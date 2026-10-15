@@ -280,45 +280,86 @@ function CentralEntrancePortico() {
 }
 
 // ─── 4. Corner Living Algae Bioreactor Stack ────────────────────────────────
-function CornerBioreactorStack({ position, floorYs = [Y_FLOOR1, Y_FLOOR2, Y_FLOOR3, Y_TERRACE] }) {
-  const matRef = useRef();
+function CornerBioreactorStack({ position, cornerType = 'FL', floorYs = [Y_GROUND + 0.1, Y_FLOOR1, Y_FLOOR2, Y_FLOOR3, Y_TERRACE] }) {
   const bubblesRef = useRef();
   const currentFluidCol = useMemo(() => new THREE.Color('#10b981'), []);
 
+  // Shared reactive fluid material for all modules in this corner stack
+  const fluidMaterial = useMemo(() => {
+    return new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#10b981'),
+      emissive: new THREE.Color('#059669'),
+      emissiveIntensity: 0.95,
+      roughness: 0.12,
+      metalness: 0.05,
+      transmission: 0.45,
+      ior: 1.42,
+      thickness: 0.8,
+      transparent: true,
+      opacity: 0.95,
+      clearcoat: 0.9,
+      clearcoatRoughness: 0.05
+    });
+  }, []);
+
+  // Shared borosilicate glass cylinder material
+  const glassMaterial = useMemo(() => {
+    return new THREE.MeshPhysicalMaterial({
+      color: '#e0f2fe',
+      roughness: 0.02,
+      metalness: 0.02,
+      transmission: 0.95,
+      ior: 1.52,
+      thickness: 0.5,
+      transparent: true,
+      opacity: 0.45,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.02
+    });
+  }, []);
+
   // Micro-bubble particle system inside the vertical corner reactor stack
-  const bubbleCount = 70;
+  const bubbleCount = 90;
   const { bubblePositions, bubbleSpeeds } = useMemo(() => {
     const pos = new Float32Array(bubbleCount * 3);
     const spd = new Float32Array(bubbleCount);
     for (let i = 0; i < bubbleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const r = Math.random() * 0.18;
+      const r = Math.random() * 0.22;
       pos[i * 3 + 0] = Math.cos(angle) * r;
-      pos[i * 3 + 1] = -1.2 + Math.random() * 3.2;
+      pos[i * 3 + 1] = -1.4 + Math.random() * 3.4;
       pos[i * 3 + 2] = Math.sin(angle) * r;
-      spd[i] = 0.5 + Math.random() * 0.9;
+      spd[i] = 0.7 + Math.random() * 1.1;
     }
     return { bubblePositions: pos, bubbleSpeeds: spd };
   }, [bubbleCount]);
 
-  useFrame((_, delta) => {
-    if (!matRef.current) return;
+  // Compute direction vector from reactor back to building corner
+  const pipeOffset = useMemo(() => {
+    if (cornerType === 'FL') return [ 0.26, 0, -0.22];
+    if (cornerType === 'FR') return [-0.26, 0, -0.22];
+    if (cornerType === 'RL') return [ 0.26, 0,  0.22];
+    return [-0.26, 0,  0.22]; // RR
+  }, [cornerType]);
+
+  useFrame((state, delta) => {
     const { algae_health, hvacState } = useStore.getState();
 
-    // Dynamically lerp fluid color based on real-time health telemetry
+    // Dynamically lerp fluid color and emissive glow based on real-time health telemetry
     const targetColor = getBioreactorFluidColor(algae_health);
-    currentFluidCol.lerp(targetColor, delta * 3.0);
-    matRef.current.color.copy(currentFluidCol);
-    matRef.current.emissive.copy(currentFluidCol);
+    currentFluidCol.lerp(targetColor, delta * 3.5);
+    fluidMaterial.color.copy(currentFluidCol);
+    fluidMaterial.emissive.copy(currentFluidCol);
+    fluidMaterial.emissiveIntensity = 0.85 + (hvacState.damperOpenPct / 100) * 0.45;
 
     // Bubble ascent physics tied to HVAC damper & velocity
     if (bubblesRef.current) {
-      const vel = 0.6 + (hvacState.damperOpenPct / 100) * 1.8;
+      const vel = 0.8 + (hvacState.damperOpenPct / 100) * 2.2;
       const arr = bubblesRef.current.geometry.attributes.position.array;
       for (let i = 0; i < bubbleCount; i++) {
         arr[i * 3 + 1] += delta * vel * bubbleSpeeds[i];
-        if (arr[i * 3 + 1] > 2.1) {
-          arr[i * 3 + 1] = -1.2;
+        if (arr[i * 3 + 1] > 2.0) {
+          arr[i * 3 + 1] = -1.4;
         }
       }
       bubblesRef.current.geometry.attributes.position.needsUpdate = true;
@@ -327,54 +368,40 @@ function CornerBioreactorStack({ position, floorYs = [Y_FLOOR1, Y_FLOOR2, Y_FLOO
 
   return (
     <group position={position}>
-      {/* 4 Stacked Cylindrical Modules corresponding to each floor */}
+      {/* 5 Stacked Cylindrical Modules corresponding to Ground, Fl 1, Fl 2, Fl 3, Terrace */}
       {floorYs.map((y, i) => (
         <group key={i} position={[0, y, 0]}>
           {/* Outer Borosilicate Glass Cylinder */}
-          <mesh castShadow receiveShadow>
-            <cylinderGeometry args={[0.24, 0.24, 0.62, 24, 1, false]} />
-            <meshPhysicalMaterial
-              color="#f8fafc"
-              roughness={0.05}
-              transmission={0.92}
-              ior={1.5}
-              thickness={0.5}
-              transparent
-              opacity={0.4}
-              clearcoat={1.0}
-            />
+          <mesh castShadow receiveShadow material={glassMaterial}>
+            <cylinderGeometry args={[0.34, 0.34, 0.65, 24, 1, false]} />
           </mesh>
 
           {/* Inner Liquid Microalgae Culture Core */}
-          <mesh>
-            <cylinderGeometry args={[0.21, 0.21, 0.58, 20]} />
-            <meshPhysicalMaterial
-              ref={i === 0 ? matRef : undefined}
-              color="#10b981"
-              emissive="#064e3b"
-              emissiveIntensity={0.35}
-              roughness={0.18}
-              transmission={0.5}
-              transparent
-              opacity={0.88}
-            />
+          <mesh material={fluidMaterial}>
+            <cylinderGeometry args={[0.30, 0.30, 0.61, 20]} />
           </mesh>
 
           {/* Stainless Steel Sanitary Flange Collars on Top & Bottom */}
-          <mesh position={[0, 0.31, 0]}>
-            <cylinderGeometry args={[0.26, 0.26, 0.05, 20]} />
-            <meshStandardMaterial color="#334155" metalness={0.9} roughness={0.2} />
+          <mesh position={[0, 0.325, 0]}>
+            <cylinderGeometry args={[0.37, 0.37, 0.05, 24]} />
+            <meshStandardMaterial color="#334155" metalness={0.92} roughness={0.18} />
           </mesh>
-          <mesh position={[0, -0.31, 0]}>
-            <cylinderGeometry args={[0.26, 0.26, 0.05, 20]} />
-            <meshStandardMaterial color="#334155" metalness={0.9} roughness={0.2} />
+          <mesh position={[0, -0.325, 0]}>
+            <cylinderGeometry args={[0.37, 0.37, 0.05, 24]} />
+            <meshStandardMaterial color="#334155" metalness={0.92} roughness={0.18} />
           </mesh>
 
-          {/* Connecting HVAC Loop Pipes attaching reactor to the facade */}
-          <group position={[0, 0, -0.28]}>
+          {/* Etched Volumetric Calibration Ring around glass */}
+          <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.342, 0.007, 6, 24]} />
+            <meshStandardMaterial color="#94a3b8" roughness={0.4} opacity={0.6} transparent />
+          </mesh>
+
+          {/* Connecting HVAC Loop Pipes attaching reactor to the building wall */}
+          <group position={pipeOffset}>
             <mesh rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.045, 0.045, 0.22, 12]} />
-              <meshStandardMaterial color={PIPE_METAL} metalness={0.85} roughness={0.25} />
+              <cylinderGeometry args={[0.055, 0.055, 0.32, 12]} />
+              <meshStandardMaterial color={PIPE_METAL} metalness={0.88} roughness={0.2} />
             </mesh>
           </group>
         </group>
@@ -391,19 +418,19 @@ function CornerBioreactorStack({ position, floorYs = [Y_FLOOR1, Y_FLOOR2, Y_FLOO
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.045}
+          size={0.055}
           color="#f0fdf4"
           transparent
-          opacity={0.75}
+          opacity={0.85}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
       </points>
 
-      {/* Continuous Vertical Support Truss & Exhaust Riser */}
-      <mesh position={[0, 0.35, -0.28]}>
-        <cylinderGeometry args={[0.035, 0.035, 3.4, 12]} />
-        <meshStandardMaterial color="#475569" metalness={0.9} roughness={0.2} />
+      {/* Heavy Vertical Structural Support Truss linking all modules */}
+      <mesh position={[pipeOffset[0] * 0.5, 0.15, pipeOffset[2] * 0.5]}>
+        <cylinderGeometry args={[0.045, 0.045, 3.6, 12]} />
+        <meshStandardMaterial color="#334155" metalness={0.92} roughness={0.2} />
       </mesh>
     </group>
   );
@@ -412,45 +439,59 @@ function CornerBioreactorStack({ position, floorYs = [Y_FLOOR1, Y_FLOOR2, Y_FLOO
 // ─── 5. HVAC Connecting Conduits & Animated Airflow Particles ───────────────
 function AirflowPipeNetwork() {
   const pointsRef = useRef();
-  const particleCount = 60;
+  const particleCount = 100;
+
+  // 4 Exterior Corner Coordinates matching the reactors
+  const corners = useMemo(() => [
+    { x: -4.38, z:  3.58, type: 'FL' },
+    { x:  4.38, z:  3.58, type: 'FR' },
+    { x: -4.38, z: -3.58, type: 'RL' },
+    { x:  4.38, z: -3.58, type: 'RR' }
+  ], []);
 
   const { particlePos, meta } = useMemo(() => {
     const pos = new Float32Array(particleCount * 3);
     const m = [];
-    const corners = [
-      [-HALF_W + 0.15, HALF_D - 0.15],
-      [ HALF_W - 0.15, HALF_D - 0.15],
-      [-HALF_W + 0.15, -HALF_D + 0.15],
-      [ HALF_W - 0.15, -HALF_D + 0.15]
-    ];
+    const floorYs = [Y_GROUND + 0.1, Y_FLOOR1, Y_FLOOR2, Y_FLOOR3, Y_TERRACE];
 
     for (let i = 0; i < particleCount; i++) {
       const c = corners[i % 4];
-      const flrIdx = Math.floor(Math.random() * 4);
-      const yBase = [Y_FLOOR1, Y_FLOOR2, Y_FLOOR3, Y_TERRACE][flrIdx];
-      pos[i * 3 + 0] = c[0];
+      const flrIdx = Math.floor(Math.random() * floorYs.length);
+      const yBase = floorYs[flrIdx];
+      const progress = Math.random();
+
+      // Flow from building wall toward reactor
+      const startX = c.type.includes('L') ? -HALF_W : HALF_W;
+      const startZ = c.type.includes('F') ? HALF_D : -HALF_D;
+
+      pos[i * 3 + 0] = startX + progress * (c.x - startX);
       pos[i * 3 + 1] = yBase;
-      pos[i * 3 + 2] = c[1];
-      m.push({ corner: c, yBase, progress: Math.random() });
+      pos[i * 3 + 2] = startZ + progress * (c.z - startZ);
+
+      m.push({ corner: c, startX, startZ, yBase, progress, speed: 0.6 + Math.random() * 0.8 });
     }
     return { particlePos: pos, meta: m };
-  }, [particleCount]);
+  }, [particleCount, corners]);
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
     const { hvacState } = useStore.getState();
     const arr = pointsRef.current.geometry.attributes.position.array;
-    const speed = hvacState.airflowVelocity * 0.9;
+    const speed = hvacState.airflowVelocity * 1.1;
 
     for (let i = 0; i < particleCount; i++) {
-      meta[i].progress += delta * speed;
-      if (meta[i].progress > 1) meta[i].progress = 0;
+      const item = meta[i];
+      item.progress += delta * speed * item.speed;
+      if (item.progress > 1) item.progress = 0;
 
-      // Pulse along connecting pipe
-      arr[i * 3 + 1] = meta[i].yBase + (Math.sin(meta[i].progress * Math.PI * 2) * 0.15);
+      // Stream along the intake conduit
+      arr[i * 3 + 0] = item.startX + item.progress * (item.corner.x - item.startX);
+      arr[i * 3 + 1] = item.yBase + Math.sin(item.progress * Math.PI) * 0.05;
+      arr[i * 3 + 2] = item.startZ + item.progress * (item.corner.z - item.startZ);
     }
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
     pointsRef.current.material.color.set(hvacState.airflowColor);
+    pointsRef.current.material.size = 0.075 + (hvacState.damperOpenPct / 100) * 0.025;
   });
 
   return (
@@ -458,7 +499,14 @@ function AirflowPipeNetwork() {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={particleCount} array={particlePos} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.065} color="#38bdf8" transparent opacity={0.85} blending={THREE.AdditiveBlending} depthWrite={false} />
+      <pointsMaterial
+        size={0.08}
+        color="#38bdf8"
+        transparent
+        opacity={0.9}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
     </points>
   );
 }
@@ -581,15 +629,15 @@ function NeoclassicalBuildingArchitecture() {
         <ClassicalPilaster key={`rp2-${i}`} position={[HALF_W + 0.02, Y_FLOOR1, z]} height={2.2} radius={0.08} rotation={[0, Math.PI / 2, 0]} />
       ))}
 
-      {/* ── CORNER LIVING ALGAE BIOREACTORS (MATCHING 4 ELEVATIONS) ── */}
+      {/* ── CORNER LIVING ALGAE BIOREACTORS (4 EXTERIOR CORNERS - 5 FLOORS EACH) ── */}
       {/* Front-Left Corner Stack */}
-      <CornerBioreactorStack position={[-HALF_W + 0.28, 0, HALF_D - 0.28]} />
+      <CornerBioreactorStack position={[-4.38, 0,  3.58]} cornerType="FL" />
       {/* Front-Right Corner Stack */}
-      <CornerBioreactorStack position={[ HALF_W - 0.28, 0, HALF_D - 0.28]} />
+      <CornerBioreactorStack position={[ 4.38, 0,  3.58]} cornerType="FR" />
       {/* Rear-Left Corner Stack */}
-      <CornerBioreactorStack position={[-HALF_W + 0.28, 0, -HALF_D + 0.28]} />
+      <CornerBioreactorStack position={[-4.38, 0, -3.58]} cornerType="RL" />
       {/* Rear-Right Corner Stack */}
-      <CornerBioreactorStack position={[ HALF_W - 0.28, 0, -HALF_D + 0.28]} />
+      <CornerBioreactorStack position={[ 4.38, 0, -3.58]} cornerType="RR" />
 
       {/* ── AIRFLOW DUCTWORK & CONNECTING PARTICLE SYSTEM ── */}
       <AirflowPipeNetwork />
@@ -617,22 +665,32 @@ function CameraController({ viewAngle }) {
   return null;
 }
 
-// ─── Dynamic Biological Light ────────────────────────────────────────────────
+// ─── Dynamic Biological Lighting (Casting light onto all 4 corners) ─────────
 function DynamicBioLight() {
-  const lightRef = useRef();
+  const lightFL = useRef();
+  const lightFR = useRef();
+  const lightRL = useRef();
+  const lightRR = useRef();
 
   useFrame((_, delta) => {
-    if (!lightRef.current) return;
     const { algae_health, hvacState } = useStore.getState();
     const color = getBioreactorFluidColor(algae_health);
-    lightRef.current.color.lerp(color, delta * 3.0);
-    lightRef.current.intensity = 0.8 + (algae_health / 100) * 1.4;
+    const intensity = 1.3 + (algae_health / 100) * 1.5;
+
+    [lightFL, lightFR, lightRL, lightRR].forEach((ref) => {
+      if (ref.current) {
+        ref.current.color.lerp(color, delta * 3.0);
+        ref.current.intensity = intensity;
+      }
+    });
   });
 
   return (
     <group>
-      <pointLight ref={lightRef} position={[-HALF_W, 0.5, HALF_D]} distance={6} decay={1.8} />
-      <pointLight position={[HALF_W, 0.5, HALF_D]} color="#10b981" distance={6} decay={1.8} intensity={0.9} />
+      <pointLight ref={lightFL} position={[-4.38, 0.4,  3.58]} distance={6} decay={1.7} />
+      <pointLight ref={lightFR} position={[ 4.38, 0.4,  3.58]} distance={6} decay={1.7} />
+      <pointLight ref={lightRL} position={[-4.38, 0.4, -3.58]} distance={6} decay={1.7} />
+      <pointLight ref={lightRR} position={[ 4.38, 0.4, -3.58]} distance={6} decay={1.7} />
     </group>
   );
 }
@@ -748,9 +806,9 @@ export default function BuildingTwin({ focusMode = 'overview' }) {
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none hidden lg:flex items-center gap-2 text-[10px] font-mono text-slate-400 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-full border border-slate-800">
         <span className="text-amber-300 font-bold">41.4m × 34.2m NEOCLASSICAL ELEVATIONS</span>
         <span>·</span>
-        <span className="text-emerald-400">CORNER BIOREACTOR MODULES</span>
+        <span className="text-emerald-400 font-bold">4 CORNER BIOREACTOR TOWERS (20 MODULES)</span>
         <span>·</span>
-        <span className="text-sky-300">LIVE BMS DATA-DRIVEN</span>
+        <span className="text-cyan-300 font-bold">LIVE SPARGING AIRFLOW STREAM</span>
       </div>
 
       {/* Three.js Canvas Scene */}
