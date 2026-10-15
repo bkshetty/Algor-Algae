@@ -221,28 +221,54 @@ function CO2CirculationFlow() {
   );
 }
 
-export default function BuildingTwin() {
+export default function BuildingTwin({ focusMode = 'overview' }) {
   const algaeHealth = useStore((state) => state.algae_health);
+  const occupancy = useStore((state) => state.occupancy);
+  const co2Ppm = useStore((state) => state.co2_ppm);
+  const biofuelRate = useStore((state) => state.biofuel_ml_hr);
   const status = useStore((state) => state.status);
 
   // Status banner color
   const statusColorHex = algaeHealth >= 70 ? '#10b981' : algaeHealth >= 45 ? '#f59e0b' : '#ef4444';
 
   return (
-    <div className="relative w-full h-full min-h-[480px] bg-gradient-to-b from-[#060a12] via-[#0b1220] to-[#080d1a] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+    <div className="relative w-full h-full min-h-[480px] bg-gradient-to-b from-[#060a12] via-[#0b1220] to-[#080d1a] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col">
       {/* 3D Viewport Title Overlay */}
-      <div className="absolute top-4 left-4 z-10 pointer-events-none flex items-center space-x-3">
-        <div className="px-3 py-1 rounded-full text-xs font-mono font-medium tracking-wide border"
-             style={{ borderColor: `${statusColorHex}55`, backgroundColor: `${statusColorHex}15`, color: statusColorHex }}>
-          <span className="inline-block w-2 h-2 rounded-full mr-2 animate-ping" style={{ backgroundColor: statusColorHex }} />
-          BIO-FACADE: {status} ({algaeHealth.toFixed(1)}%)
-        </div>
-        <div className="text-xs text-slate-400 font-mono hidden sm:inline-block">
-          Interactive 3D Digital Twin • Drag to Rotate • Scroll to Zoom
+      <div className="absolute top-4 left-4 z-10 pointer-events-none flex flex-wrap items-center gap-2">
+        {focusMode === 'human' ? (
+          <div className="px-3 py-1 rounded-full text-xs font-mono font-medium tracking-wide border border-sky-500/40 bg-sky-500/10 text-sky-300 flex items-center shadow-lg backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full mr-2 bg-sky-400 animate-pulse" />
+            HVAC SPARGING: {occupancy} OCCUPANT{occupancy !== 1 ? 'S' : ''} ({co2Ppm} PPM CO₂)
+          </div>
+        ) : focusMode === 'algae' ? (
+          <div className="px-3 py-1 rounded-full text-xs font-mono font-medium tracking-wide border flex items-center shadow-lg backdrop-blur-md"
+               style={{ borderColor: `${statusColorHex}55`, backgroundColor: `${statusColorHex}15`, color: statusColorHex }}>
+            <span className="w-2 h-2 rounded-full mr-2 animate-ping" style={{ backgroundColor: statusColorHex }} />
+            BIOREACTOR FACADE: {status} ({algaeHealth.toFixed(1)}%) • {biofuelRate} ML/HR
+          </div>
+        ) : (
+          <div className="px-3 py-1 rounded-full text-xs font-mono font-medium tracking-wide border flex items-center shadow-lg backdrop-blur-md"
+               style={{ borderColor: `${statusColorHex}55`, backgroundColor: `${statusColorHex}15`, color: statusColorHex }}>
+            <span className="w-2 h-2 rounded-full mr-2 animate-ping" style={{ backgroundColor: statusColorHex }} />
+            TWIN STATUS: {status} ({algaeHealth.toFixed(1)}%)
+          </div>
+        )}
+
+        <div className="text-[11px] text-slate-400 font-mono hidden md:inline-block bg-black/40 px-2.5 py-1 rounded-full border border-white/5 backdrop-blur-md">
+          {focusMode === 'human' ? 'Occupancy Airflow Dynamics' : focusMode === 'algae' ? 'Photosynthetic Bioreactor Loop' : 'Interactive 3D Digital Twin'} • Drag to Rotate
         </div>
       </div>
 
-      <Canvas shadows dpr={[1, 2]}>
+      {/* Floating Bottom Left Telemetry Badge in 3D viewport */}
+      <div className="absolute bottom-4 left-4 z-10 pointer-events-none hidden sm:flex items-center space-x-2 text-[10px] font-mono text-slate-400 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800">
+        <span className="text-emerald-400">7-STORY BIO-FACADE</span>
+        <span>•</span>
+        <span>56 CHLORELLA PANELS</span>
+        <span>•</span>
+        <span className="text-sky-400">CLOSED-LOOP HVAC</span>
+      </div>
+
+      <Canvas shadows dpr={[1, 2]} className="flex-1 w-full h-full">
         <PerspectiveCamera makeDefault position={[6.5, 4.0, 7.5]} fov={42} />
         <OrbitControls
           enablePan={true}
