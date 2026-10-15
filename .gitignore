@@ -1,0 +1,29 @@
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv
+.venv
+venv/
+.venv/
+env/
+.env
+.env.*
+*.env
+**/.env
+!.env.example
+!**/.env.example
+
+# Model weights
+*.pt
+*.onnx
+
+# System
+.DS_Store
+Thumbs.db
