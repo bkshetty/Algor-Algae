@@ -7,11 +7,15 @@ import {
   Users, 
   Activity, 
   Sparkles,
-  Bot
+  Bot,
+  Wind,
+  Compass
 } from 'lucide-react';
+import LandingPage from './components/LandingPage';
 import OverviewPage from './components/OverviewPage';
 import HumanDetectionPage from './components/HumanDetectionPage';
 import AlgaeHealthPage from './components/AlgaeHealthPage';
+import HVACDiagram from './components/HVACDiagram';
 import { initWebSocket, closeWebSocket } from './utils/websocket';
 import { useStore } from './store';
 
@@ -21,8 +25,8 @@ export default function App() {
   const occupancy = useStore((state) => state.occupancy);
   const status = useStore((state) => state.status);
 
-  // Systematic multi-page view state: 'overview' | 'human' | 'algae'
-  const [activePage, setActivePage] = useState('overview');
+  // Systematic multi-page view state: 'landing' | 'overview' | 'human' | 'algae' | 'hvac'
+  const [activePage, setActivePage] = useState('landing');
 
   useEffect(() => {
     initWebSocket();
@@ -34,12 +38,15 @@ export default function App() {
   const isCritical = algaeHealth < 45;
 
   return (
-    <div className="min-h-screen bg-[#070b12] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#060a12] text-slate-100 flex flex-col font-sans">
       {/* Top Futuristic Navigation Bar */}
-      <header className="border-b border-emerald-950/80 bg-[#0a110e]/95 backdrop-blur-md px-4 lg:px-6 py-3 flex flex-wrap items-center justify-between sticky top-0 z-50 gap-3">
+      <header className="border-b border-slate-800/80 bg-[#090f19]/90 backdrop-blur-xl px-4 lg:px-6 py-3 flex flex-wrap items-center justify-between sticky top-0 z-50 gap-3 shadow-2xl">
         {/* Logo & Platform Info */}
-        <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 flex items-center justify-center shadow-lg shadow-emerald-950/50">
+        <div 
+          onClick={() => setActivePage('landing')}
+          className="flex items-center space-x-3 cursor-pointer group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 flex items-center justify-center shadow-lg shadow-emerald-950/50 group-hover:scale-105 transition-transform">
             <div className="w-full h-full bg-[#070b12] rounded-[10px] flex items-center justify-center">
               <Leaf className="w-5 h-5 text-emerald-400" />
             </div>
@@ -60,24 +67,36 @@ export default function App() {
         </div>
 
         {/* Central Systematic Navigation Tabs */}
-        <nav className="flex items-center bg-[#0d151f] p-1 rounded-xl border border-slate-800 shadow-inner">
+        <nav className="flex items-center bg-[#0d1522] p-1 rounded-xl border border-slate-800 shadow-inner flex-wrap gap-1">
+          <button
+            onClick={() => setActivePage('landing')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center space-x-1.5 ${
+              activePage === 'landing'
+                ? 'bg-gradient-to-r from-emerald-500/25 to-teal-500/25 text-emerald-300 border border-emerald-500/50 shadow-sm font-bold'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Project Overview</span>
+          </button>
+
           <button
             onClick={() => setActivePage('overview')}
             className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center space-x-1.5 ${
               activePage === 'overview'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm font-bold'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
             <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Digital Twin Overview</span>
+            <span>3D Digital Twin</span>
           </button>
 
           <button
             onClick={() => setActivePage('human')}
             className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center space-x-1.5 ${
               activePage === 'human'
-                ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm'
+                ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm font-bold'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -92,7 +111,7 @@ export default function App() {
             onClick={() => setActivePage('algae')}
             className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center space-x-1.5 ${
               activePage === 'algae'
-                ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-sm'
+                ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-sm font-bold'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -105,16 +124,28 @@ export default function App() {
               {algaeHealth.toFixed(0)}%
             </span>
           </button>
+
+          <button
+            onClick={() => setActivePage('hvac')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center space-x-1.5 ${
+              activePage === 'hvac'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm font-bold'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Wind className="w-3.5 h-3.5 text-amber-400" />
+            <span>HVAC Schematic</span>
+          </button>
         </nav>
 
         {/* Global Status Indicators */}
         <div className="flex items-center space-x-3 text-xs font-mono">
-          <div className="hidden xl:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#111a16] border border-emerald-900/40">
+          <div className="hidden xl:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#0e1624] border border-slate-800">
             <span className="text-slate-400 text-[11px]">BMS KERNEL:</span>
             <span className="text-emerald-400 font-medium">GEMINI 3.8 FLASH</span>
           </div>
 
-          <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#111a16] border border-emerald-900/40">
+          <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#0e1624] border border-slate-800">
             <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
             <span className={isConnected ? 'text-slate-300' : 'text-rose-400'}>
               {isConnected ? 'TELEMETRY: 30 FPS' : 'OFFLINE'}
@@ -125,6 +156,10 @@ export default function App() {
 
       {/* Main Systematic Multi-View Container */}
       <main className="flex-1 p-4 lg:p-6 flex flex-col max-w-[1850px] w-full mx-auto">
+        {activePage === 'landing' && (
+          <LandingPage onNavigate={setActivePage} />
+        )}
+
         {activePage === 'overview' && (
           <OverviewPage onNavigate={setActivePage} />
         )}
@@ -135,6 +170,12 @@ export default function App() {
 
         {activePage === 'algae' && (
           <AlgaeHealthPage />
+        )}
+
+        {activePage === 'hvac' && (
+          <div className="w-full">
+            <HVACDiagram />
+          </div>
         )}
       </main>
     </div>
