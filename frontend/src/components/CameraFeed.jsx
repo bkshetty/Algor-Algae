@@ -25,7 +25,7 @@ export default function CameraFeed({ mode = 'overview' }) {
 
   const handleSimulateOccupants = async (count) => {
     setActiveTestMode(`occ-${count}`);
-    await setSimulationOverride(count, algaeHealth < 50);
+    await setSimulationOverride(count, algaeHealth < 68);
   };
 
   const handleSimulateYellowCrisis = async () => {

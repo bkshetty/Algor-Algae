@@ -99,10 +99,11 @@ class BioFacadeAIAgent:
             status = "STRESSED"
             diagnostics = (
                 f"Culture under mild abiotic stress. Yellowing hue detected in spectrophotometer ROI. "
-                f"With {occupancy} occupants producing {co2_ppm} ppm CO2, the algae requires pH balancing "
-                "and micronutrient replenishment to avoid culture crash."
+                f"With {occupancy} occupants producing {co2_ppm} ppm CO2, the building exhaust is redirected "
+                "to the outside atmosphere (90% outdoor vent) to prevent lethal carbonic acid shock (pH < 6.8) "
+                "while culture undergoes nutrient recovery."
             )
-            actions = ["dose_nitrogen_buffer", "increase_air_sparging", "adjust_panel_tilt"]
+            actions = ["dose_nitrogen_buffer", "bypass_hvac_exhaust_to_outside", "adjust_panel_tilt"]
             detailed_actions = [
                 {
                     "action": "dose_nitrogen_buffer",
@@ -111,10 +112,10 @@ class BioFacadeAIAgent:
                     "rationale": "Replenishes depleted nitrogen needed for chlorophyll synthesis."
                 },
                 {
-                    "action": "increase_air_sparging",
-                    "target": "HVAC_CO2_Feed_Valve",
-                    "parameter": "Modulate open +20%",
-                    "rationale": "Reduces dissolved oxygen build-up which causes photo-inhibition."
+                    "action": "bypass_hvac_exhaust_to_outside",
+                    "target": "BMS_Bypass_Damper",
+                    "parameter": "Bypass 90% exhaust to outside atmosphere",
+                    "rationale": "Yellow stress detected: Redirects high-CO2 exhaust outside to prevent carbonic acid acidification."
                 }
             ]
             esg_score = "A - Warning: Carbon Efficiency Reduced"
@@ -126,7 +127,7 @@ class BioFacadeAIAgent:
             status = "CRITICAL"
             diagnostics = (
                 f"CRITICAL BIOLOGICAL COLLAPSE DETECTED. Algae health has fallen to {health:.1f}% with severe chlorosis "
-                f"(yellow spectrum dominance). Immediate life-support automation triggered to prevent culture wipeout."
+                f"(yellow spectrum dominance). Immediate life-support automation triggered: 95% exhaust air vented outside."
             )
             actions = ["emergency_nutrient_flush", "divert_excess_hvac_exhaust", "activate_uv_sterilization", "trigger_shade_louvers"]
             detailed_actions = [
@@ -139,7 +140,7 @@ class BioFacadeAIAgent:
                 {
                     "action": "divert_excess_hvac_exhaust",
                     "target": "BMS_Bypass_Damper",
-                    "parameter": "Bypass facade by 60%",
+                    "parameter": "Bypass 95% exhaust to outside atmosphere",
                     "rationale": "High CO2 concentration at low cellular vitality acidifies water below pH 6.8."
                 },
                 {
@@ -185,11 +186,15 @@ Current telemetry received from computer vision sensors:
 - Facade Algae Health: {health}% (derived from HSV spectrophotometric analysis)
 - Simulated Biofuel Production: {biofuel_ml} ml/hr
 
+CRITICAL HVAC RULE:
+- When algae is UNHEALTHY or YELLOW (health < 70% or status STRESSED/CRITICAL): Outlet exhaust air MUST be bypassed to the outdoor atmosphere (BMS_Bypass_Damper: 90-95% outside vent) and NOT redirected to the algae bioreactor, to prevent toxic carbonic acid shock (pH < 6.8).
+- Only when algae is HEALTHY (health >= 70%): High occupancy exhaust should be redirected to the algae bioreactor for photosynthetic sequestration.
+
 Task:
 Analyze this telemetry and output a strict JSON diagnostics assessment:
 1. 'status': 'OPTIMAL' if health >= 75, 'STRESSED' if 45 <= health < 75, 'CRITICAL' if health < 45.
 2. 'diagnostics': Concise, scientifically grounded explanation of what is happening biologically and structurally.
-3. 'actions': Array of 2 to 4 command strings (e.g. ["redirect_hvac", "dose_nitrogen", "increase_sparging"]).
+3. 'actions': Array of 2 to 4 command strings (e.g. ["bypass_hvac_exhaust_to_outside", "dose_nitrogen", "adjust_damper"]).
 4. 'detailed_actions': Array of structured actions with action name, target subsystem, parameter, and rationale.
 5. 'carbon_report': Object with co2_absorbed_kg_day (float), carbon_credits_earned (float), esg_compliance_score (string), and summary (string).
 

@@ -47,24 +47,32 @@ export const useStore = create((set, get) => ({
       autoFlag = false;
     }
 
+    // Check if algae reactor is unhealthy / yellow / stressed
+    const isUnhealthyAlgae = (newHealth < 68.0) ||
+                             (payload.status && payload.status !== 'OPTIMAL') ||
+                             (payload.hsv_stats && payload.hsv_stats.yellow_ratio > 0.08);
+
     // Dynamic HVAC computation if in 'auto' mode
     let updatedHvac = { ...current.hvacState };
     if (current.hvacState.mode === 'auto') {
-      if (newHealth < 45.0) {
-        // Crisis: Acidification bypass
+      if (isUnhealthyAlgae) {
+        // ALGAE UNHEALTHY / YELLOW: Bypassed to outside atmosphere to prevent fatal carbonic acidification
+        const isYellow = newHealth >= 45.0;
         updatedHvac = {
           mode: 'auto',
-          damperOpenPct: 15,
+          damperOpenPct: 10,
           airflowVelocity: 2.2,
-          airflowColor: '#ef4444',
+          airflowColor: isYellow ? '#f59e0b' : '#ef4444',
           activeLoop: 'roof_bypass',
-          hvacStatusText: 'AI ACIDIFICATION BYPASS ACTIVE',
-          aiReasoning: `Gemini 3.8 Flash BMS: Chlorosis stress detected in OpenCV spectrophotometer (${newHealth.toFixed(1)}%). Exhaust bypassed away from facade to avoid acidification.`,
-          spargingRateLpm: 3.5,
-          divertPct: 85
+          hvacStatusText: isYellow
+            ? 'ALGAE YELLOW: OUTLET AIR REDIRECTED TO OUTSIDE'
+            : 'CRITICAL CHLOROSIS: OUTLET AIR VENTED OUTSIDE',
+          aiReasoning: `Gemini 3.8 Flash BMS: Algae reactor is unhealthy / yellow (${newHealth.toFixed(1)}% health). High-CO2 outlet air (${newCo2} ppm) is redirected to outside atmosphere (90% outdoor vent) to prevent lethal carbonic acid shock (pH < 6.8).`,
+          spargingRateLpm: 2.0,
+          divertPct: 90
         };
       } else if (newOcc > 1 || newCo2 > 650) {
-        // High Occupancy: Airflow redirected to facade
+        // HEALTHY ALGAE + High Occupancy: Airflow safely redirected to facade bioreactors
         const damper = Math.min(100, 35 + (newOcc * 15));
         const vel = 1.0 + (newOcc * 0.45);
         const isSurge = newCo2 > 800;
@@ -74,21 +82,21 @@ export const useStore = create((set, get) => ({
           airflowVelocity: vel,
           airflowColor: isSurge ? '#f59e0b' : '#38bdf8',
           activeLoop: 'facade',
-          hvacStatusText: isSurge ? 'AI AIRFLOW REDIRECTED TO FACADE' : 'ACTIVE METABOLIC SPARGING',
-          aiReasoning: `Gemini 3.8 Flash BMS: Detected ${newOcc} occupants (${newCo2} ppm CO2). Damper modulated to ${damper}%. Human exhaust redirected directly to bioreactor panels.`,
+          hvacStatusText: isSurge ? 'HEALTHY ALGAE: AI AIRFLOW REDIRECTED TO FACADE' : 'ACTIVE METABOLIC SPARGING',
+          aiReasoning: `Gemini 3.8 Flash BMS: Detected ${newOcc} occupants (${newCo2} ppm CO2). Healthy algae culture (${newHealth.toFixed(1)}%) is actively photosynthesizing. Damper modulated to ${damper}% to feed bioreactor panels.`,
           spargingRateLpm: (newOcc * 5.2).toFixed(1),
           divertPct: 0
         };
       } else {
-        // Baseline optimal
+        // HEALTHY ALGAE + Baseline optimal ventilation
         updatedHvac = {
           mode: 'auto',
           damperOpenPct: 40,
           airflowVelocity: 1.0,
           airflowColor: newHealth >= 75 ? '#10b981' : '#38bdf8',
           activeLoop: 'facade',
-          hvacStatusText: 'NORMAL RECIRCULATION',
-          aiReasoning: `Gemini 3.8 Flash BMS: Standard indoor ventilation (${newCo2} ppm). Facade panels operating at optimal photosynthetic balance.`,
+          hvacStatusText: 'HEALTHY ALGAE: BALANCED RECIRCULATION',
+          aiReasoning: `Gemini 3.8 Flash BMS: Standard indoor air (${newCo2} ppm). Healthy algae operating at optimal photosynthetic balance.`,
           spargingRateLpm: 8.5,
           divertPct: 0
         };
@@ -116,32 +124,51 @@ export const useStore = create((set, get) => ({
   // Manual/Judge GenAI HVAC Airflow Scenario Trigger
   triggerHvacScenario: (scenario) => {
     const current = get();
+    const isUnhealthy = current.algae_health < 68.0 || current.status !== 'OPTIMAL';
+
     if (scenario === 'redirect') {
-      set({
-        hvacState: {
-          mode: 'redirect',
-          damperOpenPct: 88,
-          airflowVelocity: 2.8,
-          airflowColor: '#f59e0b', // Radiant amber-gold redirection
-          activeLoop: 'facade',
-          hvacStatusText: 'AI AIRFLOW REDIRECT: 88% DAMPER OPEN',
-          aiReasoning: 'Gemini 3.8 Flash BMS: Human occupancy spike detected (1000 ppm CO2). Modulating motorized dampers to 88% — Redirecting high-CO2 exhaust into facade spargers!',
-          spargingRateLpm: 28.5,
-          divertPct: 0
-        }
-      });
+      if (isUnhealthy) {
+        // Safety Interlock: cannot redirect toxic CO2 into unhealthy/yellow algae!
+        set({
+          hvacState: {
+            mode: 'bypass',
+            damperOpenPct: 10,
+            airflowVelocity: 2.2,
+            airflowColor: '#ef4444',
+            activeLoop: 'roof_bypass',
+            hvacStatusText: 'SAFETY OVERRIDE: OUTLET AIR VENTED OUTSIDE',
+            aiReasoning: `Gemini 3.8 Flash BMS Safety Override: Redirection requested, but algae reactor is unhealthy / yellow (${current.algae_health.toFixed(1)}% health). Outlet air is safely redirected to outside atmosphere (90% outdoor vent) to prevent culture acidification!`,
+            spargingRateLpm: 2.0,
+            divertPct: 90
+          }
+        });
+      } else {
+        set({
+          hvacState: {
+            mode: 'redirect',
+            damperOpenPct: 88,
+            airflowVelocity: 2.8,
+            airflowColor: '#f59e0b', // Radiant amber-gold redirection
+            activeLoop: 'facade',
+            hvacStatusText: 'AI AIRFLOW REDIRECT: 88% DAMPER OPEN',
+            aiReasoning: 'Gemini 3.8 Flash BMS: Human occupancy spike detected (1000 ppm CO2). Healthy algae culture ready: Modulating motorized dampers to 88% — Redirecting exhaust into facade spargers!',
+            spargingRateLpm: 28.5,
+            divertPct: 0
+          }
+        });
+      }
     } else if (scenario === 'bypass') {
       set({
         hvacState: {
           mode: 'bypass',
-          damperOpenPct: 15,
+          damperOpenPct: 10,
           airflowVelocity: 2.4,
           airflowColor: '#ef4444', // Warning crimson bypass
           activeLoop: 'roof_bypass',
-          hvacStatusText: 'AI EMERGENCY BYPASS: FACADE DIVERTED 85%',
-          aiReasoning: 'Gemini 3.8 Flash BMS: Severe chlorosis / acidic pH (6.3) detected. Diverting 85% of airflow away from facade to roof scrubber to prevent culture wipeout.',
-          spargingRateLpm: 4.0,
-          divertPct: 85
+          hvacStatusText: 'AI OUTDOOR BYPASS: 90% VENTED TO OUTSIDE',
+          aiReasoning: 'Gemini 3.8 Flash BMS: Algae stress / chlorosis safeguard active. Diverting 90% of outlet air to rooftop atmospheric scrubber to prevent culture acidification.',
+          spargingRateLpm: 2.0,
+          divertPct: 90
         }
       });
     } else if (scenario === 'optimal') {
@@ -153,7 +180,7 @@ export const useStore = create((set, get) => ({
           airflowColor: '#10b981', // Vivid bio-green
           activeLoop: 'facade',
           hvacStatusText: 'AI MAX PHOTOSYNTHESIS: 75% UNIFORM FLOW',
-          aiReasoning: 'Gemini 3.8 Flash BMS: Ideal photosynthetic equilibrium. Modulating all 56 facade sparging valves for peak 32 ml/hr biomass synthesis.',
+          aiReasoning: 'Gemini 3.8 Flash BMS: Ideal photosynthetic equilibrium. Modulating all facade sparging valves for peak biomass synthesis.',
           spargingRateLpm: 22.0,
           divertPct: 0
         }

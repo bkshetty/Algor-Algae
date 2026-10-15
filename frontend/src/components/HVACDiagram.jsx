@@ -185,10 +185,11 @@ function ThreeWayDamperValve({ cx, cy, angle = 45, toAlgaePct = 80 }) {
 
 // ─── Vertical Bioreactor Facade Column SVG ────────────────────────────────────
 function BioreactorColumn({ x, y, width = 64, height = 150, health = 85, toAlgaePct = 80 }) {
-  const isHealthy = health >= 60;
+  const isHealthy = health >= 70;
   const isCrisis = health < 45;
-  const liquidColor = isCrisis ? '#eab308' : isHealthy ? '#10b981' : '#84cc16';
-  const liquidGlow = isCrisis ? 'rgba(234, 179, 8, 0.3)' : 'rgba(16, 185, 129, 0.4)';
+  const isYellow = !isHealthy && !isCrisis;
+  const liquidColor = isCrisis ? '#ef4444' : isYellow ? '#eab308' : '#10b981';
+  const liquidGlow = isCrisis ? 'rgba(239, 68, 68, 0.4)' : isYellow ? 'rgba(234, 179, 8, 0.4)' : 'rgba(16, 185, 129, 0.4)';
 
   return (
     <g transform={`translate(${x}, ${y})`}>
@@ -200,8 +201,8 @@ function BioreactorColumn({ x, y, width = 64, height = 150, health = 85, toAlgae
         height={height}
         rx="10"
         fill="#07101e"
-        stroke="#334155"
-        strokeWidth="2.5"
+        stroke={!isHealthy ? "#f59e0b" : "#334155"}
+        strokeWidth={!isHealthy ? "2.5" : "2"}
       />
       <rect
         x="2"
@@ -221,7 +222,7 @@ function BioreactorColumn({ x, y, width = 64, height = 150, health = 85, toAlgae
         height={height - 18}
         rx="6"
         fill={liquidColor}
-        opacity={isCrisis ? "0.6" : "0.75"}
+        opacity={!isHealthy ? "0.85" : "0.75"}
         style={{ filter: `drop-shadow(0 0 10px ${liquidGlow})`, transition: 'fill 0.6s ease' }}
       />
 
@@ -479,8 +480,8 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
 // ─── 2D Technical HVAC Layout Schematic (SVG Implementation) ─────────────────
 function TechnicalHVACSchematic({ stateData }) {
   const { occupants, co2, algaeHealth, toAlgaePct, toOutdoorPct, damperAngle, flowLpm } = stateData;
-  const isHealthy = algaeHealth >= 60;
-  const isCrisis = algaeHealth < 45;
+  const isHealthy = algaeHealth >= 68;
+  const isBypass = !isHealthy || toOutdoorPct >= 70;
 
   return (
     <div className="relative w-full bg-[#050b16] rounded-2xl p-4 border border-slate-800 shadow-2xl overflow-hidden">
@@ -784,25 +785,40 @@ function TechnicalHVACSchematic({ stateData }) {
           </g>
 
           {/* ══════════════════════════════════════════════════════════════════
-              8. REDIRECTED TO ALGAE (GREEN CONDUIT DOWNWARD)
+              8. REDIRECTED TO ALGAE (OR ISOLATED WHEN BYPASS ACTIVE)
              ══════════════════════════════════════════════════════════════════ */}
           <path
             d="M 595 132 L 595 240 L 640 240"
             fill="none"
-            stroke="#10b981"
-            strokeWidth={toAlgaePct > 30 ? "7" : "3.5"}
+            stroke={isBypass ? "#475569" : "#10b981"}
+            strokeWidth={isBypass ? "3" : (toAlgaePct > 30 ? "7" : "3.5")}
+            strokeDasharray={isBypass ? "4 4" : "none"}
             strokeLinejoin="round"
+            opacity={isBypass ? "0.45" : "1"}
           />
-          <polygon points="650,240 638,234 638,246" fill="#10b981" />
+          <polygon points="650,240 638,234 638,246" fill={isBypass ? "#475569" : "#10b981"} opacity={isBypass ? "0.45" : "1"} />
 
-          {/* Redirected to Algae Label */}
+          {/* Conduit Status Label */}
           <g transform="translate(620, 185)">
-            <text x="0" y="0" fill="#10b981" fontSize="10.5" fontWeight="bold" fontFamily="sans-serif">
-              To Algae
-            </text>
-            <text x="0" y="14" fill="#34d399" fontSize="9" fontWeight="bold" fontFamily="monospace">
-              Bioreactor ({toAlgaePct}%)
-            </text>
+            {isBypass ? (
+              <>
+                <text x="0" y="0" fill="#ef4444" fontSize="9.5" fontWeight="bold" fontFamily="sans-serif">
+                  BYPASS ACTIVE
+                </text>
+                <text x="0" y="14" fill="#fca5a5" fontSize="8" fontWeight="bold" fontFamily="monospace">
+                  Isolated ({toAlgaePct}%)
+                </text>
+              </>
+            ) : (
+              <>
+                <text x="0" y="0" fill="#10b981" fontSize="10.5" fontWeight="bold" fontFamily="sans-serif">
+                  To Algae
+                </text>
+                <text x="0" y="14" fill="#34d399" fontSize="9" fontWeight="bold" fontFamily="monospace">
+                  Bioreactor ({toAlgaePct}%)
+                </text>
+              </>
+            )}
           </g>
 
           {/* ══════════════════════════════════════════════════════════════════
@@ -917,13 +933,15 @@ export default function HVACDiagram() {
   // Determine current active state data (either preset or dynamic live)
   const currentStateData = useMemo(() => {
     if (selectedState === 'live') {
-      const isBypass = hvacState.activeLoop === 'roof_bypass' || storeAlgaeHealth < 45;
+      const isBypass = hvacState.activeLoop === 'roof_bypass' || storeAlgaeHealth < 68;
       const toAlgae = isBypass ? 5 : hvacState.damperOpenPct;
-      const toOutdoor = 100 - toAlgae;
+      const toOutdoor = isBypass ? 95 : (100 - toAlgae);
       return {
         id: 'live',
         title: 'Live Telemetry Sync',
-        subtitle: `Streaming live from CV sensors: ${storeOccupancy} humans, ${storeCo2} ppm CO2.`,
+        subtitle: isBypass
+          ? `ALGAE UNHEALTHY (${Math.round(storeAlgaeHealth)}%): High-CO2 exhaust bypassed to outside atmosphere (95% outdoor vent).`
+          : `Streaming live from CV sensors: ${storeOccupancy} humans, ${storeCo2} ppm CO2.`,
         occupants: storeOccupancy,
         co2: storeCo2,
         algaeHealth: Math.round(storeAlgaeHealth),
@@ -931,8 +949,8 @@ export default function HVACDiagram() {
         toOutdoorPct: toOutdoor,
         damperAngle: (toAlgae / 100) * 85,
         flowLpm: parseFloat(hvacState.spargingRateLpm),
-        algaeColor: storeAlgaeHealth >= 60 ? '#10b981' : '#eab308',
-        liquidTone: storeAlgaeHealth >= 60 ? 'healthy' : 'unhealthy',
+        algaeColor: storeAlgaeHealth >= 70 ? '#10b981' : '#eab308',
+        liquidTone: storeAlgaeHealth >= 70 ? 'healthy' : 'unhealthy',
         modeText: hvacState.hvacStatusText,
         badgeColor: hvacState.airflowColor
       };

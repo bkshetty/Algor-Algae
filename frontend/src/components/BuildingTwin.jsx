@@ -340,6 +340,7 @@ function CornerBioreactorStack({ position, cornerType = 'FL', floorYs = [Y_GROUN
 
   useFrame((state, delta) => {
     const { algae_health, hvacState } = useStore.getState();
+    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 68;
 
     // Dynamically lerp fluid color and emissive glow based on real-time health telemetry
     const targetColor = getBioreactorFluidColor(algae_health);
@@ -350,13 +351,13 @@ function CornerBioreactorStack({ position, cornerType = 'FL', floorYs = [Y_GROUN
     fluidMaterial.emissive.copy(currentEmissiveCol);
 
     // Emissive bio-illumination pulses with airflow and metabolic respiration
-    const airflowGlow = (hvacState.damperOpenPct / 100) * 0.45;
-    const pulse = Math.sin(state.clock.elapsedTime * (1.5 + hvacState.airflowVelocity * 0.8)) * 0.12;
-    fluidMaterial.emissiveIntensity = 0.70 + airflowGlow + pulse;
+    const airflowGlow = isBypass ? 0.04 : (hvacState.damperOpenPct / 100) * 0.45;
+    const pulse = isBypass ? 0 : Math.sin(state.clock.elapsedTime * (1.5 + hvacState.airflowVelocity * 0.8)) * 0.12;
+    fluidMaterial.emissiveIntensity = isBypass ? 0.48 : (0.70 + airflowGlow + pulse);
 
-    // Bubble ascent physics tied to HVAC damper & velocity
+    // Bubble ascent physics tied to HVAC damper & velocity (throttles to idle purge when bypassed)
     if (bubblesRef.current) {
-      const vel = 0.8 + (hvacState.damperOpenPct / 100) * 2.4;
+      const vel = isBypass ? 0.18 : (0.8 + (hvacState.damperOpenPct / 100) * 2.4);
       const arr = bubblesRef.current.geometry.attributes.position.array;
       for (let i = 0; i < bubbleCount; i++) {
         arr[i * 3 + 1] += delta * vel * bubbleSpeeds[i];
@@ -502,9 +503,12 @@ function AirflowPipeNetwork() {
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
-    const { hvacState } = useStore.getState();
+    const { hvacState, algae_health } = useStore.getState();
+    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 68;
     const arr = pointsRef.current.geometry.attributes.position.array;
-    const speed = hvacState.airflowVelocity * 1.25;
+
+    // When algae is unhealthy/yellow (bypass active), conduit stream to corner reactors throttles to 5% trickle
+    const speed = isBypass ? 0.15 : (hvacState.airflowVelocity * 1.25);
 
     for (let i = 0; i < particleCount; i++) {
       const item = meta[i];
@@ -517,8 +521,16 @@ function AirflowPipeNetwork() {
       arr[i * 3 + 2] = item.startZ + item.progress * (item.corner.z - item.startZ);
     }
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
-    pointsRef.current.material.color.set(hvacState.airflowColor);
-    pointsRef.current.material.size = 0.085 + (hvacState.damperOpenPct / 100) * 0.035;
+
+    if (isBypass) {
+      pointsRef.current.material.color.set('#64748b'); // Dim grey idle trickle
+      pointsRef.current.material.opacity = 0.12;
+      pointsRef.current.material.size = 0.045;
+    } else {
+      pointsRef.current.material.color.set(hvacState.airflowColor);
+      pointsRef.current.material.opacity = 0.95;
+      pointsRef.current.material.size = 0.085 + (hvacState.damperOpenPct / 100) * 0.035;
+    }
   });
 
   return (
@@ -535,6 +547,96 @@ function AirflowPipeNetwork() {
         depthWrite={false}
       />
     </points>
+  );
+}
+
+// ─── Rooftop Atmospheric Exhaust & Bypass Scrubber Plume ────────────────────
+function RooftopAtmosphericExhaust() {
+  const pointsRef = useRef();
+  const plumeCount = 100;
+
+  const { positions, meta } = useMemo(() => {
+    const pos = new Float32Array(plumeCount * 3);
+    const m = [];
+    for (let i = 0; i < plumeCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = Math.random() * 0.55;
+      const progress = Math.random();
+      const speed = 0.75 + Math.random() * 0.85;
+      const driftX = (Math.random() - 0.5) * 0.9;
+      const driftZ = (Math.random() - 0.5) * 0.9;
+
+      pos[i * 3 + 0] = Math.cos(angle) * radius;
+      pos[i * 3 + 1] = Y_TERRACE + 0.35 + progress * 2.2;
+      pos[i * 3 + 2] = Math.sin(angle) * radius;
+
+      m.push({ angle, radius, progress, speed, driftX, driftZ });
+    }
+    return { positions: pos, meta: m };
+  }, [plumeCount]);
+
+  useFrame((_, delta) => {
+    if (!pointsRef.current) return;
+    const { hvacState, algae_health } = useStore.getState();
+    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 68;
+    pointsRef.current.visible = isBypass;
+    if (!isBypass) return;
+
+    const arr = pointsRef.current.geometry.attributes.position.array;
+    const riseSpeed = (hvacState.airflowVelocity || 2.0) * 1.5;
+
+    for (let i = 0; i < plumeCount; i++) {
+      const item = meta[i];
+      item.progress += delta * riseSpeed * item.speed * 0.45;
+      if (item.progress > 1) {
+        item.progress = 0;
+      }
+
+      // Rise upward and billow into the outdoor atmosphere
+      const r = item.radius + item.progress * 1.3;
+      arr[i * 3 + 0] = Math.cos(item.angle) * r + item.driftX * item.progress;
+      arr[i * 3 + 1] = Y_TERRACE + 0.35 + item.progress * 2.5;
+      arr[i * 3 + 2] = Math.sin(item.angle) * r + item.driftZ * item.progress;
+    }
+    pointsRef.current.geometry.attributes.position.needsUpdate = true;
+    pointsRef.current.material.color.set(hvacState.airflowColor);
+  });
+
+  return (
+    <group position={[0, 0, 0]}>
+      {/* Neoclassical Rooftop Atmospheric Scrubber Penthouse Structure */}
+      <mesh position={[0, Y_TERRACE + 0.28, 0]} castShadow receiveShadow>
+        <boxGeometry args={[1.6, 0.42, 1.2]} />
+        <meshStandardMaterial color={STONE_CREAM} roughness={0.7} />
+      </mesh>
+      {/* Slate Louvered Top Cap */}
+      <mesh position={[0, Y_TERRACE + 0.52, 0]}>
+        <boxGeometry args={[1.74, 0.08, 1.34]} />
+        <meshStandardMaterial color={ROOF_SLATE} roughness={0.5} />
+      </mesh>
+      {/* Dual Rooftop Atmospheric Exhaust Stacks */}
+      {[-0.45, 0.45].map((x, idx) => (
+        <mesh key={idx} position={[x, Y_TERRACE + 0.62, 0]}>
+          <cylinderGeometry args={[0.18, 0.21, 0.24, 16]} />
+          <meshStandardMaterial color="#475569" metalness={0.8} roughness={0.25} />
+        </mesh>
+      ))}
+
+      {/* Atmospheric Outdoor Exhaust Plume */}
+      <points ref={pointsRef} renderOrder={5}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={plumeCount} array={positions} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.12}
+          color="#f59e0b"
+          transparent
+          opacity={0.88}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </points>
+    </group>
   );
 }
 
@@ -668,6 +770,9 @@ function NeoclassicalBuildingArchitecture() {
 
       {/* ── AIRFLOW DUCTWORK & CONNECTING PARTICLE SYSTEM ── */}
       <AirflowPipeNetwork />
+
+      {/* ── ROOFTOP ATMOSPHERIC EXHAUST (ACTIVE WHEN ALGAE UNHEALTHY / BYPASS) ── */}
+      <RooftopAtmosphericExhaust />
     </group>
   );
 }
@@ -748,6 +853,13 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
           <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: statusColor }} />
           NEOCLASSICAL ARCHITECTURE · {hvacState.hvacStatusText}
         </div>
+
+        {hvacState.activeLoop === 'roof_bypass' && (
+          <div className="px-3 py-1.5 rounded-full text-xs font-mono font-bold border border-rose-500/60 bg-rose-950/80 text-rose-300 flex items-center gap-1.5 backdrop-blur-md shadow-lg animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            ⚠️ OUTLET AIR REDIRECTED TO OUTSIDE (ROOFTOP SCRUBBER)
+          </div>
+        )}
 
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-mono bg-black/60 border border-slate-800 text-slate-300 backdrop-blur-md">
           <Wind className="w-3.5 h-3.5 text-cyan-400" />

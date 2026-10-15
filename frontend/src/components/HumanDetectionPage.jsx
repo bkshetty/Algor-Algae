@@ -25,12 +25,13 @@ export default function HumanDetectionPage() {
   const algaeHealth = useStore((state) => state.algae_health);
   const isConnected = useStore((state) => state.isConnected);
   const isSynthetic = useStore((state) => state.isSynthetic);
+  const hvacState = useStore((state) => state.hvacState);
 
   const [activePreset, setActivePreset] = useState('live');
 
   const handleSetOccupants = async (count) => {
     setActivePreset(`occ-${count}`);
-    await setSimulationOverride(count, algaeHealth < 50);
+    await setSimulationOverride(count, algaeHealth < 68);
   };
 
   const handleResetLive = async () => {
@@ -39,10 +40,11 @@ export default function HumanDetectionPage() {
   };
 
   // HVAC calculations
+  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 68;
   const metabolicCo2Added = occupancy * 150;
-  const hvacDamperOpenPct = Math.min(100, 35 + (occupancy * 15));
+  const hvacDamperOpenPct = isBypass ? hvacState.damperOpenPct : Math.min(100, 35 + (occupancy * 15));
   const dailyCo2LoadKg = (occupancy * 0.12).toFixed(2);
-  const airflowSpargingRate = (occupancy * 4.2).toFixed(1);
+  const airflowSpargingRate = isBypass ? hvacState.spargingRateLpm : (occupancy * 4.2).toFixed(1);
 
   return (
     <div className="flex flex-col space-y-4 w-full">
@@ -95,7 +97,9 @@ export default function HumanDetectionPage() {
           </div>
           <div className="mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between font-mono">
             <span>Airflow Direction</span>
-            <span className="text-cyan-400 font-medium">Redirected to Facade</span>
+            <span className={isBypass ? "text-rose-400 font-bold" : "text-cyan-400 font-medium"}>
+              {isBypass ? "Outside Atmosphere (Bypassed)" : "Redirected to Facade"}
+            </span>
           </div>
         </div>
 
@@ -111,7 +115,9 @@ export default function HumanDetectionPage() {
           </div>
           <div className="mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between font-mono">
             <span>Facade Sequestration</span>
-            <span className="text-teal-400 font-bold">100% Absorbed</span>
+            <span className={isBypass ? "text-amber-400 font-bold" : "text-teal-400 font-bold"}>
+              {isBypass ? "Bypassed (Culture Safeguard)" : "100% Absorbed"}
+            </span>
           </div>
         </div>
       </div>

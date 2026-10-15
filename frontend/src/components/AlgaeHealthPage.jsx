@@ -384,22 +384,41 @@ export default function AlgaeHealthPage() {
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-black/40 border border-slate-800/80 flex items-center justify-between text-[11px] space-x-1 text-center">
-                    <div className="flex-1">
-                      <span className="text-slate-400 text-[9px] block">INDOOR ROOMS</span>
-                      <span className="text-sky-300 font-bold">{occupancy} humans ({co2Ppm}ppm)</span>
+                  {hvacState.activeLoop === 'roof_bypass' ? (
+                    <div className="p-2.5 rounded-lg bg-rose-950/40 border border-rose-500/40 flex items-center justify-between text-[11px] space-x-1 text-center">
+                      <div className="flex-1">
+                        <span className="text-slate-400 text-[9px] block">INDOOR ROOMS</span>
+                        <span className="text-sky-300 font-bold">{occupancy} humans ({co2Ppm}ppm)</span>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+                      <div className="flex-1">
+                        <span className="text-slate-400 text-[9px] block">DAMPER (BYPASS)</span>
+                        <span className="font-bold text-rose-400">90% OUTSIDE VENT</span>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+                      <div className="flex-1">
+                        <span className="text-slate-400 text-[9px] block">OUTSIDE ATMOSPHERE</span>
+                        <span className="text-amber-300 font-bold">ALGAE PROTECTED</span>
+                      </div>
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
-                    <div className="flex-1">
-                      <span className="text-slate-400 text-[9px] block">MOTORIZED DAMPER</span>
-                      <span className="font-bold" style={{ color: hvacState.airflowColor }}>{hvacState.damperOpenPct}% Modulated</span>
+                  ) : (
+                    <div className="p-2.5 rounded-lg bg-black/40 border border-slate-800/80 flex items-center justify-between text-[11px] space-x-1 text-center">
+                      <div className="flex-1">
+                        <span className="text-slate-400 text-[9px] block">INDOOR ROOMS</span>
+                        <span className="text-sky-300 font-bold">{occupancy} humans ({co2Ppm}ppm)</span>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                      <div className="flex-1">
+                        <span className="text-slate-400 text-[9px] block">MOTORIZED DAMPER</span>
+                        <span className="font-bold" style={{ color: hvacState.airflowColor }}>{hvacState.damperOpenPct}% Modulated</span>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                      <div className="flex-1">
+                        <span className="text-slate-400 text-[9px] block">BIOREACTOR FACADE</span>
+                        <span className="text-emerald-400 font-bold">{biofuelRate} ml/h Lipid</span>
+                      </div>
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
-                    <div className="flex-1">
-                      <span className="text-slate-400 text-[9px] block">BIOREACTOR FACADE</span>
-                      <span className="text-emerald-400 font-bold">{biofuelRate} ml/h Lipid</span>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="text-[11px] text-slate-300 font-sans leading-relaxed pt-1">
                     {hvacState.aiReasoning}
