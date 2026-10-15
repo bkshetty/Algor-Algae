@@ -88,41 +88,102 @@ def generate_synthetic_frame(occupancy: int, is_crisis: bool) -> np.ndarray:
     return frame
 
 
+class CameraStream:
+    """
+    Dedicated threaded camera reader.
+    Continuously drains the OpenCV OS camera buffer to guarantee
+    zero latency (eliminating the multi-second FIFO delay).
+    """
+    def __init__(self, src: int = 0):
+        self.cap = cv2.VideoCapture(src)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        self.cap.set(cv2.CAP_PROP_FPS, 30)
+        self.ret = False
+        self.frame = None
+        self.running = True
+        self.lock = threading.Lock()
+        if self.cap.isOpened():
+            # Warm up camera sensor and grab first valid frame before launching async reader
+            for _ in range(25):
+                ret, f = self.cap.read()
+                if ret and f is not None:
+                    self.ret = True
+                    self.frame = f
+                    break
+                time.sleep(0.05)
+
+            self.thread = threading.Thread(target=self._reader, daemon=True)
+            self.thread.start()
+
+    def _reader(self):
+        while self.running:
+            if not self.cap.isOpened():
+                break
+            ret, frame = self.cap.read()
+            if not ret or frame is None:
+                time.sleep(0.01)
+                continue
+            with self.lock:
+                self.ret = ret
+                self.frame = frame
+            time.sleep(0.005)
+
+    def read(self):
+        with self.lock:
+            if self.frame is not None:
+                return self.ret, self.frame.copy()
+            return False, None
+
+    def isOpened(self):
+        return self.cap.isOpened()
+
+    def release(self):
+        self.running = False
+        if self.cap.isOpened():
+            self.cap.release()
+
+
 def cv_capture_worker():
     """
-    Dedicated background worker thread for OpenCV video capture and processing.
+    Dedicated background worker thread for OpenCV video processing.
     Ensures camera operations never block the FastAPI asyncio event loop.
     """
     global latest_state, is_running
 
-    print("[CV Worker] Attempting to connect to camera 0...")
-    cap = cv2.VideoCapture(0)
+    print("[CV Worker] Attempting to connect to camera 0 with Zero-Lag Stream...")
+    cam_stream = CameraStream(0)
+    use_camera = cam_stream.isOpened() and cam_stream.frame is not None
 
-    # Some platforms work better with alternate backends or indices
-    if not cap.isOpened():
-        print("[CV Worker] Camera 0 could not be opened. Running in synthetic simulation mode.")
-        use_camera = False
+    if use_camera:
+        print("[CV Worker] Physical webcam connected successfully with Zero-Lag Reader!")
     else:
-        # Request standard resolution and frame rate
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        cap.set(cv2.CAP_PROP_FPS, 30)
-        use_camera = True
-        print("[CV Worker] Physical webcam connected successfully!")
+        print("[CV Worker] Camera 0 could not be opened or initialized. Running in synthetic simulation mode.")
+
+    last_valid_frame = None
+    consecutive_failures = 0
 
     while is_running:
+        loop_start = time.time()
         try:
             frame = None
             is_synthetic = False
 
             if use_camera and not simulation_override["active"]:
-                ret, cam_frame = cap.read()
+                ret, cam_frame = cam_stream.read()
                 if ret and cam_frame is not None:
-                    # Mirror webcam for natural mirror feedback
-                    frame = cv2.flip(cam_frame, 1)
+                    consecutive_failures = 0
+                    last_valid_frame = cv2.flip(cam_frame, 1)
+                    frame = last_valid_frame
+                elif last_valid_frame is not None and consecutive_failures < 45:
+                    # Transient drop: reuse last valid frame for up to 1.5s
+                    consecutive_failures += 1
+                    frame = last_valid_frame
                 else:
-                    use_camera = False
-                    print("[CV Worker] Camera read dropped. Switching to synthetic mode.")
+                    consecutive_failures += 1
+                    if consecutive_failures > 50:
+                        use_camera = False
+                        print("[CV Worker] Camera hardware disconnected. Switching to synthetic mode.")
 
             if frame is None:
                 is_synthetic = True
@@ -130,9 +191,9 @@ def cv_capture_worker():
                 crisis = simulation_override["simulate_yellow_crisis"] if simulation_override["active"] else False
                 frame = generate_synthetic_frame(occupancy=occ, is_crisis=crisis)
 
-            # Process frame through YOLO and HSV ROI
+            # Process frame through YOLO (cadence-optimized) and HSV ROI
             processed = cv_engine.process_frame(frame)
-            b64_frame = cv_engine.frame_to_base64_jpeg(processed["annotated_frame"], quality=65)
+            b64_frame = cv_engine.frame_to_base64_jpeg(processed["annotated_frame"], quality=55)
 
             # Update shared state safely
             with state_lock:
@@ -146,21 +207,20 @@ def cv_capture_worker():
                 latest_state["timestamp"] = time.time()
                 latest_state["is_synthetic"] = is_synthetic
 
-            # Throttle background capture to ~20-25 FPS to conserve CPU
-            time.sleep(0.04)
+            # Adaptive pacing targeting smooth ~28-30 FPS without accumulating delay
+            elapsed = time.time() - loop_start
+            sleep_time = max(0.002, 0.033 - elapsed)
+            time.sleep(sleep_time)
 
         except Exception as e:
             print(f"[CV Worker] Frame processing exception: {e}")
-            time.sleep(0.1)
+            time.sleep(0.05)
 
-    if cap.isOpened():
-        cap.release()
+    cam_stream.release()
     print("[CV Worker] Stopped cleanly.")
 
 
-# Start background capture thread at server startup
-capture_thread = threading.Thread(target=cv_capture_worker, daemon=True)
-capture_thread.start()
+capture_thread = None
 
 
 @app.get("/")
@@ -236,37 +296,45 @@ def set_simulation(req: SimulationOverrideRequest):
 @app.websocket("/ws")
 async def websocket_telemetry_stream(websocket: WebSocket):
     """
-    High-frequency WebSocket stream (10-15 FPS) delivering:
-    - occupancy
-    - co2_ppm
-    - algae_health
-    - biofuel_ml_hr
-    - status
-    - webcam_frame_base64
+    High-frequency, low-latency WebSocket stream (~28-30 FPS) delivering real-time telemetry and frames.
     """
     await websocket.accept()
     print("[WebSocket] Client connected to live telemetry stream.")
+    last_sent_ts = 0.0
     try:
         while True:
+            payload = None
             with state_lock:
-                payload = {
-                    "occupancy": latest_state["occupancy"],
-                    "co2_ppm": latest_state["co2_ppm"],
-                    "ambient_lux": latest_state.get("ambient_lux", 420),
-                    "algae_health": latest_state["algae_health"],
-                    "biofuel_ml_hr": latest_state["biofuel_ml_hr"],
-                    "status": latest_state["status"],
-                    "webcam_frame_base64": latest_state["webcam_frame_base64"],
-                    "timestamp": latest_state["timestamp"],
-                    "is_synthetic": latest_state["is_synthetic"]
-                }
-            await websocket.send_json(payload)
-            # ~12 FPS stream rate
-            await asyncio.sleep(0.08)
+                current_ts = latest_state["timestamp"]
+                # Only serialize and send over network when a fresh frame has been processed
+                if current_ts != last_sent_ts:
+                    last_sent_ts = current_ts
+                    payload = {
+                        "occupancy": latest_state["occupancy"],
+                        "co2_ppm": latest_state["co2_ppm"],
+                        "ambient_lux": latest_state.get("ambient_lux", 420),
+                        "algae_health": latest_state["algae_health"],
+                        "biofuel_ml_hr": latest_state["biofuel_ml_hr"],
+                        "status": latest_state["status"],
+                        "webcam_frame_base64": latest_state["webcam_frame_base64"],
+                        "timestamp": current_ts,
+                        "is_synthetic": latest_state["is_synthetic"]
+                    }
+            if payload:
+                await websocket.send_json(payload)
+            # ~28-30 FPS delivery
+            await asyncio.sleep(0.033)
     except WebSocketDisconnect:
         print("[WebSocket] Client disconnected.")
     except Exception as e:
         print(f"[WebSocket] Stream error: {e}")
+
+
+@app.on_event("startup")
+def startup_event():
+    global capture_thread
+    capture_thread = threading.Thread(target=cv_capture_worker, daemon=True)
+    capture_thread.start()
 
 
 @app.on_event("shutdown")

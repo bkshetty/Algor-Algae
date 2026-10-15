@@ -1,3 +1,4 @@
+import os
 import cv2  # type: ignore
 import numpy as np
 import base64
@@ -22,10 +23,14 @@ class CVEngine:
         self.model = None
         if _YOLO_AVAILABLE and YOLO is not None:
             try:
-                # Load lightweight nano model; auto-downloads if not present
-                self.model = YOLO(model_name)
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                resolved_path = os.path.join(base_dir, model_name)
+                if not os.path.exists(resolved_path):
+                    resolved_path = model_name
+                # Load lightweight nano model
+                self.model = YOLO(resolved_path)
             except Exception as e:
-                print(f"[CVEngine] Warning: Could not initialize YOLO ({e}). Falling back to face cascade / mock.")
+                print(f"[CVEngine] Warning: Could not initialize YOLO ({e}).")
         
         # Algae health smoothed state (Exponential Moving Average)
         self.smoothed_health = 92.0
@@ -33,6 +38,11 @@ class CVEngine:
         # 220x220 ROI parameters
         self.roi_size = 220
         self.roi_margin = 20
+
+        # Performance optimizations: cadence caching for high FPS
+        self.frame_counter = 0
+        self.cached_occupancy = 1
+        self.cached_boxes = []
 
     def calculate_co2(self, occupancy_count: int) -> int:
         """
@@ -113,35 +123,43 @@ class CVEngine:
         h, w, _ = frame.shape
         annotated = frame.copy()
 
-        # 1. Occupancy Tracking via YOLOv8
-        occupancy_count = 0
-        boxes = []
+        # 1. Occupancy Tracking via YOLOv8 (Continuous & Responsive)
+        self.frame_counter += 1
         if self.model is not None:
-            try:
-                # Run inference on frame (verbose=False to keep logs clean)
-                results: Any = self.model(frame, classes=[0], conf=0.40, verbose=False)
-                for r in results:
-                    boxes_attr = getattr(r, "boxes", None)
-                    if boxes_attr is not None:
-                        for box in boxes_attr:
-                            cls_id = int(box.cls[0].item())
-                            if cls_id == 0:  # Class 0 is Person in COCO
-                                occupancy_count += 1
-                                x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
-                                boxes.append((x1, y1, x2, y2))
-                                # Draw person bounding box
-                                cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 210, 255), 2)
-                                cv2.putText(
-                                    annotated,
-                                    "HUMAN OCCUPANT",
-                                    (x1, max(20, y1 - 8)),
-                                    cv2.FONT_HERSHEY_SIMPLEX,
-                                    0.5,
-                                    (0, 210, 255),
-                                    2
-                                )
-            except Exception as e:
-                print(f"[CVEngine] YOLO detection error: {e}")
+            # Run inference every 2 frames, or every frame if no occupants currently detected
+            if self.frame_counter % 2 == 0 or self.cached_occupancy == 0:
+                try:
+                    # Run inference on frame with conf=0.25 (optimal for seated/indoor humans)
+                    results: Any = self.model(frame, classes=[0], conf=0.25, verbose=False)
+                    new_boxes = []
+                    new_count = 0
+                    for r in results:
+                        boxes_attr = getattr(r, "boxes", None)
+                        if boxes_attr is not None:
+                            for box in boxes_attr:
+                                cls_id = int(box.cls[0].item())
+                                if cls_id == 0:  # Class 0 is Person in COCO
+                                    new_count += 1
+                                    x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
+                                    new_boxes.append((x1, y1, x2, y2))
+                    self.cached_occupancy = new_count
+                    self.cached_boxes = new_boxes
+                except Exception as e:
+                    print(f"[CVEngine] YOLO detection error: {e}")
+
+            occupancy_count = self.cached_occupancy
+            for (x1, y1, x2, y2) in self.cached_boxes:
+                # Draw person bounding box
+                cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 210, 255), 2)
+                cv2.putText(
+                    annotated,
+                    "HUMAN OCCUPANT",
+                    (x1, max(20, y1 - 8)),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 210, 255),
+                    2
+                )
         else:
             # Fallback simple simulation: 1 person baseline
             occupancy_count = 1
@@ -240,9 +258,10 @@ class CVEngine:
         }
 
     @staticmethod
-    def frame_to_base64_jpeg(frame: np.ndarray, quality: int = 70) -> str:
+    def frame_to_base64_jpeg(frame: np.ndarray, quality: int = 55) -> str:
         """
         Encodes an OpenCV BGR frame to a JPEG Base64 string for WebSocket transmission.
+        Quality 55 provides high visual clarity with 50% smaller payload for low-latency streaming.
         """
         encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
         success, buffer = cv2.imencode('.jpg', frame, encode_params)

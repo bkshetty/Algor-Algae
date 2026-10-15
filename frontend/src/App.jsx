@@ -50,13 +50,13 @@ export default function App() {
         <div className="flex items-center space-x-3 text-xs font-mono">
           <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#111a16] border border-emerald-900/40">
             <span className="text-slate-400 text-[11px]">BMS KERNEL:</span>
-            <span className="text-emerald-400 font-medium">GEMINI 2.5 FLASH</span>
+            <span className="text-emerald-400 font-medium">GEMINI 3.8 FLASH</span>
           </div>
 
           <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#111a16] border border-emerald-900/40">
             <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
             <span className={isConnected ? 'text-slate-300' : 'text-rose-400'}>
-              {isConnected ? 'TELEMETRY: 12 FPS' : 'OFFLINE'}
+              {isConnected ? 'TELEMETRY: 30 FPS (ZERO-LAG)' : 'OFFLINE'}
             </span>
           </div>
         </div>

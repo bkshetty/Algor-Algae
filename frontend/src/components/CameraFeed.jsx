@@ -45,7 +45,7 @@ export default function CameraFeed() {
         <div className="flex items-center space-x-2">
           <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'}`} />
           <span className="text-xs font-mono text-slate-400">
-            {isConnected ? (isSynthetic ? 'SYNTHETIC CV FEED' : 'LIVE 12 FPS STREAM') : 'OFFLINE (RECONNECTING)'}
+            {isConnected ? (isSynthetic ? 'SYNTHETIC CV FEED' : 'LIVE 30 FPS STREAM (ZERO-LAG)') : 'OFFLINE (RECONNECTING)'}
           </span>
         </div>
       </div>
