@@ -72,7 +72,7 @@ export default function OverviewPage({ onNavigate }) {
         {/* Right Column (5 cols): CV Camera Stream & Gemini Agent Drawer */}
         <section className="lg:col-span-5 flex flex-col space-y-4">
           <div className="h-[310px] flex-shrink-0">
-            <CameraFeed />
+            <CameraFeed mode="overview" />
           </div>
           <div className="flex-1 min-h-[300px]">
             <AgentDrawer />

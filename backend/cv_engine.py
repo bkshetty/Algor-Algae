@@ -67,10 +67,21 @@ class CVEngine:
         Returns calculated health percentage and pixel statistics.
         """
         if roi_bgr is None or roi_bgr.size == 0:
-            return 90.0, {"green_pixels": 0, "yellow_pixels": 0, "total_pixels": 0}
+            return 90.0, {
+                "green_pixels": 0, "yellow_pixels": 0, "total_pixels": 0,
+                "green_ratio": 0.0, "yellow_ratio": 0.0,
+                "mean_h": 60.0, "mean_s": 120.0, "mean_v": 150.0,
+                "biomass_g_l": 1.6
+            }
 
         hsv = cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV)
         total_pixels = roi_bgr.shape[0] * roi_bgr.shape[1]
+
+        # Calculate mean HSV across the ROI
+        mean_vals = cv2.mean(hsv)
+        mean_h = round(float(mean_vals[0]), 1)
+        mean_s = round(float(mean_vals[1]), 1)
+        mean_v = round(float(mean_vals[2]), 1)
 
         # Green mask (Healthy Chlorella/Spirulina)
         lower_green = np.array([35, 40, 40])
@@ -104,26 +115,37 @@ class CVEngine:
         self.smoothed_health = (0.25 * target_health) + (0.75 * self.smoothed_health)
         self.smoothed_health = max(5.0, min(100.0, self.smoothed_health))
 
+        # Estimated biomass density (g/L) based on health and chlorophyll density
+        biomass_g_l = round(0.45 + (self.smoothed_health / 100.0) * 1.75, 2)
+
         stats = {
             "green_pixels": green_count,
             "yellow_pixels": yellow_count,
             "green_ratio": round(green_ratio, 3),
             "yellow_ratio": round(yellow_ratio, 3),
+            "mean_h": mean_h,
+            "mean_s": mean_s,
+            "mean_v": mean_v,
+            "biomass_g_l": biomass_g_l,
             "total_pixels": total_pixels
         }
         return round(self.smoothed_health, 1), stats
 
     def process_frame(self, frame: np.ndarray) -> Dict[str, Any]:
         """
-        Full processing pipeline on a single frame:
-        1. Detect people using YOLOv8 -> Occupancy count & CO2 formula.
-        2. Extract 220x220 ROI at top-right -> Algae health HSV analysis.
-        3. Annotate frame with target box, bounding boxes, and HUD telemetry.
+        Full processing pipeline producing:
+        1. annotated_human: YOLOv8 person tracking, bounding boxes, CO2 math HUD.
+        2. annotated_algae: PURE OpenCV HSV color segmentation on 220x220 ROI.
+           ZERO YOLO human detection or person bounding boxes.
+        3. annotated_frame: Composite overview feed.
         """
         h, w, _ = frame.shape
-        annotated = frame.copy()
+        annotated_human = frame.copy()
+        annotated_algae = frame.copy()
 
-        # 1. Occupancy Tracking via YOLOv8 (Continuous & Responsive)
+        # ---------------------------------------------------------------------
+        # 1. Occupancy Tracking via YOLOv8 (Strictly for Human Detection Page)
+        # ---------------------------------------------------------------------
         self.frame_counter += 1
         if self.model is not None:
             # Run inference every 2 frames, or every frame if no occupants currently detected
@@ -149,10 +171,10 @@ class CVEngine:
 
             occupancy_count = self.cached_occupancy
             for (x1, y1, x2, y2) in self.cached_boxes:
-                # Draw person bounding box
-                cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 210, 255), 2)
+                # Draw person bounding box ONLY on human feed
+                cv2.rectangle(annotated_human, (x1, y1), (x2, y2), (0, 210, 255), 2)
                 cv2.putText(
-                    annotated,
+                    annotated_human,
                     "HUMAN OCCUPANT",
                     (x1, max(20, y1 - 8)),
                     cv2.FONT_HERSHEY_SIMPLEX,
@@ -166,13 +188,14 @@ class CVEngine:
 
         co2_ppm = self.calculate_co2(occupancy_count)
 
-        # 2. Ambient Light Estimation via grayscale mean intensity
+        # Ambient Light Estimation via grayscale mean intensity
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         mean_intensity = float(np.mean(gray))
-        # Map 0-255 mean pixel brightness to 0-1000 simulated lux
         ambient_lux = int(mean_intensity * 3.9)
 
-        # 3. Designated 220x220 ROI on top-right corner
+        # ---------------------------------------------------------------------
+        # 2. Designated 220x220 ROI on top-right: PURE OpenCV Color Analysis
+        # ---------------------------------------------------------------------
         roi_x = max(0, w - self.roi_size - self.roi_margin)
         roi_y = self.roi_margin
         roi_w = min(self.roi_size, w - roi_x)
@@ -186,42 +209,54 @@ class CVEngine:
         if health_pct >= 70:
             status_color = (46, 204, 113)  # Emerald Green
             status_text = "OPTIMAL"
+            pigment_text = "CHLOROPHYLL-a (520nm)"
         elif health_pct >= 45:
             status_color = (0, 200, 255)   # Amber / Caution
             status_text = "STRESSED"
+            pigment_text = "CAROTENOID STRESS (580nm)"
         else:
             status_color = (30, 30, 240)   # Crimson / Crisis
             status_text = "CRITICAL DECAY"
+            pigment_text = "CHLOROSIS DECAY (620nm)"
 
-        # Draw ROI Target Box (220x220)
+        # ---------------------------------------------------------------------
+        # 3. Build annotated_algae (ZERO YOLO human boxes - Pure OpenCV Color)
+        # ---------------------------------------------------------------------
+        # Draw 220x220 Spectrophotometer ROI Box
         cv2.rectangle(
-            annotated,
+            annotated_algae,
             (roi_x, roi_y),
             (roi_x + roi_w, roi_y + roi_h),
             status_color,
-            3
+            2
         )
-        # Corner reticles for high-tech HUD look
-        c_len = 16
+        # Tech reticles on corners
+        c_len = 18
         for cx, cy in [(roi_x, roi_y), (roi_x + roi_w, roi_y), (roi_x, roi_y + roi_h), (roi_x + roi_w, roi_y + roi_h)]:
             dx = c_len if cx == roi_x else -c_len
             dy = c_len if cy == roi_y else -c_len
-            cv2.line(annotated, (cx, cy), (cx + dx, cy), (255, 255, 255), 2)
-            cv2.line(annotated, (cx, cy), (cx, cy + dy), (255, 255, 255), 2)
+            cv2.line(annotated_algae, (cx, cy), (cx + dx, cy), (255, 255, 255), 2)
+            cv2.line(annotated_algae, (cx, cy), (cx, cy + dy), (255, 255, 255), 2)
+
+        # Center crosshair in ROI
+        mid_x = roi_x + roi_w // 2
+        mid_y = roi_y + roi_h // 2
+        cv2.line(annotated_algae, (mid_x - 10, mid_y), (mid_x + 10, mid_y), (255, 255, 255), 1)
+        cv2.line(annotated_algae, (mid_x, mid_y - 10), (mid_x, mid_y + 10), (255, 255, 255), 1)
 
         # Label above ROI
         cv2.putText(
-            annotated,
-            "BIO-SCANNER (220x220)",
+            annotated_algae,
+            "OPENCV SPECTROPHOTOMETER (220x220)",
             (roi_x, max(15, roi_y - 8)),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.45,
+            0.42,
             (255, 255, 255),
             1
         )
         # Algae Health percentage inside ROI
         cv2.putText(
-            annotated,
+            annotated_algae,
             f"HEALTH: {health_pct:.0f}% ({status_text})",
             (roi_x + 8, roi_y + roi_h - 10),
             cv2.FONT_HERSHEY_SIMPLEX,
@@ -230,21 +265,67 @@ class CVEngine:
             2
         )
 
-        # Top-Left Telemetry HUD Overlay
-        overlay_h = 95
-        overlay_w = 260
-        sub_img = annotated[10:10 + overlay_h, 10:10 + overlay_w]
-        black_rect = np.zeros(sub_img.shape, dtype=np.uint8)
-        # Semi-transparent dark background
-        res = cv2.addWeighted(sub_img, 0.35, black_rect, 0.65, 1.0)
-        annotated[10:10 + overlay_h, 10:10 + overlay_w] = res
-        cv2.rectangle(annotated, (10, 10), (10 + overlay_w, 10 + overlay_h), (100, 100, 100), 1)
+        # Real-time Color Spectrum mini bar under ROI
+        bar_y = roi_y + roi_h + 10
+        bar_w = roi_w
+        bar_h = 10
+        if bar_y + bar_h < h:
+            cv2.rectangle(annotated_algae, (roi_x, bar_y), (roi_x + bar_w, bar_y + bar_h), (30, 30, 30), -1)
+            g_w = int(bar_w * min(1.0, stats["green_ratio"] * 3.0))
+            y_w = int(bar_w * min(1.0, stats["yellow_ratio"] * 3.0))
+            if g_w > 0:
+                cv2.rectangle(annotated_algae, (roi_x, bar_y), (roi_x + g_w, bar_y + bar_h), (46, 204, 113), -1)
+            if y_w > 0:
+                cv2.rectangle(annotated_algae, (roi_x + bar_w - y_w, bar_y), (roi_x + bar_w, bar_y + bar_h), (0, 215, 255), -1)
+            cv2.putText(
+                annotated_algae,
+                f"HSV: H={stats['mean_h']:.0f} S={stats['mean_s']:.0f} V={stats['mean_v']:.0f}",
+                (roi_x, bar_y + bar_h + 14),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.38,
+                (200, 220, 240),
+                1
+            )
 
-        cv2.putText(annotated, "ALGOR-ALGAE TWIN cv2", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 170), 2)
-        cv2.putText(annotated, f"OCCUPANTS: {occupancy_count} humans", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1)
-        cv2.putText(annotated, f"SIMULATED CO2: {co2_ppm} ppm", (20, 68), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 210, 255), 1)
-        cv2.putText(annotated, f"AMBIENT LUX: {ambient_lux} lx", (20, 84), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 220, 100), 1)
-        cv2.putText(annotated, f"BIOFUEL RATE: {biofuel_rate} ml/h", (20, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (200, 255, 100), 1)
+        # Top-Left Telemetry HUD for Algae Feed (Pure Algae / Spectrophotometer focus)
+        algae_hud_h = 105
+        algae_hud_w = 280
+        sub_algae = annotated_algae[10:10 + algae_hud_h, 10:10 + algae_hud_w]
+        black_rect_a = np.zeros(sub_algae.shape, dtype=np.uint8)
+        res_a = cv2.addWeighted(sub_algae, 0.30, black_rect_a, 0.70, 1.0)
+        annotated_algae[10:10 + algae_hud_h, 10:10 + algae_hud_w] = res_a
+        cv2.rectangle(annotated_algae, (10, 10), (10 + algae_hud_w, 10 + algae_hud_h), (46, 204, 113), 1)
+
+        cv2.putText(annotated_algae, "OPENCV BIO-SPECTROPHOTOMETER", (20, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.46, (0, 255, 170), 2)
+        cv2.putText(annotated_algae, f"HEALTH: {health_pct:.1f}% ({status_text})", (20, 48), cv2.FONT_HERSHEY_SIMPLEX, 0.44, status_color, 2)
+        cv2.putText(annotated_algae, f"PIGMENT: {pigment_text}", (20, 66), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (255, 255, 255), 1)
+        cv2.putText(annotated_algae, f"BIOMASS DENSITY: {stats['biomass_g_l']:.2f} g/L", (20, 84), cv2.FONT_HERSHEY_SIMPLEX, 0.40, (200, 255, 100), 1)
+        cv2.putText(annotated_algae, "MODE: COLOR SEGMENTATION (YOLO OFF)", (20, 102), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (255, 200, 100), 1)
+
+        # ---------------------------------------------------------------------
+        # 4. Build annotated_human HUD (Occupancy & CO2 focus)
+        # ---------------------------------------------------------------------
+        human_hud_h = 95
+        human_hud_w = 270
+        sub_human = annotated_human[10:10 + human_hud_h, 10:10 + human_hud_w]
+        black_rect_h = np.zeros(sub_human.shape, dtype=np.uint8)
+        res_h = cv2.addWeighted(sub_human, 0.35, black_rect_h, 0.65, 1.0)
+        annotated_human[10:10 + human_hud_h, 10:10 + human_hud_w] = res_h
+        cv2.rectangle(annotated_human, (10, 10), (10 + human_hud_w, 10 + human_hud_h), (0, 210, 255), 1)
+
+        cv2.putText(annotated_human, "YOLOv8 OCCUPANCY TRACKER", (20, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (0, 210, 255), 2)
+        cv2.putText(annotated_human, f"OCCUPANTS: {occupancy_count} humans", (20, 48), cv2.FONT_HERSHEY_SIMPLEX, 0.44, (255, 255, 255), 1)
+        cv2.putText(annotated_human, f"DERIVED CO2: {co2_ppm} ppm", (20, 66), cv2.FONT_HERSHEY_SIMPLEX, 0.44, (0, 255, 170), 1)
+        cv2.putText(annotated_human, f"METABOLIC LOAD: +{occupancy_count * 150} ppm", (20, 84), cv2.FONT_HERSHEY_SIMPLEX, 0.40, (255, 220, 100), 1)
+        cv2.putText(annotated_human, f"HVAC DEMAND: {occupancy_count * 4.2:.1f} L/min", (20, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (180, 220, 255), 1)
+
+        # ---------------------------------------------------------------------
+        # 5. Composite annotated_frame (General Overview)
+        # ---------------------------------------------------------------------
+        annotated_frame = annotated_human.copy()
+        # Draw ROI Box on overview as well
+        cv2.rectangle(annotated_frame, (roi_x, roi_y), (roi_x + roi_w, roi_y + roi_h), status_color, 2)
+        cv2.putText(annotated_frame, f"ALGAE: {health_pct:.0f}%", (roi_x + 5, roi_y + roi_h - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.45, status_color, 2)
 
         return {
             "occupancy": occupancy_count,
@@ -254,7 +335,9 @@ class CVEngine:
             "biofuel_ml_hr": biofuel_rate,
             "status": status_text,
             "stats": stats,
-            "annotated_frame": annotated
+            "annotated_frame": annotated_frame,
+            "annotated_human": annotated_human,
+            "annotated_algae": annotated_algae
         }
 
     @staticmethod

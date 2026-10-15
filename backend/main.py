@@ -35,6 +35,9 @@ latest_state: Dict[str, Any] = {
     "biofuel_ml_hr": 19.0,
     "status": "OPTIMAL",
     "webcam_frame_base64": "",
+    "webcam_frame_human_base64": "",
+    "webcam_frame_algae_base64": "",
+    "hsv_stats": {},
     "timestamp": time.time(),
     "is_synthetic": False
 }
@@ -194,6 +197,8 @@ def cv_capture_worker():
             # Process frame through YOLO (cadence-optimized) and HSV ROI
             processed = cv_engine.process_frame(frame)
             b64_frame = cv_engine.frame_to_base64_jpeg(processed["annotated_frame"], quality=55)
+            b64_frame_human = cv_engine.frame_to_base64_jpeg(processed["annotated_human"], quality=55)
+            b64_frame_algae = cv_engine.frame_to_base64_jpeg(processed["annotated_algae"], quality=55)
 
             # Update shared state safely
             with state_lock:
@@ -204,6 +209,9 @@ def cv_capture_worker():
                 latest_state["biofuel_ml_hr"] = processed["biofuel_ml_hr"]
                 latest_state["status"] = processed["status"]
                 latest_state["webcam_frame_base64"] = b64_frame
+                latest_state["webcam_frame_human_base64"] = b64_frame_human
+                latest_state["webcam_frame_algae_base64"] = b64_frame_algae
+                latest_state["hsv_stats"] = processed.get("stats", {})
                 latest_state["timestamp"] = time.time()
                 latest_state["is_synthetic"] = is_synthetic
 
@@ -239,6 +247,8 @@ def get_status():
         state_copy = dict(latest_state)
     # Exclude heavy base64 image from quick polling status
     state_copy.pop("webcam_frame_base64", None)
+    state_copy.pop("webcam_frame_human_base64", None)
+    state_copy.pop("webcam_frame_algae_base64", None)
     return state_copy
 
 
@@ -317,6 +327,9 @@ async def websocket_telemetry_stream(websocket: WebSocket):
                         "biofuel_ml_hr": latest_state["biofuel_ml_hr"],
                         "status": latest_state["status"],
                         "webcam_frame_base64": latest_state["webcam_frame_base64"],
+                        "webcam_frame_human_base64": latest_state.get("webcam_frame_human_base64", ""),
+                        "webcam_frame_algae_base64": latest_state.get("webcam_frame_algae_base64", ""),
+                        "hsv_stats": latest_state.get("hsv_stats", {}),
                         "timestamp": current_ts,
                         "is_synthetic": latest_state["is_synthetic"]
                     }

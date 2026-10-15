@@ -153,7 +153,7 @@ export default function HumanDetectionPage() {
         <section className="lg:col-span-5 flex flex-col space-y-4">
           {/* Vision Feed Container */}
           <div className="h-[310px] flex-shrink-0">
-            <CameraFeed />
+            <CameraFeed mode="human" />
           </div>
 
           {/* Mathematical CO2 Derivation Card */}
