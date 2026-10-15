@@ -19,6 +19,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import BuildingTwin from './BuildingTwin';
+import HVACDiagram from './HVACDiagram';
 import CameraFeed from './CameraFeed';
 import { useStore } from '../store';
 import { triggerAIDiagnostics, setSimulationOverride, disableSimulationOverride } from '../utils/websocket';
@@ -331,7 +332,10 @@ export default function AlgaeHealthPage() {
 
             {/* Tab 2: HVAC Airflow Redirection Actuator System */}
             {activeTab === 'hvac' && (
-              <div className="space-y-3 font-mono text-xs max-h-[290px] overflow-y-auto pr-1">
+              <div className="space-y-3 font-mono text-xs max-h-[360px] overflow-y-auto pr-1">
+                {/* ── 2D HVAC System Layout & Operational Scenarios ── */}
+                <HVACDiagram />
+
                 {/* Visual Airflow Loop Schematic */}
                 <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
                   <div className="flex items-center justify-between text-xs">
@@ -528,6 +532,11 @@ export default function AlgaeHealthPage() {
           </div>
         </section>
       </div>
+
+      {/* ── Full 2D HVAC Architecture & 3-State Operational Redirection Layout ── */}
+      <section className="mt-8 pt-6 border-t border-slate-800/80">
+        <HVACDiagram />
+      </section>
     </div>
   );
 }
