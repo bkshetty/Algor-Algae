@@ -19,6 +19,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import BuildingTwin from './BuildingTwin';
+import BioreactorTwin from './BioreactorTwin';
 import HVACDiagram from './HVACDiagram';
 import CameraFeed from './CameraFeed';
 import { useStore } from '../store';
@@ -39,6 +40,7 @@ export default function AlgaeHealthPage() {
 
   const [activeTab, setActiveTab] = useState('diagnostics'); // 'diagnostics' | 'hvac' | 'esg'
   const [activePreset, setActivePreset] = useState('live');
+  const [threeDView, setThreeDView] = useState('bioreactor'); // 'bioreactor' | 'building'
 
   const handleRunAI = async () => {
     try {
@@ -151,10 +153,47 @@ export default function AlgaeHealthPage() {
 
       {/* Main Split Grid: 3D Twin (Left) & Vision Feed + AI Agent (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[580px]">
-        {/* Left Column (7 cols): 3D Living Bioreactor Building Twin */}
+        {/* Left Column (7 cols): 3D Living Bioreactor Digital Twin */}
         <section className="lg:col-span-7 flex flex-col space-y-3">
+          {/* 3D Viewport Selector */}
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-1.5 font-mono text-xs">
+              <button
+                onClick={() => setThreeDView('bioreactor')}
+                className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 border ${
+                  threeDView === 'bioreactor'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400 font-bold shadow-lg shadow-emerald-950/40'
+                    : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white'
+                }`}
+              >
+                <FlaskConical className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Real Photobioreactor (3D PBR)</span>
+              </button>
+
+              <button
+                onClick={() => setThreeDView('building')}
+                className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 border ${
+                  threeDView === 'building'
+                    ? 'bg-sky-500/20 text-sky-300 border-sky-400 font-bold shadow-lg shadow-sky-950/40'
+                    : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white'
+                }`}
+              >
+                <Wind className="w-3.5 h-3.5 text-sky-400" />
+                <span>Building Context</span>
+              </button>
+            </div>
+
+            <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
+              {threeDView === 'bioreactor' ? 'Active: Chlorella Culture Chamber' : 'Active: 5-Story Facade'}
+            </span>
+          </div>
+
           <div className="h-[460px] lg:h-[520px] w-full">
-            <BuildingTwin focusMode="algae" />
+            {threeDView === 'bioreactor' ? (
+              <BioreactorTwin focusMode="algae" />
+            ) : (
+              <BuildingTwin focusMode="algae" />
+            )}
           </div>
 
           {/* Photobioreactor Physical Subsystem Status & OpenCV Color Breakdown */}
