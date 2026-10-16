@@ -60,35 +60,46 @@ export const useStore = create((set, get) => ({
     // Dynamic HVAC computation if in 'auto' mode
     let updatedHvac = { ...current.hvacState };
     if (current.hvacState.mode === 'auto') {
-      if (isAlgaeGreen) {
-        // ALGAE IS GREEN: Redirect air to algae bioreactor!
-        // Action: Gemini AI BMS opens dampers to 85% — routing human CO2 exhaust straight into the facade
+      if (!isAlgaeGreen) {
+        // ALGAE IS YELLOW OR UNHEALTHY: Redirect air to exhausts outside!
+        updatedHvac = {
+          mode: 'auto',
+          damperOpenPct: 15,
+          airflowVelocity: 2.8,
+          airflowColor: '#FF3B30',
+          activeLoop: 'roof_bypass',
+          hvacStatusText: 'ALGAE IS YELLOW: AIR REDIRECTED TO EXHAUSTS',
+          aiReasoning: `Gemini 3.8 Flash BMS: Yellow/unhealthy microalgae detected in ROI (${newHealth.toFixed(1)}% < 45%). Sick microalgae cannot process carbon efficiently; continuing high-CO2 air creates lethal carbonic acid (pH < 6.8). Damper clamped to 15%, 85% exhaust air redirected to safe rooftop scrubber.`,
+          spargingRateLpm: 2.5,
+          divertPct: 85
+        };
+      } else if (newOcc < 4) {
+        // OCCUPANTS < 4: Not enough CO2 load to justify bioreactor feed — redirect to exhausts outside
+        updatedHvac = {
+          mode: 'auto',
+          damperOpenPct: 15,
+          airflowVelocity: 2.0,
+          airflowColor: '#0071E3',
+          activeLoop: 'roof_bypass',
+          hvacStatusText: 'LOW OCCUPANCY: AIR REDIRECTED TO EXHAUSTS',
+          aiReasoning: `Gemini 3.8 Flash BMS: Only ${newOcc} occupant(s) detected (< 4). Metabolic CO₂ load insufficient for photosynthetic feed. Air redirected to outside exhausts. Bioreactor on 15% standby trickle.`,
+          spargingRateLpm: 2.5,
+          divertPct: 85
+        };
+      } else {
+        // OCCUPANTS >= 4 AND ALGAE IS GREEN: Redirect air to algae bioreactor!
         const damper = Math.min(95, Math.max(85, 45 + (newOcc * 10)));
         const vel = 3.0;
         updatedHvac = {
           mode: 'auto',
           damperOpenPct: damper,
           airflowVelocity: vel,
-          airflowColor: '#34C759', // Vivid bio-green
-          activeLoop: 'facade', // REDIRECT TO BIOREACTOR
+          airflowColor: '#34C759',
+          activeLoop: 'facade',
           hvacStatusText: 'ALGAE IS GREEN: AIR REDIRECTED TO BIOREACTOR',
-          aiReasoning: `Gemini 3.8 Flash BMS: Microalgae culture is healthy & green (${newHealth.toFixed(1)}%). HVAC dampers opened to ${damper}% — routing human CO₂ return air directly into algae bioreactor panels as photosynthetic fuel.`,
+          aiReasoning: `Gemini 3.8 Flash BMS: Microalgae culture is healthy & green (${newHealth.toFixed(1)}%). ${newOcc} occupants generating ${400 + newOcc * 150} ppm CO₂. HVAC dampers opened to ${damper}% — routing human CO₂ return air directly into algae bioreactor panels as photosynthetic fuel.`,
           spargingRateLpm: 26.0,
           divertPct: Math.max(5, 100 - damper)
-        };
-      } else {
-        // ALGAE IS YELLOW OR UNHEALTHY: Redirect air to exhausts outside!
-        // Action: Gemini AI triggers Emergency Bypass, clamping dampers down to 15% and routing 85% to safe rooftop scrubber
-        updatedHvac = {
-          mode: 'auto',
-          damperOpenPct: 15, // Strictly clamped down to 15% to protect biology
-          airflowVelocity: 2.8,
-          airflowColor: '#FF3B30', // Heavily pulsing crimson & amber
-          activeLoop: 'roof_bypass', // REDIRECT TO OUTSIDE EXHAUSTS
-          hvacStatusText: 'ALGAE IS YELLOW: AIR REDIRECTED TO EXHAUSTS',
-          aiReasoning: `Gemini 3.8 Flash BMS: Yellow/unhealthy microalgae detected in ROI (${newHealth.toFixed(1)}% < 45%). Sick microalgae cannot process carbon efficiently; continuing high-CO2 air creates lethal carbonic acid (pH < 6.8). Damper clamped to 15%, 85% exhaust air redirected to safe rooftop scrubber.`,
-          spargingRateLpm: 2.5,
-          divertPct: 85
         };
       }
     }
