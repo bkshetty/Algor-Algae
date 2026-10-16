@@ -131,8 +131,8 @@ export default function HumanDetectionPage() {
           </div>
           <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
             <span>Biological Loop</span>
-            <span className={isCrisis ? "text-[#FF3B30] font-semibold" : isHighOcc ? "text-[#34C759] font-semibold" : "text-[#0071E3] font-semibold"}>
-              {isCrisis ? "Acidification Shield" : isHighOcc ? "Photosynthetic Feed" : "Outside Atmospheric Vent"}
+            <span className={isAlgaeGreen ? "text-[#34C759] font-semibold" : "text-[#FF3B30] font-semibold"}>
+              {isAlgaeGreen ? "Photosynthetic Feed (Bioreactor)" : "Acidification Shield (Exhausts)"}
             </span>
           </div>
         </div>
