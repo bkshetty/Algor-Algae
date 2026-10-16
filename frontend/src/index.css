@@ -135,3 +135,43 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #8E8E93;
 }
+
+/* HVAC Pipeline Dynamic Animations */
+@keyframes flowDash {
+  from {
+    stroke-dashoffset: 28;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes heavyBypassPulse {
+  0% {
+    stroke: #FF3B30;
+    filter: drop-shadow(0 0 4px rgba(255, 59, 48, 0.7));
+    opacity: 0.85;
+  }
+  50% {
+    stroke: #FF9500;
+    filter: drop-shadow(0 0 16px rgba(255, 149, 0, 1)) drop-shadow(0 0 28px rgba(255, 59, 48, 0.8));
+    opacity: 1;
+  }
+  100% {
+    stroke: #FF3B30;
+    filter: drop-shadow(0 0 4px rgba(255, 59, 48, 0.7));
+    opacity: 0.85;
+  }
+}
+
+.animate-flow-dash {
+  animation: flowDash 1s linear infinite;
+}
+
+.animate-flow-dash-fast {
+  animation: flowDash 0.5s linear infinite;
+}
+
+.animate-bypass-heavy {
+  animation: heavyBypassPulse 1s ease-in-out infinite;
+}

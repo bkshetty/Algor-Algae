@@ -9,12 +9,15 @@ import {
   Cpu, 
   Eye, 
   CheckCircle2, 
-  AlertCircle,
+  AlertTriangle,
   ArrowRight,
   ShieldCheck,
-  Building
+  ShieldAlert,
+  Flame,
+  Radio,
+  RefreshCw
 } from 'lucide-react';
-import BuildingTwin from './BuildingTwin';
+import HVACDiagram from './HVACDiagram';
 import CameraFeed from './CameraFeed';
 import { useStore } from '../store';
 import { setSimulationOverride, disableSimulationOverride } from '../utils/websocket';
@@ -26,29 +29,37 @@ export default function HumanDetectionPage() {
   const isConnected = useStore((state) => state.isConnected);
   const isSynthetic = useStore((state) => state.isSynthetic);
   const hvacState = useStore((state) => state.hvacState);
+  const triggerHvac = useStore((state) => state.triggerHvacScenario);
 
   const [activePreset, setActivePreset] = useState('live');
 
-  const handleSetOccupants = async (count) => {
-    setActivePreset(`occ-${count}`);
-    await setSimulationOverride(count, algaeHealth < 68);
+  const handleSetOccupants = async (count, yellowCrisis = false) => {
+    setActivePreset(yellowCrisis ? 'crisis' : `occ-${count}`);
+    await setSimulationOverride(count, yellowCrisis);
+    if (yellowCrisis) {
+      triggerHvac('bypass');
+    } else {
+      triggerHvac('redirect');
+    }
   };
 
   const handleResetLive = async () => {
     setActivePreset('live');
     await disableSimulationOverride();
+    triggerHvac('auto');
   };
 
-  // HVAC calculations
-  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 68;
+  // Biological Cause-and-Effect Pipeline State
+  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 45.0;
   const metabolicCo2Added = occupancy * 150;
-  const hvacDamperOpenPct = isBypass ? hvacState.damperOpenPct : Math.min(100, 35 + (occupancy * 15));
+  // If in bypass, damper is strictly clamped down to 15% to protect biology from acidifying
+  const hvacDamperOpenPct = isBypass ? 15 : (hvacState.damperOpenPct || (occupancy > 0 ? 85 : 35));
   const dailyCo2LoadKg = (occupancy * 0.12).toFixed(2);
-  const airflowSpargingRate = isBypass ? hvacState.spargingRateLpm : (occupancy * 4.2).toFixed(1);
+  const airflowSpargingRate = isBypass ? '2.5' : (hvacState.spargingRateLpm || (occupancy > 0 ? '26.0' : '6.0'));
 
   return (
     <div className="flex flex-col space-y-4 w-full">
-      {/* Top Occupancy Telemetry HUD Header - Apple Retail Product Specification Tiles */}
+      {/* Top Occupancy & HVAC Telemetry HUD Header - Apple Retail Specification Tiles */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Metric 1: Detected Occupants */}
         <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl relative overflow-hidden flex flex-col justify-between">
@@ -73,15 +84,15 @@ export default function HumanDetectionPage() {
         <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
           <div className="flex items-center justify-between text-[#86868B]">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Indoor CO₂ Level</span>
-            <Wind className="w-4 h-4 text-[#34C759]" />
+            <Wind className="w-4 h-4 text-[#FF9500]" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-3xl font-semibold text-[#1D1D1F] tracking-tight">{co2Ppm}</span>
+            <span className="text-3xl font-semibold text-[#FF9500] tracking-tight">{co2Ppm}</span>
             <span className="text-xs text-[#86868B] font-medium">ppm</span>
           </div>
           <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
             <span>Base: 400 ppm</span>
-            <span className="text-[#34C759] font-medium">+{metabolicCo2Added} ppm breath</span>
+            <span className="text-[#FF9500] font-medium">+{metabolicCo2Added} ppm breath</span>
           </div>
         </div>
 
@@ -89,16 +100,18 @@ export default function HumanDetectionPage() {
         <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
           <div className="flex items-center justify-between text-[#86868B]">
             <span className="text-[11px] font-semibold uppercase tracking-wider">HVAC Damper Valve</span>
-            <Activity className="w-4 h-4 text-[#0071E3]" />
+            <Activity className={`w-4 h-4 ${isBypass ? 'text-[#FF3B30]' : 'text-[#34C759]'}`} />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-3xl font-semibold text-[#1D1D1F] tracking-tight">{hvacDamperOpenPct}%</span>
+            <span className={`text-3xl font-semibold tracking-tight ${isBypass ? 'text-[#FF3B30]' : 'text-[#1D1D1F]'}`}>
+              {hvacDamperOpenPct}%
+            </span>
             <span className="text-xs text-[#86868B] font-medium">{airflowSpargingRate} L/min</span>
           </div>
           <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
-            <span>Airflow Loop</span>
-            <span className={isBypass ? "text-[#FF3B30] font-semibold" : "text-[#0071E3] font-medium"}>
-              {isBypass ? "Outside (Bypassed)" : "Redirected to Facade"}
+            <span>Active Pipeline</span>
+            <span className={`font-semibold ${isBypass ? "text-[#FF3B30]" : "text-[#34C759]"}`}>
+              {isBypass ? "15% Shunt Clamped" : "85% Facade Fuel"}
             </span>
           </div>
         </div>
@@ -114,45 +127,76 @@ export default function HumanDetectionPage() {
             <span className="text-xs text-[#86868B] font-medium">kg CO₂ / day</span>
           </div>
           <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
-            <span>Sequestration</span>
-            <span className={isBypass ? "text-[#FF9500] font-semibold" : "text-[#34C759] font-semibold"}>
-              {isBypass ? "Culture Safeguard" : "100% Absorbed"}
+            <span>Biological Loop</span>
+            <span className={isBypass ? "text-[#FF3B30] font-semibold" : "text-[#34C759] font-semibold"}>
+              {isBypass ? "Acidification Shield" : "Photosynthetic Feed"}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Main Split View: 3D Twin (Left) & Vision Feed + Math Cards (Right) */}
+      {/* Main Split View: HVAC System Diagram (Left) & Vision Feed + Math Cards (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[580px]">
-        {/* Left Column (7 cols): Working 3D Digital Twin with Human Focus */}
-        <section className="lg:col-span-7 flex flex-col space-y-3">
-          <div className="h-[460px] lg:h-[520px] w-full rounded-2xl overflow-hidden border border-[rgba(0,0,0,0.08)] bg-[#000000]">
-            <BuildingTwin focusMode="human" />
+        {/* Left Column (7 cols): Full 2D HVAC System Layout replacing the 3D building */}
+        <section className="lg:col-span-7 flex flex-col space-y-4">
+          {/* 2D HVAC System Layout & Bio-Redirection Flow */}
+          <div className="w-full">
+            <HVACDiagram
+              defaultView="schematic"
+              defaultState="live"
+              compact={true}
+              showHeader={true}
+            />
           </div>
 
-          {/* Floor-by-Floor Building Occupancy Distribution Card */}
-          <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] rounded-2xl p-4 flex flex-col space-y-2.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[#1D1D1F] font-semibold flex items-center">
-                <Building className="w-4 h-4 text-[#0071E3] mr-1.5" />
-                7-Story Tower Occupancy Distribution & Intake Manifold
+          {/* Biological Cause-and-Effect Architecture Summary Card */}
+          <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] rounded-2xl p-4 flex flex-col space-y-3">
+            <div className="flex items-center justify-between border-b border-[rgba(0,0,0,0.06)] pb-2.5">
+              <span className="text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider flex items-center gap-1.5">
+                <Radio className="w-4 h-4 text-[#0071E3]" />
+                Biological Cause-and-Effect Redirection Rules
               </span>
-              <span className="text-[#0071E3] text-[11px] font-medium bg-[#E8F2FD] px-2 py-0.5 rounded-[980px]">
-                Dynamic Airflow Active
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-[980px] bg-[#E8F2FD] text-[#0071E3]">
+                GEMINI AI BMS
               </span>
             </div>
 
-            <div className="grid grid-cols-7 gap-2 pt-1 text-center">
-              {[7, 6, 5, 4, 3, 2, 1].map((floor) => {
-                const floorOcc = Math.max(0, Math.ceil((occupancy * (8 - floor)) / 10));
-                return (
-                  <div key={floor} className="bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] p-2.5 rounded-xl flex flex-col items-center">
-                    <span className="text-[10px] font-medium text-[#86868B]">FL {floor}</span>
-                    <span className="text-base font-semibold text-[#1D1D1F] mt-0.5">{floorOcc}</span>
-                    <span className="text-[10px] text-[#86868B] font-mono mt-0.5">{400 + floorOcc * 150}ppm</span>
-                  </div>
-                );
-              })}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              {/* Pipeline 1 Rule Box */}
+              <div className={`p-3 rounded-xl border transition-all ${
+                !isBypass && occupancy > 0
+                  ? 'bg-[#FFF9EB] border-[#FF9500]/40 ring-1 ring-[#FF9500]/20'
+                  : 'bg-[#F5F5F7] border-[rgba(0,0,0,0.04)]'
+              }`}>
+                <div className="flex items-center gap-1.5 text-[#FF9500] font-semibold">
+                  <Flame className="w-3.5 h-3.5" />
+                  <span>1. "Feed the Algae" Pipeline</span>
+                </div>
+                <div className="text-[11px] text-[#86868B] mt-1 space-y-1">
+                  <p><strong className="text-[#1D1D1F]">Trigger:</strong> YOLOv8 detects humans in frame.</p>
+                  <p><strong className="text-[#1D1D1F]">Logic:</strong> CO₂ = 400 + 150ppm/person.</p>
+                  <p><strong className="text-[#1D1D1F]">Action:</strong> Algae healthy (green) → Dampers opened to 85%.</p>
+                  <p><strong className="text-[#FF9500]">Visual:</strong> Glowing orange <span className="font-semibold">"HUMAN CO₂ RETURN AIR"</span> flows into green facade.</p>
+                </div>
+              </div>
+
+              {/* Pipeline 2 Rule Box */}
+              <div className={`p-3 rounded-xl border transition-all ${
+                isBypass
+                  ? 'bg-[#FFF2F2] border-[#FF3B30]/40 ring-1 ring-[#FF3B30]/20'
+                  : 'bg-[#F5F5F7] border-[rgba(0,0,0,0.04)]'
+              }`}>
+                <div className="flex items-center gap-1.5 text-[#FF3B30] font-semibold">
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>2. "Acidification Bypass" Pipeline</span>
+                </div>
+                <div className="text-[11px] text-[#86868B] mt-1 space-y-1">
+                  <p><strong className="text-[#1D1D1F]">Trigger:</strong> OpenCV detects yellow pixels (&lt;45% health).</p>
+                  <p><strong className="text-[#1D1D1F]">Logic:</strong> Sick algae cannot process CO₂ → Carbonic acid (pH &lt; 6.8).</p>
+                  <p><strong className="text-[#1D1D1F]">Action:</strong> AI Emergency Bypass clamps damper to <strong>15%</strong>.</p>
+                  <p><strong className="text-[#FF3B30]">Visual:</strong> Pulsing crimson/amber <span className="font-semibold">"ALGAE COLLAPSE BYPASS SHUNT"</span> vents to safe rooftop scrubber.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -190,57 +234,63 @@ export default function HumanDetectionPage() {
                 </div>
                 <div className="p-2.5 rounded-lg bg-white border border-[rgba(0,0,0,0.06)]">
                   <span className="text-[#86868B] text-[10px] uppercase font-semibold">Added Metabolic Load:</span>
-                  <div className="text-[#0071E3] font-semibold mt-0.5">+{metabolicCo2Added} ppm ({occupancy} pers)</div>
+                  <div className="text-[#FF9500] font-semibold mt-0.5">+{metabolicCo2Added} ppm ({occupancy} pers)</div>
                 </div>
               </div>
             </div>
 
             {/* Quick Demo Simulator for Judges */}
             <div className="pt-1">
-              <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider mb-2 flex items-center">
-                <Zap className="w-3.5 h-3.5 text-[#0071E3] mr-1.5" />
-                Hackathon Judge Simulation Controls:
+              <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider mb-2 flex items-center justify-between">
+                <span className="flex items-center">
+                  <Zap className="w-3.5 h-3.5 text-[#0071E3] mr-1.5" />
+                  Hackathon Judge Simulation Controls:
+                </span>
+                <span className="text-[10px] text-[#86868B]">1-Click Verification</span>
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => handleSetOccupants(1)}
-                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
+                  onClick={() => handleSetOccupants(1, false)}
+                  className={`text-xs py-2 px-3 rounded-xl font-medium transition-all ${
                     activePreset === 'occ-1'
                       ? 'btn-apple-primary'
                       : 'btn-apple-secondary'
                   }`}
                 >
-                  1 Person
+                  1 Person (Baseline)
                 </button>
                 <button
-                  onClick={() => handleSetOccupants(2)}
-                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
-                    activePreset === 'occ-2'
-                      ? 'btn-apple-primary'
-                      : 'btn-apple-secondary'
-                  }`}
-                >
-                  2 People
-                </button>
-                <button
-                  onClick={() => handleSetOccupants(4)}
-                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
+                  onClick={() => handleSetOccupants(4, false)}
+                  className={`text-xs py-2 px-3 rounded-xl font-medium transition-all flex items-center justify-center gap-1 ${
                     activePreset === 'occ-4'
-                      ? 'btn-apple-primary'
+                      ? 'bg-[#FF9500] text-white shadow-sm'
                       : 'btn-apple-secondary'
                   }`}
                 >
-                  4 People
+                  <Flame className="w-3.5 h-3.5" />
+                  <span>Feed Algae (4 Pers)</span>
+                </button>
+                <button
+                  onClick={() => handleSetOccupants(4, true)}
+                  className={`text-xs py-2 px-3 rounded-xl font-medium transition-all flex items-center justify-center gap-1 ${
+                    activePreset === 'crisis'
+                      ? 'bg-[#FF3B30] text-white shadow-sm'
+                      : 'btn-apple-secondary border-[#FF3B30]/30 text-[#FF3B30]'
+                  }`}
+                >
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>Yellow Crisis (&lt;45%)</span>
                 </button>
                 <button
                   onClick={handleResetLive}
-                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
+                  className={`text-xs py-2 px-3 rounded-xl font-medium transition-all flex items-center justify-center gap-1 ${
                     activePreset === 'live'
-                      ? 'bg-[#34C759] text-white'
+                      ? 'bg-[#34C759] text-white shadow-sm'
                       : 'btn-apple-secondary'
                   }`}
                 >
-                  Live CV
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Live CV Camera</span>
                 </button>
               </div>
             </div>
