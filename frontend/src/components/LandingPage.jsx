@@ -134,7 +134,7 @@ export default function LandingPage({ onNavigate }) {
   const co2Ppm = useStore((s) => s.co2_ppm);
   const algaeHealth = useStore((s) => s.algae_health);
   const hvacState = useStore((s) => s.hvacState);
-  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 68;
+  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 45;
 
   // Reduced motion preference detection
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);

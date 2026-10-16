@@ -340,7 +340,7 @@ function CornerBioreactorStack({ position, cornerType = 'FL', floorYs = [Y_GROUN
 
   useFrame((state, delta) => {
     const { algae_health, hvacState, occupancy } = useStore.getState();
-    const isBypass = (hvacState.activeLoop === 'roof_bypass' || algae_health < 45) && (occupancy < 4);
+    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 45;
 
     // Dynamically lerp fluid color and emissive glow based on real-time health telemetry
     const targetColor = getBioreactorFluidColor(algae_health);
@@ -504,7 +504,7 @@ function AirflowPipeNetwork() {
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
     const { hvacState, algae_health, occupancy } = useStore.getState();
-    const isBypass = (hvacState.activeLoop === 'roof_bypass' || algae_health < 45) && (occupancy < 4);
+    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 45;
     const arr = pointsRef.current.geometry.attributes.position.array;
 
     // When algae is unhealthy/yellow (bypass active), conduit stream to corner reactors throttles to 5% trickle
@@ -578,7 +578,7 @@ function RooftopAtmosphericExhaust() {
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
     const { hvacState, algae_health, occupancy } = useStore.getState();
-    const isBypass = (hvacState.activeLoop === 'roof_bypass' || algae_health < 45) && (occupancy < 4);
+    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 45;
     pointsRef.current.visible = isBypass;
     if (!isBypass) return;
 
@@ -836,7 +836,7 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
   const setDamper   = useStore((s) => s.setHvacDamper);
 
   const statusColor = algaeHealth >= 75 ? '#10b981' : algaeHealth >= 45 ? '#f59e0b' : '#ef4444';
-  const isBypass = (hvacState.activeLoop === 'roof_bypass' || algaeHealth < 45) && (occupancy < 4);
+  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 45;
 
   return (
     <>
@@ -853,10 +853,15 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
           <span>NEOCLASSICAL FACADE · {hvacState.hvacStatusText}</span>
         </div>
 
-        {isBypass && (
-          <div className="px-3 py-1.5 rounded-[980px] text-xs font-semibold border border-[#0071E3]/30 bg-[rgba(245,245,247,0.92)] text-[#0071E3] flex items-center gap-2 backdrop-blur-[20px] shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0071E3] animate-pulse" />
-            <span>OUTLET AIR REDIRECTED TO OUTSIDE (ROOFTOP EXHAUST)</span>
+        {isBypass ? (
+          <div className="px-3 py-1.5 rounded-[980px] text-xs font-semibold border border-[#FF3B30]/30 bg-[rgba(245,245,247,0.92)] text-[#FF3B30] flex items-center gap-2 backdrop-blur-[20px] shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B30] animate-pulse" />
+            <span>ALGAE YELLOW: REDIRECTED TO OUTSIDE EXHAUSTS</span>
+          </div>
+        ) : (
+          <div className="px-3 py-1.5 rounded-[980px] text-xs font-semibold border border-[#34C759]/30 bg-[rgba(245,245,247,0.92)] text-[#34C759] flex items-center gap-2 backdrop-blur-[20px] shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#34C759]" />
+            <span>ALGAE GREEN: REDIRECTED TO BIOREACTOR</span>
           </div>
         )}
 

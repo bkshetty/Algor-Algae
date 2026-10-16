@@ -41,7 +41,7 @@ export default function OverviewPage({ onNavigate }) {
   // Subsystem Stage Mode: 'building' | 'bioreactor' | 'hvac'
   const [twinViewMode, setTwinViewMode] = useState('building');
 
-  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 68;
+  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 45;
 
   return (
     <div className="flex flex-col space-y-6 w-full text-[#1D1D1F] font-[-apple-system,BlinkMacSystemFont,'SF_Pro_Text',system-ui,sans-serif] select-none">

@@ -50,14 +50,15 @@ export default function HumanDetectionPage() {
   };
 
   // Biological Cause-and-Effect Pipeline State
-  const isHighOcc = occupancy >= 4;
-  const isCrisis = algaeHealth < 45.0;
-  const isBypass = !isHighOcc || isCrisis || hvacState.activeLoop === 'roof_bypass';
+  // Green Algae (health >= 45%): Air redirects to bioreactor (damper opens to 85%)
+  // Yellow/Unhealthy Algae (<45%): Air redirects to exhausts outside (damper clamps to 15%)
+  const isAlgaeGreen = algaeHealth >= 45.0 && hvacState.activeLoop !== 'roof_bypass';
+  const isBypass = !isAlgaeGreen;
+  const isCrisis = !isAlgaeGreen;
   const metabolicCo2Added = occupancy * 150;
-  // If occupants >= 4, damper opens to 85% redirecting air to bioreactor; if occupants < 4, air redirects to outside exhausts (damper clamped to 15% to bio / 85% outside)
-  const hvacDamperOpenPct = isHighOcc ? 85 : 15;
+  const hvacDamperOpenPct = isAlgaeGreen ? (hvacState.damperOpenPct || 85) : 15;
   const dailyCo2LoadKg = (occupancy * 0.12).toFixed(2);
-  const airflowSpargingRate = isHighOcc ? '26.0' : '2.5';
+  const airflowSpargingRate = isAlgaeGreen ? (hvacState.spargingRateLpm ? Number(hvacState.spargingRateLpm).toFixed(1) : '26.0') : '2.5';
 
   return (
     <div className="flex flex-col space-y-4 w-full">
@@ -102,18 +103,18 @@ export default function HumanDetectionPage() {
         <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
           <div className="flex items-center justify-between text-[#86868B]">
             <span className="text-[11px] font-semibold uppercase tracking-wider">HVAC Damper Valve</span>
-            <Activity className={`w-4 h-4 ${isCrisis ? 'text-[#FF3B30]' : isHighOcc ? 'text-[#34C759]' : 'text-[#0071E3]'}`} />
+            <Activity className={`w-4 h-4 ${isAlgaeGreen ? 'text-[#34C759]' : 'text-[#FF3B30]'}`} />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className={`text-3xl font-semibold tracking-tight ${isCrisis ? 'text-[#FF3B30]' : isHighOcc ? 'text-[#1D1D1F]' : 'text-[#0071E3]'}`}>
+            <span className={`text-3xl font-semibold tracking-tight ${isAlgaeGreen ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
               {hvacDamperOpenPct}%
             </span>
             <span className="text-xs text-[#86868B] font-medium">{airflowSpargingRate} L/min</span>
           </div>
           <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
             <span>Active Pipeline</span>
-            <span className={`font-semibold ${isCrisis ? "text-[#FF3B30]" : isHighOcc ? "text-[#34C759]" : "text-[#0071E3]"}`}>
-              {isCrisis ? "15% Shunt Clamped" : isHighOcc ? "85% Facade Fuel Redirected" : "85% Outside Exhaust"}
+            <span className={`font-semibold ${isAlgaeGreen ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
+              {isAlgaeGreen ? "85% Facade Fuel Redirected" : "85% Outside Exhaust"}
             </span>
           </div>
         </div>
@@ -166,37 +167,37 @@ export default function HumanDetectionPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               {/* Pipeline 1 Rule Box */}
               <div className={`p-3 rounded-xl border transition-all ${
-                !isBypass && occupancy > 0
-                  ? 'bg-[#FFF9EB] border-[#FF9500]/40 ring-1 ring-[#FF9500]/20'
+                isAlgaeGreen
+                  ? 'bg-[#E8F8EE] border-[#34C759]/40 ring-1 ring-[#34C759]/20'
                   : 'bg-[#F5F5F7] border-[rgba(0,0,0,0.04)]'
               }`}>
-                <div className="flex items-center gap-1.5 text-[#FF9500] font-semibold">
+                <div className="flex items-center gap-1.5 text-[#34C759] font-semibold">
                   <Flame className="w-3.5 h-3.5" />
-                  <span>1. "Feed the Algae" Pipeline</span>
+                  <span>1. "Feed the Algae" Pipeline (Bioreactor Redirect)</span>
                 </div>
                 <div className="text-[11px] text-[#86868B] mt-1 space-y-1">
-                  <p><strong className="text-[#1D1D1F]">Trigger:</strong> YOLOv8 detects humans in frame.</p>
+                  <p><strong className="text-[#1D1D1F]">Trigger:</strong> Algae is Green (health &ge; 45%).</p>
                   <p><strong className="text-[#1D1D1F]">Logic:</strong> CO₂ = 400 + 150ppm/person.</p>
-                  <p><strong className="text-[#1D1D1F]">Action:</strong> Algae healthy (green) → Dampers opened to 85%.</p>
-                  <p><strong className="text-[#FF9500]">Visual:</strong> Glowing orange <span className="font-semibold">"HUMAN CO₂ RETURN AIR"</span> flows into green facade.</p>
+                  <p><strong className="text-[#1D1D1F]">Action:</strong> Air redirected to algae bioreactor (85% damper).</p>
+                  <p><strong className="text-[#34C759]">Visual:</strong> Glowing emerald & orange <span className="font-semibold">"HUMAN CO₂ RETURN AIR"</span> fuels facade.</p>
                 </div>
               </div>
 
               {/* Pipeline 2 Rule Box */}
               <div className={`p-3 rounded-xl border transition-all ${
-                isBypass
+                !isAlgaeGreen
                   ? 'bg-[#FFF2F2] border-[#FF3B30]/40 ring-1 ring-[#FF3B30]/20'
                   : 'bg-[#F5F5F7] border-[rgba(0,0,0,0.04)]'
               }`}>
                 <div className="flex items-center gap-1.5 text-[#FF3B30] font-semibold">
                   <ShieldAlert className="w-3.5 h-3.5" />
-                  <span>2. "Acidification Bypass" Pipeline</span>
+                  <span>2. "Acidification Bypass" Pipeline (Outdoor Exhaust)</span>
                 </div>
                 <div className="text-[11px] text-[#86868B] mt-1 space-y-1">
                   <p><strong className="text-[#1D1D1F]">Trigger:</strong> OpenCV detects yellow pixels (&lt;45% health).</p>
-                  <p><strong className="text-[#1D1D1F]">Logic:</strong> Sick algae cannot process CO₂ → Carbonic acid (pH &lt; 6.8).</p>
-                  <p><strong className="text-[#1D1D1F]">Action:</strong> AI Emergency Bypass clamps damper to <strong>15%</strong>.</p>
-                  <p><strong className="text-[#FF3B30]">Visual:</strong> Pulsing crimson/amber <span className="font-semibold">"ALGAE COLLAPSE BYPASS SHUNT"</span> vents to safe rooftop scrubber.</p>
+                  <p><strong className="text-[#1D1D1F]">Logic:</strong> Sick algae cannot process CO₂ → Lethal carbonic acid (pH &lt; 6.8).</p>
+                  <p><strong className="text-[#1D1D1F]">Action:</strong> Air redirected to exhausts (85% outside vent, 15% clamp).</p>
+                  <p><strong className="text-[#FF3B30]">Visual:</strong> Pulsing crimson <span className="font-semibold">"ALGAE COLLAPSE BYPASS SHUNT"</span> vents to rooftop.</p>
                 </div>
               </div>
             </div>

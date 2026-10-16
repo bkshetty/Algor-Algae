@@ -215,7 +215,7 @@ function AirSpargingSystem({ radius = 0.85, baseHeight = -1.75, bubbleCount = 28
 
     // Sparging velocity is directly tied to the input HVAC airflow and damper modulation
     const baseVel = 0.7 + (hvacState.damperOpenPct / 100) * 2.8;
-    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 68;
+    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 45;
     const effectiveVel = isBypass ? 0.35 : baseVel;
 
     const posArray = pointsRef.current.geometry.attributes.position.array;

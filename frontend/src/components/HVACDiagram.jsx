@@ -47,19 +47,19 @@ import { useStore } from '../store';
 const STATES = {
   state1: {
     id: 'state1',
-    title: 'State 1: Low Occupancy (<4 Occupants)',
-    subtitle: '1 human detected (550 ppm CO2). Air redirects in HVAC system to exhausts outside (85% outdoor vent).',
+    title: 'State 1: Algae is Green (Direct to Bioreactor)',
+    subtitle: 'Healthy green Chlorella culture (95% health). Damper opens to 85% — human CO2 exhaust routes into bioreactor panels as fuel.',
     occupants: 1,
     co2: 550,
     algaeHealth: 95,
-    toAlgaePct: 15,
-    toOutdoorPct: 85,
-    damperAngle: 15,
-    flowLpm: 2.5,
+    toAlgaePct: 85,
+    toOutdoorPct: 15,
+    damperAngle: 75,
+    flowLpm: 26.0,
     algaeColor: '#34C759',
     liquidTone: 'healthy',
-    modeText: 'OUTDOOR EXHAUST REDIRECTION (85% VENT)',
-    badgeColor: '#0071E3'
+    modeText: 'ALGAE IS GREEN: BIOREACTOR REDIRECTION (85%)',
+    badgeColor: '#34C759'
   },
   state2: {
     id: 'state2',
@@ -299,8 +299,8 @@ function BioreactorColumn({ x, y, width = 64, height = 150, health = 85, toAlgae
 }
 
 function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
-  const isHighOcc = data.occupants >= 4;
-  const isCrisis = !isHighOcc && (data.algaeHealth < 45 || data.toAlgaePct <= 20);
+  const isAlgaeGreen = data.algaeHealth >= 45 && data.toAlgaePct >= 50;
+  const isCrisis = !isAlgaeGreen;
 
   return (
     <div
@@ -382,29 +382,21 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
 
         {/* Center: Dynamic Animated Airflow Arrow */}
         <div className="relative z-10 flex flex-col items-center px-2">
-          {isCrisis ? (
-            <div className="flex flex-col items-center">
-              <span className="text-[8px] font-mono text-[#FF3B30] font-bold animate-pulse text-center leading-tight">
-                BYPASS<br />SHUNT
-              </span>
-              <ArrowRight className="w-4 h-4 text-[#FF3B30] my-0.5 animate-bounce" />
-              <span className="text-[7.5px] font-mono text-amber-400">85% Vent</span>
-            </div>
-          ) : !isHighOcc ? (
-            <div className="flex flex-col items-center">
-              <span className="text-[8px] font-mono text-[#0071E3] font-bold text-center leading-tight">
-                OUTDOOR<br />EXHAUST
-              </span>
-              <ArrowRight className="w-4 h-4 text-[#0071E3] my-0.5" />
-              <span className="text-[7.5px] font-mono text-[#0071E3] font-bold">85% Outside</span>
-            </div>
-          ) : (
+          {isAlgaeGreen ? (
             <div className="flex flex-col items-center">
               <span className="text-[8px] font-mono text-[#FF9500] font-bold text-center leading-tight">
                 HUMAN CO₂<br />RETURN
               </span>
               <ArrowRight className="w-4 h-4 text-[#FF9500] my-0.5" />
               <span className="text-[7.5px] font-mono text-[#34C759] font-bold">85% Bio-Fuel</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] font-mono text-[#FF3B30] font-bold animate-pulse text-center leading-tight">
+                BYPASS<br />SHUNT
+              </span>
+              <ArrowRight className="w-4 h-4 text-[#FF3B30] my-0.5 animate-bounce" />
+              <span className="text-[7.5px] font-mono text-amber-400">85% Vent</span>
             </div>
           )}
         </div>
@@ -423,17 +415,13 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
               boxShadow: `0 0 12px ${isCrisis ? 'rgba(234,179,8,0.5)' : 'rgba(52,199,89,0.5)'}`
             }}
           >
-            {isCrisis ? (
-              <span className="text-[8px] font-bold text-red-950 text-center leading-none">
-                15%<br />CLAMP
-              </span>
-            ) : !isHighOcc ? (
-              <span className="text-[8px] font-bold text-slate-300 text-center leading-none">
-                15%<br />STANDBY
-              </span>
-            ) : (
+            {isAlgaeGreen ? (
               <span className="text-[8px] font-bold text-emerald-950 text-center leading-none">
                 85%<br />FEED
+              </span>
+            ) : (
+              <span className="text-[8px] font-bold text-red-950 text-center leading-none">
+                15%<br />CLAMP
               </span>
             )}
           </div>
@@ -497,11 +485,11 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
 // ─── 2D Technical HVAC Layout Schematic (SVG Implementation) ─────────────────
 function TechnicalHVACSchematic({ stateData }) {
   const { occupants, co2, algaeHealth, toAlgaePct, toOutdoorPct, damperAngle, flowLpm } = stateData;
-  const isHighOcc = occupants >= 4;
-  const isCrisis = algaeHealth < 45;
-  // If occupants >= 4, air directs to bioreactor!
-  // If occupants < 4 or crisis, air redirects to outside exhausts!
-  const isBypass = !isHighOcc || isCrisis || toOutdoorPct >= 60;
+  // Rule: When algae is green (healthy), redirect to bioreactor!
+  // When algae is yellow/unhealthy, redirect to exhausts outside!
+  const isAlgaeGreen = algaeHealth >= 45 && toAlgaePct >= 50;
+  const isBypass = !isAlgaeGreen;
+  const isCrisis = !isAlgaeGreen;
 
   return (
     <div className="relative w-full bg-[#FFFFFF] rounded-2xl p-4 sm:p-5 border border-[rgba(0,0,0,0.08)] overflow-hidden">
@@ -554,8 +542,8 @@ function TechnicalHVACSchematic({ stateData }) {
           <span className="px-3 py-1 rounded-[980px] bg-[#E8F2FD] border border-[#0071E3]/20 text-[#1D1D1F]">
             Return: <strong className="text-[#FF9500]">HUMAN CO₂ ({co2} ppm)</strong>
           </span>
-          <span className={`px-3 py-1 rounded-[980px] border text-[#1D1D1F] ${isHighOcc ? 'bg-[#E8F8EE] border-[#34C759]/20' : 'bg-[#E8F2FD] border-[#0071E3]/30'}`}>
-            HVAC Status: <strong className={isHighOcc ? "text-[#34C759]" : "text-[#0071E3]"}>{isHighOcc ? '85% TO BIOREACTOR' : '85% EXHAUSTED OUTSIDE'}</strong>
+          <span className={`px-3 py-1 rounded-[980px] border text-[#1D1D1F] ${isAlgaeGreen ? 'bg-[#E8F8EE] border-[#34C759]/20' : 'bg-[#FFF2F2] border-[#FF3B30]/30'}`}>
+            HVAC Status: <strong className={isAlgaeGreen ? "text-[#34C759]" : "text-[#FF3B30]"}>{isAlgaeGreen ? '85% TO BIOREACTOR' : '85% EXHAUSTED OUTSIDE'}</strong>
           </span>
         </div>
       </div>
@@ -788,8 +776,8 @@ function TechnicalHVACSchematic({ stateData }) {
             <text x="0" y="-32" fill="#e2e8f0" fontSize="10" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
               3-way Damper
             </text>
-            <text x="0" y="-20" fill={isCrisis ? "#FF3B30" : isHighOcc ? "#34C759" : "#0071E3"} fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
-              {isCrisis ? '(CLAMPED 15% BY AI)' : isHighOcc ? '(AI REDIRECTED 85% TO BIOREACTOR)' : '(AI REDIRECTED 85% TO OUTSIDE EXHAUSTS)'}
+            <text x="0" y="-20" fill={isAlgaeGreen ? "#34C759" : "#FF3B30"} fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+              {isAlgaeGreen ? '(AI REDIRECTED 85% TO BIOREACTOR)' : '(CLAMPED 15% BY AI — 85% TO EXHAUSTS)'}
             </text>
           </g>
 
@@ -829,7 +817,7 @@ function TechnicalHVACSchematic({ stateData }) {
                   {isCrisis ? '⚠️ ALGAE COLLAPSE BYPASS SHUNT' : '💨 OUTDOOR EXHAUST REDIRECTION'}
                 </text>
                 <text x="97.5" y="21" fill={isCrisis ? "#FDE047" : "#BAE6FD"} fontSize="7" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
-                  {isCrisis ? `VENTING ${toOutdoorPct}% TO PREVENT ACIDIFICATION` : `VENTING ${toOutdoorPct}% OUTSIDE (<4 OCCUPANTS)`}
+                  {isCrisis ? `VENTING ${toOutdoorPct}% TO PREVENT ACIDIFICATION` : `VENTING ${toOutdoorPct}% TO OUTSIDE EXHAUSTS`}
                 </text>
               </g>
             </g>
@@ -899,7 +887,7 @@ function TechnicalHVACSchematic({ stateData }) {
                   RESTRICTED TO 15% FLOW
                 </text>
                 <text x="82.5" y="24" fill="#94A3B8" fontSize="7" fontWeight="medium" textAnchor="middle" fontFamily="monospace">
-                  {isCrisis ? 'Acidification Shield (pH < 6.8)' : 'Low Occupancy (<4) — Air Exhausted Outside'}
+                  {isCrisis ? 'Acidification Shield (pH < 6.8)' : 'Restricted Standby Vent'}
                 </text>
               </g>
             </g>
@@ -946,7 +934,7 @@ function TechnicalHVACSchematic({ stateData }) {
             y={170}
             width={74}
             height={165}
-            health={isHighOcc ? Math.max(88, algaeHealth) : algaeHealth}
+            health={algaeHealth}
             toAlgaePct={toAlgaePct}
           />
 
@@ -1055,39 +1043,31 @@ export default function HVACDiagram({
   // Determine current active state data (either preset or dynamic live)
   const currentStateData = useMemo(() => {
     if (selectedState === 'live') {
-      const isHighOcc = storeOccupancy >= 4;
-      const isCrisis = storeAlgaeHealth < 45.0 || (hvacState.activeLoop === 'roof_bypass' && storeAlgaeHealth < 45);
-      
-      // When occupants are 4 or more: air directs to bioreactor (85% bio, 15% outdoor)
-      // When occupants are less than 4: air redirects in HVAC system to exhausts outside (85% outdoor, 15% bio)
-      const toAlgae = isHighOcc ? 85 : 15;
-      const toOutdoor = isHighOcc ? 15 : 85;
+      const isAlgaeGreen = storeAlgaeHealth >= 45.0 && hvacState.activeLoop !== 'roof_bypass';
+      const toAlgae = isAlgaeGreen ? 85 : 15;
+      const toOutdoor = isAlgaeGreen ? 15 : 85;
 
       return {
         id: 'live',
-        title: isHighOcc
-          ? 'Live Sync: "Feed the Algae" Active (High Occupancy ≥4)'
-          : (isCrisis
-            ? 'Live Sync: "Acidification Bypass" Shunt'
-            : 'Live Sync: Outdoor Exhaust Redirection (<4 Occupants)'),
-        subtitle: isHighOcc
-          ? `YOLOv8 detected ${storeOccupancy} occupants in Live CV (${storeCo2} ppm CO₂). HVAC dampers modulated to 85% — directing human CO₂ exhaust straight into the bioreactor facade.`
-          : (isCrisis
-            ? `ALGAE COLLAPSE BYPASS SHUNT active: Yellow pixels detected (${Math.round(storeAlgaeHealth)}% < 45%). Damper clamped to 15% to prevent carbonic acidification. 85% exhaust routed to safe rooftop scrubber.`
-            : `YOLOv8 detected ${storeOccupancy} occupant${storeOccupancy !== 1 ? 's' : ''} in Live CV (<4 threshold). Air redirects in HVAC system to exhausts outside (85% outdoor exhaust vent / 15% baseline bio-trickle).`),
+        title: isAlgaeGreen
+          ? 'Live Sync: Algae is Green (Direct to Bioreactor)'
+          : 'Live Sync: Algae is Yellow/Unhealthy (Redirect to Exhausts)',
+        subtitle: isAlgaeGreen
+          ? `Algae culture is healthy & green (${Math.round(storeAlgaeHealth)}%). HVAC dampers opened to 85% — directing human CO₂ return air directly into the bioreactor panels as photosynthetic fuel.`
+          : `Algae culture is yellow/unhealthy (${Math.round(storeAlgaeHealth)}% < 45%). Damper clamped to 15% to prevent carbonic acidification. 85% exhaust air redirected to safe rooftop scrubber.`,
         occupants: storeOccupancy,
         co2: storeCo2,
-        algaeHealth: isHighOcc ? Math.max(88, Math.round(storeAlgaeHealth)) : Math.round(storeAlgaeHealth),
+        algaeHealth: Math.round(storeAlgaeHealth),
         toAlgaePct: toAlgae,
         toOutdoorPct: toOutdoor,
-        damperAngle: isHighOcc ? 75 : 15,
-        flowLpm: isHighOcc ? 26.0 : 2.5,
-        algaeColor: (!isCrisis || isHighOcc) ? '#34C759' : '#FFCC00',
-        liquidTone: (!isCrisis || isHighOcc) ? 'healthy' : 'unhealthy',
-        modeText: isHighOcc
-          ? 'FEED THE ALGAE (85% BIO-FEED)'
-          : (isCrisis ? 'ALGAE COLLAPSE BYPASS SHUNT (15% CLAMP)' : 'OUTDOOR EXHAUST REDIRECTION (85% VENT)'),
-        badgeColor: isHighOcc ? '#34C759' : (isCrisis ? '#FF3B30' : '#0071E3')
+        damperAngle: isAlgaeGreen ? 75 : 12,
+        flowLpm: isAlgaeGreen ? 26.0 : 2.5,
+        algaeColor: isAlgaeGreen ? '#34C759' : '#FFCC00',
+        liquidTone: isAlgaeGreen ? 'healthy' : 'unhealthy',
+        modeText: isAlgaeGreen
+          ? 'ALGAE IS GREEN: DIRECTED TO BIOREACTOR (85% FLOW)'
+          : 'ALGAE IS YELLOW: REDIRECTED TO EXHAUSTS (85% VENT)',
+        badgeColor: isAlgaeGreen ? '#34C759' : '#FF3B30'
       };
     }
     return STATES[selectedState] || STATES.state2;

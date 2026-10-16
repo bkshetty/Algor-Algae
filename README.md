@@ -64,11 +64,10 @@ Using real-time Computer Vision (**YOLOv8** & **OpenCV Spectrophotometry**) and 
 
 The HVAC system enforces a biological cause-and-effect loop driven by real-time computer vision sensors:
 
-| Operational State | Trigger | Damper Angle | Damper Allocation | Airflow Routing & Visual Representation |
+| Operational State | Biological Health Trigger | Damper Angle | Damper Allocation | Airflow Routing & Visual Representation |
 | :--- | :--- | :--- | :--- | :--- |
-| **"Feed the Algae"**<br>*(High Occupancy)* | **Occupants $\ge$ 4** in Live CV | $75^\circ$ (Downward) | **85% to Bioreactor**<br>15% Outdoor Standby | Human exhaust routes directly into the bioreactor panels. 2D schematic renders glowing orange **HUMAN $\text{CO}_2$ RETURN AIR** entering the emerald green **PHOTOSYNTHETIC FUEL (85% FLOW)** conduit. 3D Twin bioreactor columns bubble with high bio-illumination. |
-| **"Outdoor Exhaust"**<br>*(Low Occupancy)* | **Occupants $<$ 4** in Live CV | $15^\circ$ (Upward) | **85% Outside Exhaust**<br>15% Bio-Standby | When metabolic $\text{CO}_2$ load is below threshold, air redirects upward to the **SAFE ROOFTOP SCRUBBER** (85% outdoor vent). Downward bioreactor flow throttles to 15% idle standby. |
-| **"Acidification Bypass"**<br>*(Biological Crisis)* | **Health $<$ 45%**<br>*(Yellow ROI Detection)* | $12^\circ$ (Bypass) | **85% Rooftop Shunt**<br>15% Clamped Flow | Sick microalgae cannot process carbon; high $\text{CO}_2$ would crash pH below 6.8. System triggers **ALGAE COLLAPSE BYPASS SHUNT** venting $\text{CO}_2$ to safe rooftop scrubbers. |
+| **"Feed the Algae"**<br>*(Green / Healthy Culture)* | **Algae is Green**<br>*(Health $\ge$ 45%)* | $75^\circ$ (Downward) | **85% to Bioreactor**<br>15% Outdoor Standby | **Air Redirects to Bioreactor:** Human $\text{CO}_2$ exhaust routes directly into the algae bioreactor panels as photosynthetic fuel. 2D schematic renders glowing **HUMAN $\text{CO}_2$ RETURN AIR** entering the emerald green **PHOTOSYNTHETIC FUEL (85% FLOW)** conduit. 3D Twin bioreactor columns bubble actively with bio-illumination. |
+| **"Acidification Bypass"**<br>*(Yellow / Unhealthy Culture)* | **Algae is Yellow / Unhealthy**<br>*(Health $<$ 45% or Yellow ROI)* | $12^\circ$ (Upward Bypass) | **85% Outside Exhaust**<br>15% Bio-Clamp | **Air Redirects to Exhausts:** Sick microalgae cannot process carbon efficiently; continuing high-$\text{CO}_2$ air creates lethal carbonic acid ($\text{pH} < 6.8$). Damper clamps to 15%, and 85% exhaust air is shunted away through the **ALGAE COLLAPSE BYPASS SHUNT** to the safe rooftop scrubber. |
 
 ---
 

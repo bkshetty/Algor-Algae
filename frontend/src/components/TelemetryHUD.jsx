@@ -24,7 +24,7 @@ export default function TelemetryHUD() {
   const isHealthy = algaeHealth >= 70;
   const isStressed = algaeHealth >= 45 && algaeHealth < 70;
   const healthBadgeColor = isHealthy ? 'text-[#34C759]' : isStressed ? 'text-[#FF9500]' : 'text-[#FF3B30]';
-  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 68;
+  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 45;
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full select-none font-[-apple-system,BlinkMacSystemFont,'SF_Pro_Text',system-ui,sans-serif]">
