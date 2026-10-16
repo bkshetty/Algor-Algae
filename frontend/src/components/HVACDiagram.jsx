@@ -288,30 +288,30 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
       onClick={() => onSelect(stateKey)}
       className={`relative flex flex-col rounded-2xl p-4 transition-all cursor-pointer border ${
         isSelected
-          ? 'bg-[#0b1322] border-sky-400 ring-2 ring-sky-500/20 shadow-xl'
-          : 'bg-[#090f1c]/90 border-slate-800 hover:border-slate-700 hover:bg-[#0c1527]'
+          ? 'bg-[#FFFFFF] border-[#0071E3] ring-2 ring-[#0071E3]/20 shadow-md'
+          : 'bg-[#FFFFFF] border-[rgba(0,0,0,0.08)] hover:border-[rgba(0,0,0,0.18)]'
       }`}
     >
       {/* Selection pill */}
       {isSelected && (
-        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-mono font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/30">
+        <div className="absolute top-3.5 right-3.5 flex items-center gap-1 text-[10px] font-semibold text-[#0071E3] bg-[#E8F2FD] px-2.5 py-0.5 rounded-[980px]">
           <CheckCircle2 className="w-3 h-3" /> ACTIVE SIMULATION
         </div>
       )}
 
       {/* Title & Subtitle */}
       <div className="pr-16">
-        <h3 className="text-xs font-bold text-white font-sans flex items-center gap-1.5">
+        <h3 className="text-xs font-semibold text-[#1D1D1F] flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data.badgeColor }} />
           {data.title}
         </h3>
-        <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+        <p className="text-[11px] text-[#86868B] mt-0.5 leading-snug">
           {data.subtitle}
         </p>
       </div>
 
-      {/* Mini Schematic Cross-Section View */}
-      <div className="my-3.5 relative bg-[#040812] rounded-xl p-3 border border-slate-800/80 overflow-hidden min-h-[160px] flex items-center justify-between">
+      {/* Mini Schematic Cross-Section View - High Contrast Precision Display */}
+      <div className="my-3.5 relative bg-[#000000] rounded-xl p-3 border border-[rgba(255,255,255,0.08)] overflow-hidden min-h-[160px] flex items-center justify-between">
         {/* Background Grid */}
         <div
           className="absolute inset-0 opacity-10 pointer-events-none"
@@ -420,25 +420,25 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
       </div>
 
       {/* Metrics Row (Matching design spec) */}
-      <div className="grid grid-cols-4 gap-2 pt-2 border-t border-slate-800 text-[10px] font-mono">
+      <div className="grid grid-cols-4 gap-2 pt-2.5 border-t border-[rgba(0,0,0,0.06)] text-[10px]">
         {/* Metric 1: Occupants */}
         <div className="flex flex-col">
-          <span className="text-slate-400 text-[9px] flex items-center gap-1">
-            <Users className="w-2.5 h-2.5 text-sky-400" /> Occupants
+          <span className="text-[#86868B] text-[9px] flex items-center gap-1 font-medium">
+            <Users className="w-2.5 h-2.5 text-[#0071E3]" /> Occupants
           </span>
-          <span className="font-bold text-white text-xs mt-0.5 flex items-center gap-1">
+          <span className="font-semibold text-[#1D1D1F] text-xs mt-0.5 flex items-center gap-1">
             👤 {data.occupants}
           </span>
         </div>
 
         {/* Metric 2: Indoor CO2 */}
         <div className="flex flex-col">
-          <span className="text-slate-400 text-[9px] flex items-center gap-1">
-            <Cloud className="w-2.5 h-2.5 text-amber-400" /> Indoor CO₂
+          <span className="text-[#86868B] text-[9px] flex items-center gap-1 font-medium">
+            <Cloud className="w-2.5 h-2.5 text-[#FF9500]" /> Indoor CO₂
           </span>
           <span
-            className="font-bold text-xs mt-0.5"
-            style={{ color: data.co2 > 800 ? '#ef4444' : '#38bdf8' }}
+            className="font-semibold text-xs mt-0.5"
+            style={{ color: data.co2 > 800 ? '#FF3B30' : '#1D1D1F' }}
           >
             {data.co2} ppm
           </span>
@@ -446,12 +446,12 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
 
         {/* Metric 3: Algae Health */}
         <div className="flex flex-col">
-          <span className="text-slate-400 text-[9px] flex items-center gap-1">
-            <Leaf className="w-2.5 h-2.5 text-emerald-400" /> Algae Health
+          <span className="text-[#86868B] text-[9px] flex items-center gap-1 font-medium">
+            <Leaf className="w-2.5 h-2.5 text-[#34C759]" /> Algae Health
           </span>
           <span
-            className="font-bold text-xs mt-0.5"
-            style={{ color: isCrisis ? '#eab308' : '#10b981' }}
+            className="font-semibold text-xs mt-0.5"
+            style={{ color: isCrisis ? '#FF9500' : '#34C759' }}
           >
             {data.algaeHealth}%
           </span>
@@ -459,16 +459,16 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
 
         {/* Metric 4: Air Distribution */}
         <div className="flex flex-col items-end">
-          <span className="text-slate-400 text-[9px]">Air Distribution</span>
+          <span className="text-[#86868B] text-[9px] font-medium">Air Distribution</span>
           <div className="mt-0.5 flex items-center gap-1.5">
             <DistributionDonut
               toAlgaePct={data.toAlgaePct}
               toOutdoorPct={data.toOutdoorPct}
               size={24}
             />
-            <div className="text-[8px] text-right text-slate-300 leading-tight">
-              <span className="text-emerald-400 font-bold block">{data.toAlgaePct}% Algae</span>
-              <span className="text-slate-400 block">{data.toOutdoorPct}% Out</span>
+            <div className="text-[8px] text-right text-[#86868B] leading-tight">
+              <span className="text-[#34C759] font-semibold block">{data.toAlgaePct}% Algae</span>
+              <span className="text-[#86868B] block">{data.toOutdoorPct}% Out</span>
             </div>
           </div>
         </div>
@@ -484,7 +484,7 @@ function TechnicalHVACSchematic({ stateData }) {
   const isBypass = !isHealthy || toOutdoorPct >= 70;
 
   return (
-    <div className="relative w-full bg-[#050b16] rounded-2xl p-4 border border-slate-800 shadow-2xl overflow-hidden">
+    <div className="relative w-full bg-[#FFFFFF] rounded-2xl p-4 sm:p-5 border border-[rgba(0,0,0,0.08)] overflow-hidden">
       {/* SVG Definitions for Gradients & Filters */}
       <svg className="w-0 h-0 absolute">
         <defs>
@@ -508,33 +508,33 @@ function TechnicalHVACSchematic({ stateData }) {
       </svg>
 
       {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between pb-3 border-b border-slate-800/80 gap-2 font-mono">
+      <div className="flex flex-wrap items-center justify-between pb-3.5 border-b border-[rgba(0,0,0,0.06)] gap-2">
         <div>
-          <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <Wind className="w-4 h-4 text-sky-400" />
-            Design Draft - 2D HVAC System Layout
+          <h2 className="text-sm font-semibold text-[#1D1D1F] flex items-center gap-2">
+            <Wind className="w-4 h-4 text-[#0071E3]" />
+            2D HVAC System Layout & Bio-Redirection Flow
           </h2>
-          <p className="text-[11px] text-slate-400">
-            Clean layout for implementation (SVG / HTML Canvas / React)
+          <p className="text-[11px] text-[#86868B]">
+            Dynamic building air loop, motorized damper modulation, and facade sparging
           </p>
         </div>
 
         {/* Live operational readout */}
         <div className="flex items-center gap-2 text-xs">
-          <span className="px-2.5 py-1 rounded-lg bg-black/60 border border-slate-800 text-sky-300 font-mono">
-            Supply: <strong className="text-white">Fresh Air (100%)</strong>
+          <span className="px-3 py-1 rounded-[980px] bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] text-[#1D1D1F]">
+            Supply: <strong className="text-[#0071E3]">Fresh Air (100%)</strong>
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-black/60 border border-slate-800 text-emerald-300 font-mono">
-            Bio-Feed: <strong className="text-emerald-400">{toAlgaePct}%</strong>
+          <span className="px-3 py-1 rounded-[980px] bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] text-[#1D1D1F]">
+            Bio-Feed: <strong className="text-[#34C759]">{toAlgaePct}%</strong>
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-black/60 border border-slate-800 text-amber-300 font-mono">
-            Atmosphere Exhaust: <strong className="text-amber-400">{toOutdoorPct}%</strong>
+          <span className="px-3 py-1 rounded-[980px] bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] text-[#1D1D1F]">
+            Exhaust: <strong className="text-[#FF9500]">{toOutdoorPct}%</strong>
           </span>
         </div>
       </div>
 
-      {/* Main SVG Schematic */}
-      <div className="w-full overflow-x-auto py-2">
+      {/* Main SVG Schematic - Apple Surface Dark Contrast Tile */}
+      <div className="w-full overflow-x-auto py-2 my-2 bg-[#000000] rounded-xl border border-[rgba(0,0,0,0.08)]">
         <svg
           viewBox="0 0 980 460"
           className="w-full min-w-[760px] h-auto select-none"
@@ -974,39 +974,39 @@ export default function HVACDiagram() {
   return (
     <div className="w-full space-y-4">
       {/* ── Top Control & View Switcher Bar ── */}
-      <div className="bg-[#0b101e] border border-slate-800 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-lg">
-        {/* Left: View Selector */}
-        <div className="flex items-center space-x-1.5 font-mono text-xs">
+      <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3">
+        {/* Left: View Selector - Apple Segmented Control */}
+        <div className="flex items-center bg-[#E8E8ED] p-1 rounded-[980px] text-xs">
           <button
             onClick={() => setViewMode('matrix')}
-            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 border ${
+            className={`px-3.5 py-1 rounded-[980px] transition-all flex items-center gap-1.5 ${
               viewMode === 'matrix'
-                ? 'bg-sky-500/20 text-sky-300 border-sky-400 font-bold'
-                : 'text-slate-400 border-transparent hover:text-white hover:bg-slate-800'
+                ? 'bg-white text-[#1D1D1F] font-semibold shadow-sm'
+                : 'text-[#86868B] hover:text-[#1D1D1F]'
             }`}
           >
-            <Activity className="w-3.5 h-3.5 text-sky-400" />
+            <Activity className="w-3.5 h-3.5 text-[#0071E3]" />
             <span>3-State Matrix</span>
           </button>
 
           <button
             onClick={() => setViewMode('schematic')}
-            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 border ${
+            className={`px-3.5 py-1 rounded-[980px] transition-all flex items-center gap-1.5 ${
               viewMode === 'schematic'
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400 font-bold'
-                : 'text-slate-400 border-transparent hover:text-white hover:bg-slate-800'
+                ? 'bg-white text-[#1D1D1F] font-semibold shadow-sm'
+                : 'text-[#86868B] hover:text-[#1D1D1F]'
             }`}
           >
-            <Wind className="w-3.5 h-3.5 text-emerald-400" />
+            <Wind className="w-3.5 h-3.5 text-[#0071E3]" />
             <span>2D System Layout</span>
           </button>
 
           <button
             onClick={() => setViewMode('both')}
-            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 border ${
+            className={`px-3.5 py-1 rounded-[980px] transition-all flex items-center gap-1.5 ${
               viewMode === 'both'
-                ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400 font-bold'
-                : 'text-slate-400 border-transparent hover:text-white hover:bg-slate-800'
+                ? 'bg-white text-[#1D1D1F] font-semibold shadow-sm'
+                : 'text-[#86868B] hover:text-[#1D1D1F]'
             }`}
           >
             <span>Overview Both</span>
@@ -1014,33 +1014,32 @@ export default function HVACDiagram() {
         </div>
 
         {/* Right: State Preset Switcher Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono">
-          <span className="text-[10px] text-slate-500 uppercase mr-1 hidden sm:inline">Active Mode:</span>
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <span className="text-[10px] text-[#86868B] font-semibold uppercase mr-1 hidden sm:inline">Active Mode:</span>
           {Object.entries(STATES).map(([key, item]) => (
             <button
               key={key}
               onClick={() => handleSelectState(key)}
-              className={`px-2.5 py-1 rounded-lg border text-[11px] transition-all flex items-center gap-1 ${
+              className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all flex items-center gap-1.5 ${
                 selectedState === key
-                  ? 'border-white font-bold text-white shadow-md'
-                  : 'border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 bg-slate-900/60'
+                  ? 'btn-apple-primary'
+                  : 'btn-apple-secondary'
               }`}
-              style={selectedState === key ? { backgroundColor: `${item.badgeColor}25`, borderColor: item.badgeColor } : {}}
             >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.badgeColor }} />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: selectedState === key ? '#FFFFFF' : item.badgeColor }} />
               {key === 'state1' ? 'State 1 (Normal)' : key === 'state2' ? 'State 2 (Redirect)' : 'State 3 (Bypass)'}
             </button>
           ))}
 
           <button
             onClick={() => setSelectedState('live')}
-            className={`px-2.5 py-1 rounded-lg border text-[11px] transition-all flex items-center gap-1 ${
+            className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all flex items-center gap-1.5 ${
               selectedState === 'live'
-                ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold shadow-md'
-                : 'border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 bg-slate-900/60'
+                ? 'bg-[#34C759] text-white'
+                : 'btn-apple-secondary'
             }`}
           >
-            <RefreshCw className="w-3 h-3 text-cyan-400" />
+            <RefreshCw className="w-3 h-3" />
             <span>Live Sync</span>
           </button>
 
@@ -1048,7 +1047,7 @@ export default function HVACDiagram() {
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
             title="Expand Fullscreen"
-            className="p-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all ml-1"
+            className="btn-apple-secondary p-1.5 rounded-[980px] ml-1"
           >
             {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
@@ -1058,9 +1057,9 @@ export default function HVACDiagram() {
       {/* ── View 1: 3-State Operational Matrix (Top section of design spec) ── */}
       {(viewMode === 'matrix' || viewMode === 'both') && (
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 px-1">
+          <div className="flex items-center justify-between text-xs text-[#86868B] px-1 font-medium">
             <span className="uppercase tracking-wider">HVAC Redirection Operating Scenarios</span>
-            <span className="text-[11px] text-slate-500">Click any card to engage flow state</span>
+            <span className="text-[11px] text-[#86868B]">Click any card to engage flow state</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
@@ -1084,20 +1083,20 @@ export default function HVACDiagram() {
 
       {/* ── Modal Dialog for Fullscreen Inspection ── */}
       {isFullscreen && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl p-6 flex flex-col justify-between overflow-y-auto">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 bg-[rgba(245,245,247,0.92)] backdrop-blur-[20px] p-6 flex flex-col justify-between overflow-y-auto">
+          <div className="flex items-center justify-between pb-4 border-b border-[rgba(0,0,0,0.08)]">
             <div>
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <Wind className="w-5 h-5 text-sky-400" />
+              <h2 className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                <Wind className="w-5 h-5 text-[#0071E3]" />
                 Algor-Algae 2D HVAC Architecture & Redirection Matrix
               </h2>
-              <p className="text-xs text-slate-400 font-mono">
+              <p className="text-xs text-[#86868B]">
                 Full-Screen Engineering Specification View
               </p>
             </div>
             <button
               onClick={() => setIsFullscreen(false)}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono text-xs flex items-center gap-1.5"
+              className="btn-apple-primary text-xs py-1.5 px-4 flex items-center gap-1.5"
             >
               <Minimize2 className="w-4 h-4" /> Exit Fullscreen
             </button>
@@ -1119,7 +1118,7 @@ export default function HVACDiagram() {
             <TechnicalHVACSchematic stateData={currentStateData} />
           </div>
 
-          <div className="pt-4 border-t border-slate-800 text-center text-xs font-mono text-slate-500">
+          <div className="pt-4 border-t border-[rgba(0,0,0,0.08)] text-center text-xs text-[#86868B]">
             Algor-Algae Living Bioreactor Digital Twin · Autonomous BMS powered by Gemini 3.8 Flash
           </div>
         </div>

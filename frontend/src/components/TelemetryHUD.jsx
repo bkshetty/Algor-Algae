@@ -1,12 +1,11 @@
 /**
  * TelemetryHUD.jsx
  * ──────────────────────────────────────────────────────────────────────────
- * Real-time Living Telemetry Badges conforming to the Design Specification:
- * - Obsidian & Secondary Ground: #060a12, #090f19
- * - Hairlines: rgba(237, 231, 220, 0.13)
- * - Inks: #ede7dc, #9ea5a8, #6c7378
- * - Typography: Syne 700 headings, Sora 500 labels, JetBrains Mono metrics
- * - Accents: purely as type ornaments, dots, and hairlines (no filled blocks)
+ * Apple Retail "Product-tile whiteout" Design System (apple-design.md):
+ * - Flat pure-white surface (#FFFFFF) on off-white ground (#F5F5F7)
+ * - Near-black ink (#1D1D1F) for metrics, #86868B for labels
+ * - Single rationed blue (#0071E3) for primary signals
+ * - Crisp 1px hairline border (rgba(0,0,0,0.08)), zero drop shadows
  */
 
 import React from 'react';
@@ -24,99 +23,99 @@ export default function TelemetryHUD() {
 
   const isHealthy = algaeHealth >= 70;
   const isStressed = algaeHealth >= 45 && algaeHealth < 70;
-  const healthAccent = isHealthy ? '#10b981' : isStressed ? '#f59e0b' : '#ef4444';
+  const healthBadgeColor = isHealthy ? 'text-[#34C759]' : isStressed ? 'text-[#FF9500]' : 'text-[#FF3B30]';
   const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 68;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full select-none font-['Sora']">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full select-none font-[-apple-system,BlinkMacSystemFont,'SF_Pro_Text',system-ui,sans-serif]">
       
-      {/* 1. Human Occupancy */}
-      <div className="bg-[#090f19] border border-[rgba(237,231,220,0.13)] p-3.5 rounded-xl flex flex-col justify-between shadow-lg">
-        <div className="flex items-center justify-between text-[#9ea5a8]">
-          <span className="text-[11px] uppercase tracking-[0.14em] font-medium">Occupancy</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#0284c7]" />
+      {/* 1. Human Occupancy Tile */}
+      <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+        <div className="flex items-center justify-between text-[#86868B]">
+          <span className="text-[11px] uppercase tracking-[0.06em] font-medium">Occupancy</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#0071E3]" />
         </div>
-        <div className="mt-2 flex items-baseline justify-between">
-          <span className="text-2xl font-bold font-['Syne'] text-[#ede7dc]">{occupancy}</span>
-          <span className="text-[11px] text-[#6c7378] font-mono">person{occupancy !== 1 ? 's' : ''}</span>
+        <div className="mt-2.5 flex items-baseline justify-between">
+          <span className="text-3xl font-semibold text-[#1D1D1F] tracking-[-0.02em]">{occupancy}</span>
+          <span className="text-[12px] text-[#86868B]">person{occupancy !== 1 ? 's' : ''}</span>
         </div>
-        <div className="mt-1 text-[10.5px] text-[#9ea5a8] border-t border-[rgba(237,231,220,0.13)] pt-1.5 flex items-center justify-between font-mono">
-          <span>YOLOv8 Edge</span>
-          <span className="text-[#0284c7]">Class 0 // 30 FPS</span>
+        <div className="mt-2 text-[11px] text-[#86868B] border-t border-[rgba(0,0,0,0.06)] pt-2 flex items-center justify-between">
+          <span>YOLOv8 Vision</span>
+          <span className="text-[#1D1D1F] font-mono text-[10.5px]">30 FPS Active</span>
         </div>
       </div>
 
-      {/* 2. Indoor CO2 Flux */}
-      <div className="bg-[#090f19] border border-[rgba(237,231,220,0.13)] p-3.5 rounded-xl flex flex-col justify-between shadow-lg">
-        <div className="flex items-center justify-between text-[#9ea5a8]">
-          <span className="text-[11px] uppercase tracking-[0.14em] font-medium">Indoor CO₂</span>
-          <span className={`w-1.5 h-1.5 rounded-full ${co2Ppm > 800 ? 'bg-[#f59e0b]' : 'bg-[#10b981]'}`} />
+      {/* 2. Indoor CO2 Flux Tile */}
+      <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+        <div className="flex items-center justify-between text-[#86868B]">
+          <span className="text-[11px] uppercase tracking-[0.06em] font-medium">Indoor CO₂</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${co2Ppm > 800 ? 'bg-[#FF9500]' : 'bg-[#34C759]'}`} />
         </div>
-        <div className="mt-2 flex items-baseline justify-between">
-          <span className="text-2xl font-bold font-['Syne'] text-[#ede7dc]">{co2Ppm}</span>
-          <span className="text-[11px] text-[#6c7378] font-mono">ppm</span>
+        <div className="mt-2.5 flex items-baseline justify-between">
+          <span className="text-3xl font-semibold text-[#1D1D1F] tracking-[-0.02em]">{co2Ppm}</span>
+          <span className="text-[12px] text-[#86868B]">ppm</span>
         </div>
-        <div className="mt-1 text-[10.5px] text-[#9ea5a8] border-t border-[rgba(237,231,220,0.13)] pt-1.5 flex items-center justify-between font-mono">
-          <span>400 + N×150</span>
-          <span className={co2Ppm > 800 ? 'text-[#f59e0b]' : 'text-[#10b981]'}>
-            {co2Ppm > 800 ? 'SURGE REDIRECT' : 'EQUILIBRIUM'}
+        <div className="mt-2 text-[11px] text-[#86868B] border-t border-[rgba(0,0,0,0.06)] pt-2 flex items-center justify-between">
+          <span>Breath Metabolic</span>
+          <span className={`font-mono text-[10.5px] ${co2Ppm > 800 ? 'text-[#FF9500] font-medium' : 'text-[#34C759]'}`}>
+            {co2Ppm > 800 ? '+Surge' : 'Nominal'}
           </span>
         </div>
       </div>
 
-      {/* 3. Algae Bio-Health */}
-      <div className="bg-[#090f19] border border-[rgba(237,231,220,0.13)] p-3.5 rounded-xl flex flex-col justify-between shadow-lg">
-        <div className="flex items-center justify-between text-[#9ea5a8]">
-          <span className="text-[11px] uppercase tracking-[0.14em] font-medium">Algae Health</span>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: healthAccent }} />
+      {/* 3. Algae Bio-Health Tile */}
+      <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+        <div className="flex items-center justify-between text-[#86868B]">
+          <span className="text-[11px] uppercase tracking-[0.06em] font-medium">Algae Health</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${isHealthy ? 'bg-[#34C759]' : isStressed ? 'bg-[#FF9500]' : 'bg-[#FF3B30]'}`} />
         </div>
-        <div className="mt-2 flex items-baseline justify-between">
-          <span className="text-2xl font-bold font-['Syne']" style={{ color: healthAccent }}>
+        <div className="mt-2.5 flex items-baseline justify-between">
+          <span className="text-3xl font-semibold text-[#1D1D1F] tracking-[-0.02em]">
             {algaeHealth.toFixed(1)}%
           </span>
-          <span className="text-[10.5px] font-mono text-[#6c7378]">CHL-a 520nm</span>
-        </div>
-        <div className="mt-1 text-[10.5px] border-t border-[rgba(237,231,220,0.13)] pt-1.5 flex items-center justify-between font-mono">
-          <span className="text-[#9ea5a8]">Spectro ROI</span>
-          <span style={{ color: healthAccent }}>
-            {algaeHealth >= 70 ? 'PEAK CULTURE' : algaeHealth >= 45 ? 'CHLOROSIS' : 'CRITICAL BYPASS'}
+          <span className={`text-[12px] font-medium ${healthBadgeColor}`}>
+            {algaeHealth >= 70 ? 'Healthy' : algaeHealth >= 45 ? 'Stressed' : 'Critical'}
           </span>
+        </div>
+        <div className="mt-2 text-[11px] text-[#86868B] border-t border-[rgba(0,0,0,0.06)] pt-2 flex items-center justify-between">
+          <span>Spectrophotometer</span>
+          <span className="font-mono text-[10.5px] text-[#1D1D1F]">520nm Chl-a</span>
         </div>
       </div>
 
-      {/* 4. Motorized Damper Actuation */}
-      <div className="bg-[#090f19] border border-[rgba(237,231,220,0.13)] p-3.5 rounded-xl flex flex-col justify-between shadow-lg">
-        <div className="flex items-center justify-between text-[#9ea5a8]">
-          <span className="text-[11px] uppercase tracking-[0.14em] font-medium">Damper Valve</span>
-          <span className={`w-1.5 h-1.5 rounded-full ${isBypass ? 'bg-[#ef4444]' : 'bg-[#10b981]'}`} />
+      {/* 4. Motorized Damper Actuation Tile */}
+      <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+        <div className="flex items-center justify-between text-[#86868B]">
+          <span className="text-[11px] uppercase tracking-[0.06em] font-medium">Damper Valve</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${isBypass ? 'bg-[#FF3B30]' : 'bg-[#34C759]'}`} />
         </div>
-        <div className="mt-2 flex items-baseline justify-between">
-          <span className="text-2xl font-bold font-['Syne'] text-[#ede7dc]">
+        <div className="mt-2.5 flex items-baseline justify-between">
+          <span className="text-3xl font-semibold text-[#1D1D1F] tracking-[-0.02em]">
             {hvacState.damperOpenPct}%
           </span>
-          <span className="text-[11px] text-[#6c7378] font-mono">servo</span>
+          <span className="text-[12px] text-[#86868B]">servo</span>
         </div>
-        <div className="mt-1 text-[10.5px] border-t border-[rgba(237,231,220,0.13)] pt-1.5 flex items-center justify-between font-mono">
-          <span className="text-[#9ea5a8]">HVAC Loop</span>
-          <span className={isBypass ? 'text-[#ef4444]' : 'text-[#10b981]'}>
-            {isBypass ? 'OUTDOOR BYPASS' : 'FACADE FEED'}
+        <div className="mt-2 text-[11px] text-[#86868B] border-t border-[rgba(0,0,0,0.06)] pt-2 flex items-center justify-between">
+          <span>Airflow Loop</span>
+          <span className={`font-mono text-[10.5px] ${isBypass ? 'text-[#FF3B30] font-medium' : 'text-[#34C759]'}`}>
+            {isBypass ? 'Bypass Vent' : 'Bioreactor'}
           </span>
         </div>
       </div>
 
-      {/* 5. Biofuel & Lipid Harvest Yield */}
-      <div className="bg-[#090f19] border border-[rgba(237,231,220,0.13)] p-3.5 rounded-xl flex flex-col justify-between shadow-lg col-span-2 sm:col-span-1 lg:col-span-1">
-        <div className="flex items-center justify-between text-[#9ea5a8]">
-          <span className="text-[11px] uppercase tracking-[0.14em] font-medium">Biofuel Yield</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+      {/* 5. Biofuel & Lipid Harvest Yield Tile */}
+      <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between col-span-2 sm:col-span-1 lg:col-span-1">
+        <div className="flex items-center justify-between text-[#86868B]">
+          <span className="text-[11px] uppercase tracking-[0.06em] font-medium">Biofuel Rate</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#34C759]" />
         </div>
-        <div className="mt-2 flex items-baseline justify-between">
-          <span className="text-2xl font-bold font-['Syne'] text-[#ede7dc]">{biofuelRate}</span>
-          <span className="text-[11px] text-[#6c7378] font-mono">ml / hr</span>
+        <div className="mt-2.5 flex items-baseline justify-between">
+          <span className="text-3xl font-semibold text-[#1D1D1F] tracking-[-0.02em]">{biofuelRate}</span>
+          <span className="text-[12px] text-[#86868B]">ml / hr</span>
         </div>
-        <div className="mt-1 text-[10.5px] text-[#9ea5a8] border-t border-[rgba(237,231,220,0.13)] pt-1.5 flex items-center justify-between font-mono">
-          <span>Lipid Synthesis</span>
-          <span className="text-[#10b981]">O₂ POSITIVE</span>
+        <div className="mt-2 text-[11px] text-[#86868B] border-t border-[rgba(0,0,0,0.06)] pt-2 flex items-center justify-between">
+          <span>Oxygen Recirculation</span>
+          <span className="font-mono text-[10.5px] text-[#34C759]">Positive</span>
         </div>
       </div>
 

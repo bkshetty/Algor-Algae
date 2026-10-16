@@ -841,9 +841,9 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
   return (
     <>
       {/* Top-Left Mode & Elevation Status */}
-      <div className="absolute top-3 left-3 z-10 pointer-events-none flex flex-wrap items-center gap-2 font-['Sora']">
+      <div className="absolute top-3 left-3 z-10 pointer-events-none flex flex-wrap items-center gap-2">
         <div
-          className="px-3 py-1.5 rounded-full text-xs font-mono font-medium border flex items-center gap-2 backdrop-blur-md shadow-lg bg-[rgba(9,15,25,0.85)]"
+          className="px-3 py-1.5 rounded-[980px] text-xs font-semibold border flex items-center gap-2 backdrop-blur-[20px] bg-[rgba(245,245,247,0.92)] shadow-sm"
           style={{
             borderColor: `${statusColor}55`,
             color: statusColor
@@ -854,28 +854,28 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
         </div>
 
         {isBypass && (
-          <div className="px-3 py-1.5 rounded-full text-xs font-mono font-medium border border-[rgba(239,68,68,0.5)] bg-[rgba(9,15,25,0.9)] text-[#ef4444] flex items-center gap-2 backdrop-blur-md shadow-lg">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] animate-pulse" />
+          <div className="px-3 py-1.5 rounded-[980px] text-xs font-semibold border border-[#FF3B30]/30 bg-[rgba(245,245,247,0.92)] text-[#FF3B30] flex items-center gap-2 backdrop-blur-[20px] shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B30] animate-pulse" />
             <span>OUTLET AIR REDIRECTED TO OUTSIDE (ROOFTOP SCRUBBER)</span>
           </div>
         )}
 
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-mono bg-[rgba(9,15,25,0.85)] border border-[rgba(237,231,220,0.13)] text-[#9ea5a8] backdrop-blur-md">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#0284c7]" />
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-[980px] text-[11px] font-medium bg-[rgba(245,245,247,0.85)] border border-[rgba(0,0,0,0.08)] text-[#1D1D1F] backdrop-blur-[20px]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#0071E3]" />
           <span>{occupancy} occupants · {co2Ppm} ppm · {hvacState.damperOpenPct}% Damper</span>
         </div>
       </div>
 
       {/* Top-Right 4-Elevation Camera View Selectors */}
-      <div className="absolute top-3 right-3 z-20 pointer-events-auto bg-[rgba(9,15,25,0.9)] backdrop-blur-md p-2.5 rounded-2xl border border-[rgba(237,231,220,0.13)] shadow-2xl flex flex-col gap-2 font-['Sora']">
-        <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-[#9ea5a8] px-1 flex items-center justify-between border-b border-[rgba(237,231,220,0.1)] pb-1.5">
+      <div className="absolute top-3 right-3 z-20 pointer-events-auto bg-[rgba(245,245,247,0.92)] backdrop-blur-[20px] p-2.5 rounded-2xl border border-[rgba(0,0,0,0.08)] shadow-lg flex flex-col gap-2">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-[#86868B] px-1 flex items-center justify-between border-b border-[rgba(0,0,0,0.06)] pb-1.5">
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0284c7]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0071E3]" />
             Elevation Views
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
+        <div className="grid grid-cols-2 gap-1.5 text-[11px]">
           {[
             { key: 'front', label: 'Front' },
             { key: 'rear', label: 'Rear' },
@@ -886,10 +886,10 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
             <button
               key={key}
               onClick={() => setViewAngle(key)}
-              className={`px-2.5 py-1 rounded-full border transition-all text-center ${
+              className={`px-2.5 py-1 rounded-[980px] transition-all text-center font-medium ${
                 viewAngle === key
-                  ? 'border-[#10b981] text-[#10b981] font-bold'
-                  : 'border-[rgba(237,231,220,0.15)] text-[#ede7dc] hover:border-[#10b981] hover:text-[#10b981]'
+                  ? 'btn-apple-primary'
+                  : 'btn-apple-secondary'
               } ${key === 'perspective' ? 'col-span-2' : ''}`}
             >
               {label}
@@ -899,28 +899,28 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
       </div>
 
       {/* Bottom Bar: AI Diagnostics & Damper Control */}
-      <div className="absolute bottom-3 left-3 right-3 z-10 pointer-events-none flex flex-col sm:flex-row items-end sm:items-center justify-between gap-2 font-['Sora']">
-        <div className="max-w-md text-[11px] font-mono text-[#ede7dc] bg-[rgba(9,15,25,0.9)] backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-[rgba(237,231,220,0.13)] shadow-lg pointer-events-auto">
-          <div className="flex items-center gap-1.5 text-[#10b981] font-bold mb-1 text-[10px] uppercase tracking-[0.14em]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+      <div className="absolute bottom-3 left-3 right-3 z-10 pointer-events-none flex flex-col sm:flex-row items-end sm:items-center justify-between gap-2">
+        <div className="max-w-md text-[11px] text-[#1D1D1F] bg-[rgba(245,245,247,0.92)] backdrop-blur-[20px] px-3.5 py-2.5 rounded-2xl border border-[rgba(0,0,0,0.08)] shadow-md pointer-events-auto">
+          <div className="flex items-center gap-1.5 text-[#0071E3] font-semibold mb-1 text-[10px] uppercase tracking-wide">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0071E3]" />
             Gemini 3.8 Flash BMS Actuation
           </div>
-          <p className="text-[#9ea5a8] font-sans text-xs leading-snug">
+          <p className="text-[#1D1D1F] text-xs leading-snug">
             {hvacState.aiReasoning}
           </p>
         </div>
 
-        <div className="pointer-events-auto bg-[rgba(9,15,25,0.9)] backdrop-blur-md px-3.5 py-2 rounded-xl border border-[rgba(237,231,220,0.13)] flex items-center gap-3 text-xs font-mono shadow-xl text-[#ede7dc]">
-          <span className="text-[10.5px] uppercase tracking-wider text-[#9ea5a8]">Damper Servo</span>
+        <div className="pointer-events-auto bg-[rgba(245,245,247,0.92)] backdrop-blur-[20px] px-3.5 py-2 rounded-2xl border border-[rgba(0,0,0,0.08)] flex items-center gap-3 text-xs shadow-md text-[#1D1D1F]">
+          <span className="text-[10px] uppercase tracking-wider text-[#86868B] font-semibold">Damper Servo</span>
           <input
             type="range"
             min="0"
             max="100"
             value={hvacState.damperOpenPct}
             onChange={(e) => setDamper(parseInt(e.target.value))}
-            className="w-24 h-1.5 bg-[#1e293b] rounded-lg appearance-none cursor-pointer accent-[#10b981]"
+            className="w-24 h-1.5 bg-[#E5E5EA] rounded-lg appearance-none cursor-pointer accent-[#0071E3]"
           />
-          <span className="font-bold text-[#10b981] w-8 text-right">{hvacState.damperOpenPct}%</span>
+          <span className="font-semibold text-[#0071E3] w-8 text-right">{hvacState.damperOpenPct}%</span>
         </div>
       </div>
     </>
@@ -932,22 +932,13 @@ export default function BuildingTwin({ focusMode = 'overview' }) {
   const [viewAngle, setViewAngle] = useState('perspective');
 
   return (
-    <div className="relative w-full h-full min-h-[480px] bg-gradient-to-b from-[#060b14] via-[#091322] to-[#040812] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col">
+    <div className="relative w-full h-full min-h-[480px] bg-[#000000] rounded-2xl overflow-hidden border border-[rgba(0,0,0,0.08)] flex flex-col">
       {/* HUD Overlay with Elevation Angle Selectors */}
       <NeoclassicalTwinHUD
         focusMode={focusMode}
         viewAngle={viewAngle}
         setViewAngle={setViewAngle}
       />
-
-      {/* Footer Dimension Specs */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none hidden lg:flex items-center gap-2 text-[10px] font-mono text-slate-400 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-full border border-slate-800">
-        <span className="text-amber-300 font-bold">41.4m × 34.2m NEOCLASSICAL ELEVATIONS</span>
-        <span>·</span>
-        <span className="text-emerald-400 font-bold">4 CORNER BIOREACTOR TOWERS (20 MODULES)</span>
-        <span>·</span>
-        <span className="text-cyan-300 font-bold">LIVE SPARGING AIRFLOW STREAM</span>
-      </div>
 
       {/* Three.js Canvas Scene */}
       <Canvas shadows dpr={[1, 2]} className="flex-1 w-full h-full">

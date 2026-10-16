@@ -1,22 +1,12 @@
 /**
  * OverviewPage.jsx
  * ──────────────────────────────────────────────────────────────────────────
- * The Ultimate "Final Boss" Living Digital Twin Command Center for Judges.
- *
- * Rearranged Architecture:
- * 1. Two Main Pillars Command the Stage:
- *    - Left Stage: Gen AI 3D Twin & Biological Kinetics (Building / Bioreactor / HVAC)
- *    - Right Stage: Real-Time Camera Detection (YOLOv8 + OpenCV Spectrophotometer + Demo Triggers)
- *      paired with Autonomous Gemini 3.8 Flash BMS Kernel
- * 2. Fully Integrated Subsystems:
- *    - 3D Neoclassical Building Architecture (41.4m × 34.2m with corner bioreactors)
- *    - Close-up 3D Photobioreactor (PBR) Vessel with actinic grow lights & cooling coils
- *    - 2D HVAC System Layout & Closed-Loop Airflow Schematic
- * 3. Strict adherence to the Design Specification:
- *    - Obsidian #060a12, Secondary #090f19, Hairlines rgba(237,231,220,0.13)
- *    - Bone ink #ede7dc, Secondary #9ea5a8, Muted #6c7378
- *    - Accents strictly as type ornaments/dots (no solid filled blocks)
- *    - Syne headings, Sora labels, JetBrains Mono technical telemetry
+ * Apple Retail "Product-tile whiteout" Design System (apple-design.md):
+ * - Flat off-white ground (#F5F5F7) with pure white (#FFFFFF) panels
+ * - True black (#000000) edge-to-edge canvas product display tile
+ * - Near-black ink (#1D1D1F) for headlines, #86868B for metadata
+ * - Single rationed blue (#0071E3) for primary pill actions
+ * - Tight SF Pro Display & SF Pro Text typography
  */
 
 import React, { useState } from 'react';
@@ -30,8 +20,7 @@ import {
   Activity, 
   ArrowRight, 
   ShieldCheck, 
-  Sparkles,
-  Zap
+  Sparkles
 } from 'lucide-react';
 import BuildingTwin from './BuildingTwin';
 import BioreactorTwin from './BioreactorTwin';
@@ -53,67 +42,67 @@ export default function OverviewPage({ onNavigate }) {
   const [twinViewMode, setTwinViewMode] = useState('building');
 
   const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 68;
-  const statusColor = algaeHealth >= 75 ? '#10b981' : algaeHealth >= 45 ? '#f59e0b' : '#ef4444';
 
   return (
-    <div className="flex flex-col space-y-5 w-full text-[#ede7dc] font-['Sora'] select-none">
+    <div className="flex flex-col space-y-6 w-full text-[#1D1D1F] font-[-apple-system,BlinkMacSystemFont,'SF_Pro_Text',system-ui,sans-serif] select-none">
       
       {/* ══════════════════════════════════════════════════════════════════════
           1. TOP COMMAND BAR & SUBSYSTEM MODE SELECTOR
          ══════════════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-[rgba(237,231,220,0.13)]">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-[rgba(0,0,0,0.08)]">
         <div>
-          <div className="flex items-center space-x-2 text-[11px] font-mono text-[#9ea5a8] uppercase tracking-[0.16em]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
-            <span>Digital Twin v1.0 // Judicial Command Center</span>
+          <div className="flex items-center space-x-2 text-[11px] font-medium text-[#86868B] uppercase tracking-[0.06em]">
+            <span>Digital Twin Prototype</span>
+            <span>·</span>
+            <span className="text-[#0071E3] font-medium">BMS Command Center</span>
           </div>
-          <h1 className="font-['Syne'] font-extrabold text-2xl sm:text-3xl uppercase tracking-[-0.02em] text-[#ede7dc] mt-0.5">
-            Living Bioreactor Facade Twin<span className="text-[#10b981]">.</span>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-[-0.02em] text-[#1D1D1F] mt-0.5">
+            Living Bioreactor Facade Twin
           </h1>
+          <p className="text-sm text-[#86868B] mt-1">
+            Closed-loop photosynthetic carbon capture and autonomous biological building management.
+          </p>
         </div>
 
-        {/* Primary Subsystem View Mode Switcher Pills */}
-        <div className="flex items-center space-x-2 font-mono text-xs overflow-x-auto pb-1">
+        {/* Primary Subsystem View Mode Switcher: Apple Segmented Pill Control */}
+        <div className="inline-flex p-1 bg-[#E8E8ED] rounded-[980px] self-start lg:self-center">
           <button
             onClick={() => setTwinViewMode('building')}
-            className={`px-3.5 py-1.5 rounded-full border transition-all flex items-center space-x-2 tracking-wider ${
+            className={`px-4 py-1.5 rounded-[980px] text-xs font-medium transition-all ${
               twinViewMode === 'building'
-                ? 'border-[#10b981] text-[#10b981] font-bold shadow-[0_0_12px_rgba(16,185,129,0.2)]'
-                : 'border-[rgba(237,231,220,0.18)] text-[#ede7dc] hover:border-[#10b981] hover:text-[#10b981]'
+                ? 'bg-[#FFFFFF] text-[#1D1D1F] shadow-sm'
+                : 'text-[#86868B] hover:text-[#1D1D1F]'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${twinViewMode === 'building' ? 'bg-[#10b981]' : 'bg-[#9ea5a8]'}`} />
-            <span>3D Neoclassical Building</span>
+            3D Building
           </button>
 
           <button
             onClick={() => setTwinViewMode('bioreactor')}
-            className={`px-3.5 py-1.5 rounded-full border transition-all flex items-center space-x-2 tracking-wider ${
+            className={`px-4 py-1.5 rounded-[980px] text-xs font-medium transition-all ${
               twinViewMode === 'bioreactor'
-                ? 'border-[#10b981] text-[#10b981] font-bold shadow-[0_0_12px_rgba(16,185,129,0.2)]'
-                : 'border-[rgba(237,231,220,0.18)] text-[#ede7dc] hover:border-[#10b981] hover:text-[#10b981]'
+                ? 'bg-[#FFFFFF] text-[#1D1D1F] shadow-sm'
+                : 'text-[#86868B] hover:text-[#1D1D1F]'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${twinViewMode === 'bioreactor' ? 'bg-[#10b981]' : 'bg-[#9ea5a8]'}`} />
-            <span>3D Bioreactor Vessel</span>
+            Bioreactor Vessel
           </button>
 
           <button
             onClick={() => setTwinViewMode('hvac')}
-            className={`px-3.5 py-1.5 rounded-full border transition-all flex items-center space-x-2 tracking-wider ${
+            className={`px-4 py-1.5 rounded-[980px] text-xs font-medium transition-all ${
               twinViewMode === 'hvac'
-                ? 'border-[#0284c7] text-[#0284c7] font-bold shadow-[0_0_12px_rgba(2,132,199,0.2)]'
-                : 'border-[rgba(237,231,220,0.18)] text-[#ede7dc] hover:border-[#0284c7] hover:text-[#0284c7]'
+                ? 'bg-[#FFFFFF] text-[#1D1D1F] shadow-sm'
+                : 'text-[#86868B] hover:text-[#1D1D1F]'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${twinViewMode === 'hvac' ? 'bg-[#0284c7]' : 'bg-[#9ea5a8]'}`} />
-            <span>2D HVAC Schematic</span>
+            HVAC Schematic
           </button>
         </div>
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          2. REAL-TIME TELEMETRY HUD STRIP
+          2. REAL-TIME TELEMETRY HUD STRIP (APPLE RETAIL TILES)
          ══════════════════════════════════════════════════════════════════════ */}
       <TelemetryHUD />
 
@@ -130,26 +119,26 @@ export default function OverviewPage({ onNavigate }) {
         <section className="lg:col-span-7 flex flex-col space-y-3">
           
           {/* Subsystem Stage Header Bar */}
-          <div className="flex items-center justify-between px-1 text-xs font-mono">
-            <div className="flex items-center space-x-2 text-[#9ea5a8] uppercase tracking-[0.14em]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
-              <span className="font-['Syne'] font-bold text-[#ede7dc]">
-                {twinViewMode === 'building' && '01 // 3D Neoclassical Architectural Twin'}
-                {twinViewMode === 'bioreactor' && '01 // High-Fidelity 3D Photobioreactor Vessel'}
-                {twinViewMode === 'hvac' && '01 // 2D Closed-Loop HVAC Airflow Schematic'}
+          <div className="flex items-center justify-between px-1 text-xs">
+            <div className="flex items-center space-x-2 text-[#86868B] uppercase tracking-[0.05em] font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0071E3]" />
+              <span className="text-[#1D1D1F] font-semibold">
+                {twinViewMode === 'building' && '3D Neoclassical Architectural Twin'}
+                {twinViewMode === 'bioreactor' && 'High-Fidelity 3D Photobioreactor Vessel'}
+                {twinViewMode === 'hvac' && 'Closed-Loop HVAC Airflow Schematic'}
               </span>
             </div>
 
-            <div className="flex items-center space-x-2 text-[#6c7378] text-[11px]">
-              <span>ACTIVE LOOP:</span>
-              <span className={isBypass ? 'text-[#ef4444] font-bold' : 'text-[#10b981] font-bold'}>
-                {isBypass ? 'OUTDOOR ROOF BYPASS' : 'FACADE BIO-FEED'}
+            <div className="flex items-center space-x-2 text-[#86868B] text-[11px] font-mono">
+              <span>AIRFLOW LOOP:</span>
+              <span className={isBypass ? 'text-[#FF3B30] font-semibold' : 'text-[#34C759] font-semibold'}>
+                {isBypass ? 'Outdoor Bypass Vent' : 'Facade Redirection'}
               </span>
             </div>
           </div>
 
-          {/* Interactive Visualizer Canvas Container */}
-          <div className="h-[560px] lg:h-[620px] w-full rounded-2xl overflow-hidden border border-[rgba(237,231,220,0.13)] bg-[#090f19] shadow-2xl relative">
+          {/* Interactive Visualizer Canvas Container: Dark Apple Render Tile */}
+          <div className="h-[560px] lg:h-[620px] w-full rounded-2xl overflow-hidden border border-[rgba(0,0,0,0.08)] bg-[#000000] relative">
             
             {twinViewMode === 'building' && (
               <BuildingTwin focusMode="overview" />
@@ -162,38 +151,38 @@ export default function OverviewPage({ onNavigate }) {
             )}
 
             {twinViewMode === 'hvac' && (
-              <div className="w-full h-full overflow-y-auto p-2 bg-[#090f19]">
+              <div className="w-full h-full overflow-y-auto p-2 bg-[#F5F5F7]">
                 <HVACDiagram />
               </div>
             )}
           </div>
 
-          {/* Bottom Technical Specs Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs font-mono">
-            <div className="bg-[#090f19] p-3 rounded-xl border border-[rgba(237,231,220,0.13)] flex items-center justify-between">
+          {/* Bottom Technical Specs Strip: Clean White Tiles */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+            <div className="bg-[#FFFFFF] p-3.5 rounded-xl border border-[rgba(0,0,0,0.06)] flex items-center justify-between">
               <div>
-                <span className="text-[#6c7378] block text-[10px] uppercase font-['Sora']">Dimensions</span>
-                <span className="text-[#ede7dc] font-bold">41.4m × 34.2m Core</span>
+                <span className="text-[#86868B] block text-[10.5px] uppercase tracking-wider font-medium">Dimensions</span>
+                <span className="text-[#1D1D1F] font-semibold text-sm">41.4m × 34.2m Core</span>
               </div>
-              <span className="text-[10px] text-[#9ea5a8]">7-Bay Facade</span>
+              <span className="text-[11px] text-[#86868B]">7-Bay Facade</span>
             </div>
 
-            <div className="bg-[#090f19] p-3 rounded-xl border border-[rgba(237,231,220,0.13)] flex items-center justify-between">
+            <div className="bg-[#FFFFFF] p-3.5 rounded-xl border border-[rgba(0,0,0,0.06)] flex items-center justify-between">
               <div>
-                <span className="text-[#6c7378] block text-[10px] uppercase font-['Sora']">Bioreactors</span>
-                <span className="text-[#10b981] font-bold">20 Corner Modules</span>
+                <span className="text-[#86868B] block text-[10.5px] uppercase tracking-wider font-medium">Bioreactors</span>
+                <span className="text-[#34C759] font-semibold text-sm">20 Corner Modules</span>
               </div>
-              <span className="text-[10px] text-[#9ea5a8]">4 Towers</span>
+              <span className="text-[11px] text-[#86868B]">4 Towers</span>
             </div>
 
-            <div className="bg-[#090f19] p-3 rounded-xl border border-[rgba(237,231,220,0.13)] flex items-center justify-between">
+            <div className="bg-[#FFFFFF] p-3.5 rounded-xl border border-[rgba(0,0,0,0.06)] flex items-center justify-between">
               <div>
-                <span className="text-[#6c7378] block text-[10px] uppercase font-['Sora']">Acid Safeguard</span>
-                <span className={isBypass ? 'text-[#ef4444] font-bold' : 'text-[#0284c7] font-bold'}>
-                  {isBypass ? '< 60ms ACTUATED' : 'pH ≥ 6.8 NOMINAL'}
+                <span className="text-[#86868B] block text-[10.5px] uppercase tracking-wider font-medium">Acid Safeguard</span>
+                <span className={isBypass ? 'text-[#FF3B30] font-semibold text-sm' : 'text-[#0071E3] font-semibold text-sm'}>
+                  {isBypass ? '< 60ms Actuated' : 'pH ≥ 6.8 Nominal'}
                 </span>
               </div>
-              <span className="text-[10px] text-[#9ea5a8]">Servo 88%</span>
+              <span className="text-[11px] text-[#86868B]">Servo 88%</span>
             </div>
           </div>
         </section>
@@ -204,16 +193,16 @@ export default function OverviewPage({ onNavigate }) {
         <section className="lg:col-span-5 flex flex-col space-y-4">
           
           {/* Subsystem Header Bar */}
-          <div className="flex items-center justify-between px-1 text-xs font-mono">
-            <div className="flex items-center space-x-2 text-[#9ea5a8] uppercase tracking-[0.14em]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#0284c7]" />
-              <span className="font-['Syne'] font-bold text-[#ede7dc]">
-                02 // Vision Perception & Autonomous AI
+          <div className="flex items-center justify-between px-1 text-xs">
+            <div className="flex items-center space-x-2 text-[#86868B] uppercase tracking-[0.05em] font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0071E3]" />
+              <span className="text-[#1D1D1F] font-semibold">
+                Vision Perception & Autonomous AI
               </span>
             </div>
 
-            <span className="text-[11px] text-[#6c7378]">
-              ZERO-LATENCY TENSOR
+            <span className="text-[11px] text-[#86868B] font-mono">
+              Zero-Latency Tensor
             </span>
           </div>
 
@@ -231,74 +220,74 @@ export default function OverviewPage({ onNavigate }) {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          4. BOTTOM ARCHITECTURAL BENCHMARKS (LEED PLATINUM CRITERIA)
+          4. BOTTOM ARCHITECTURAL BENCHMARKS (APPLE SPEC TILES)
          ══════════════════════════════════════════════════════════════════════ */}
-      <section className="mt-4 pt-6 border-t border-[rgba(237,231,220,0.13)]">
+      <section className="mt-6 pt-6 border-t border-[rgba(0,0,0,0.08)]">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <div className="text-[11px] font-mono uppercase tracking-[0.15em] text-[#6c7378]">
-              03 // Closed-Loop Biological Specifications
+            <div className="text-[11px] uppercase tracking-[0.06em] text-[#86868B] font-medium">
+              System Specifications
             </div>
-            <h2 className="font-['Syne'] font-bold text-xl text-[#ede7dc] mt-0.5">
+            <h2 className="text-xl font-semibold text-[#1D1D1F] mt-0.5 tracking-[-0.01em]">
               Autonomous Building Performance Benchmarks
             </h2>
           </div>
-          <span className="font-mono text-xs text-[#9ea5a8]">
-            CHLORELLA VULGARIS SYMBIOSIS
+          <span className="text-xs text-[#86868B] font-mono">
+            Chlorella vulgaris Symbiosis
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           
-          <div className="bg-[#090f19] p-4 rounded-xl border border-[rgba(237,231,220,0.13)] space-y-2">
+          <div className="bg-[#FFFFFF] p-4 rounded-2xl border border-[rgba(0,0,0,0.06)] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[#9ea5a8] text-[10.5px] uppercase font-['Sora']">Spectrophotometry</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+              <span className="text-[#86868B] text-[11px] uppercase font-medium">Spectrophotometry</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#34C759]" />
             </div>
-            <div className="text-lg font-bold font-['Syne'] text-[#ede7dc]">
-              520nm // 580nm
+            <div className="text-lg font-semibold text-[#1D1D1F] tracking-[-0.01em]">
+              520nm / 580nm
             </div>
-            <p className="text-[11px] font-sans text-[#9ea5a8] leading-relaxed">
+            <p className="text-[12px] text-[#86868B] leading-relaxed">
               OpenCV ROI evaluates chlorophyll-a peak vs carotenoids to detect chlorosis onset before cell death.
             </p>
           </div>
 
-          <div className="bg-[#090f19] p-4 rounded-xl border border-[rgba(237,231,220,0.13)] space-y-2">
+          <div className="bg-[#FFFFFF] p-4 rounded-2xl border border-[rgba(0,0,0,0.06)] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[#9ea5a8] text-[10.5px] uppercase font-['Sora']">Edge Perception</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#0284c7]" />
+              <span className="text-[#86868B] text-[11px] uppercase font-medium">Edge Perception</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0071E3]" />
             </div>
-            <div className="text-lg font-bold font-['Syne'] text-[#ede7dc]">
-              YOLOv8 Nano // Class 0
+            <div className="text-lg font-semibold text-[#1D1D1F] tracking-[-0.01em]">
+              YOLOv8 Nano
             </div>
-            <p className="text-[11px] font-sans text-[#9ea5a8] leading-relaxed">
+            <p className="text-[12px] text-[#86868B] leading-relaxed">
               Real-time occupant bounding boxes correlate directly with indoor CO₂ surges via mathematical modeling.
             </p>
           </div>
 
-          <div className="bg-[#090f19] p-4 rounded-xl border border-[rgba(237,231,220,0.13)] space-y-2">
+          <div className="bg-[#FFFFFF] p-4 rounded-2xl border border-[rgba(0,0,0,0.06)] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[#9ea5a8] text-[10.5px] uppercase font-['Sora']">Damper Actuation</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
+              <span className="text-[#86868B] text-[11px] uppercase font-medium">Damper Actuation</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF9500]" />
             </div>
-            <div className="text-lg font-bold font-['Syne'] text-[#ede7dc]">
+            <div className="text-lg font-semibold text-[#1D1D1F] tracking-[-0.01em]">
               &lt; 60ms Motorized Servo
             </div>
-            <p className="text-[11px] font-sans text-[#9ea5a8] leading-relaxed">
+            <p className="text-[12px] text-[#86868B] leading-relaxed">
               3-way damper redirects 88% air into spargers during occupancy spikes, or bypasses outside during culture stress.
             </p>
           </div>
 
-          <div className="bg-[#090f19] p-4 rounded-xl border border-[rgba(237,231,220,0.13)] space-y-2">
+          <div className="bg-[#FFFFFF] p-4 rounded-2xl border border-[rgba(0,0,0,0.06)] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[#9ea5a8] text-[10.5px] uppercase font-['Sora']">ESG Carbon Sequestration</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+              <span className="text-[#86868B] text-[11px] uppercase font-medium">Carbon Sequestration</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#34C759]" />
             </div>
-            <div className="text-lg font-bold font-['Syne'] text-[#ede7dc]">
-              88% Peak Sequestration
+            <div className="text-lg font-semibold text-[#1D1D1F] tracking-[-0.01em]">
+              88% Peak Capture
             </div>
-            <p className="text-[11px] font-sans text-[#9ea5a8] leading-relaxed">
-              Transforms commercial breath waste into continuous biofuel and pure O₂, verified via cryptographic ESG reports.
+            <p className="text-[12px] text-[#86868B] leading-relaxed">
+              Transforms breath waste into continuous biofuel and pure O₂, verified via cryptographic ESG reports.
             </p>
           </div>
 

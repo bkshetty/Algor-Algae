@@ -545,113 +545,112 @@ function BioreactorHUD({ viewMode, setViewMode }) {
       {/* Top-Left Live Status Badge */}
       <div className="absolute top-3 left-3 z-10 pointer-events-none flex flex-wrap items-center gap-2">
         <div
-          className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border flex items-center gap-2 backdrop-blur-md shadow-xl"
+          className="px-3.5 py-1.5 rounded-[980px] text-xs font-semibold border flex items-center gap-2 backdrop-blur-[20px] bg-[rgba(245,245,247,0.92)] shadow-sm"
           style={{
-            borderColor: `${statusColor}66`,
-            backgroundColor: `${statusColor}18`,
+            borderColor: `${statusColor}55`,
             color: statusColor
           }}
         >
-          <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: statusColor }} />
+          <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: statusColor }} />
           PBR STATUS: {statusLabel} ({algaeHealth.toFixed(1)}%)
         </div>
 
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-mono bg-black/60 border border-slate-800 text-slate-300 backdrop-blur-md">
-          <Wind className="w-3.5 h-3.5 text-cyan-400" />
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-[980px] text-[11px] font-medium bg-[rgba(245,245,247,0.85)] border border-[rgba(0,0,0,0.08)] text-[#1D1D1F] backdrop-blur-[20px]">
+          <Wind className="w-3.5 h-3.5 text-[#0071E3]" />
           <span>CO₂ Sparging:</span>
-          <strong className="text-white">{hvacState.spargingRateLpm} L/min</strong>
+          <strong className="text-[#0071E3] font-semibold">{hvacState.spargingRateLpm} L/min</strong>
         </div>
 
-        <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-mono bg-black/60 border border-slate-800 text-emerald-300 backdrop-blur-md">
-          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-[980px] text-[11px] font-medium bg-[rgba(245,245,247,0.85)] border border-[rgba(0,0,0,0.08)] text-[#1D1D1F] backdrop-blur-[20px]">
+          <Sparkles className="w-3.5 h-3.5 text-[#34C759]" />
           <span>Biofuel Yield:</span>
-          <strong className="text-white">{biofuelRate} ml/hr</strong>
+          <strong className="text-[#34C759] font-semibold">{biofuelRate} ml/hr</strong>
         </div>
       </div>
 
       {/* Top-Right Preset Buttons */}
-      <div className="absolute top-3 right-3 z-20 pointer-events-auto bg-[#08101e]/90 backdrop-blur-md p-2 rounded-xl border border-slate-800 shadow-2xl flex flex-col gap-1.5 min-w-[185px]">
-        <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider px-1 flex items-center justify-between border-b border-slate-800/80 pb-1">
+      <div className="absolute top-3 right-3 z-20 pointer-events-auto bg-[rgba(245,245,247,0.92)] backdrop-blur-[20px] p-2.5 rounded-2xl border border-[rgba(0,0,0,0.08)] shadow-lg flex flex-col gap-1.5 min-w-[185px]">
+        <div className="text-[10px] font-semibold text-[#86868B] uppercase tracking-wider px-1 flex items-center justify-between border-b border-[rgba(0,0,0,0.06)] pb-1.5">
           <span className="flex items-center gap-1">
-            <Zap className="w-3 h-3 text-amber-400" /> PBR Control Modes
+            <Zap className="w-3 h-3 text-[#0071E3]" /> PBR Control Modes
           </span>
         </div>
 
         <button
           onClick={() => triggerHvac('redirect')}
-          className={`px-2.5 py-1.5 rounded-lg text-left text-[11px] font-mono border transition-all flex items-center justify-between ${
+          className={`px-3 py-1.5 rounded-[980px] text-left text-[11px] font-medium transition-all flex items-center justify-between ${
             hvacState.mode === 'redirect'
-              ? 'bg-amber-500/20 border-amber-400 text-amber-300 font-bold'
-              : 'border-slate-800 text-slate-300 hover:bg-slate-800'
+              ? 'btn-apple-primary'
+              : 'btn-apple-secondary'
           }`}
         >
           <span>🔀 AI Redirect (CO₂)</span>
-          <span className="text-[9px] px-1 rounded bg-amber-500/30 text-amber-300">88%</span>
+          <span className="text-[9px] px-1.5 py-0.5 rounded-[980px] bg-white/20 font-semibold">88%</span>
         </button>
 
         <button
           onClick={() => triggerHvac('optimal')}
-          className={`px-2.5 py-1.5 rounded-lg text-left text-[11px] font-mono border transition-all flex items-center justify-between ${
+          className={`px-3 py-1.5 rounded-[980px] text-left text-[11px] font-medium transition-all flex items-center justify-between ${
             hvacState.mode === 'optimal'
-              ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold'
-              : 'border-slate-800 text-slate-300 hover:bg-slate-800'
+              ? 'btn-apple-primary'
+              : 'btn-apple-secondary'
           }`}
         >
           <span>🌿 Max Biomass</span>
-          <span className="text-[9px] px-1 rounded bg-emerald-500/30 text-emerald-300">95%</span>
+          <span className="text-[9px] px-1.5 py-0.5 rounded-[980px] bg-white/20 font-semibold">95%</span>
         </button>
 
         <button
           onClick={() => triggerHvac('bypass')}
-          className={`px-2.5 py-1.5 rounded-lg text-left text-[11px] font-mono border transition-all flex items-center justify-between ${
+          className={`px-3 py-1.5 rounded-[980px] text-left text-[11px] font-medium transition-all flex items-center justify-between ${
             hvacState.mode === 'bypass'
-              ? 'bg-rose-500/20 border-rose-400 text-rose-300 font-bold'
-              : 'border-slate-800 text-slate-300 hover:bg-slate-800'
+              ? 'btn-apple-primary'
+              : 'btn-apple-secondary'
           }`}
         >
           <span>⚠️ Acid Bypass</span>
-          <span className="text-[9px] px-1 rounded bg-rose-500/30 text-rose-300">Bypass</span>
+          <span className="text-[9px] px-1.5 py-0.5 rounded-[980px] bg-white/20 font-semibold">Bypass</span>
         </button>
 
         <button
           onClick={() => triggerHvac('auto')}
-          className={`px-2.5 py-1.5 rounded-lg text-left text-[11px] font-mono border transition-all flex items-center justify-between ${
+          className={`px-3 py-1.5 rounded-[980px] text-left text-[11px] font-medium transition-all flex items-center justify-between ${
             hvacState.mode === 'auto'
-              ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
-              : 'border-slate-800 text-slate-300 hover:bg-slate-800'
+              ? 'btn-apple-primary'
+              : 'btn-apple-secondary'
           }`}
         >
           <span>🔄 Live Sensors Sync</span>
-          <span className="text-[9px] px-1 rounded bg-sky-500/30 text-sky-300">Auto</span>
+          <span className="text-[9px] px-1.5 py-0.5 rounded-[980px] bg-white/20 font-semibold">Auto</span>
         </button>
       </div>
 
       {/* Bottom Bar: Damper Slider & Biological Trace */}
       <div className="absolute bottom-3 left-3 right-3 z-10 pointer-events-none flex flex-col sm:flex-row items-end sm:items-center justify-between gap-2">
         {/* Gemini BMS Reasoning Box */}
-        <div className="max-w-md text-[11px] font-mono text-slate-300 bg-black/85 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-white/10 shadow-lg pointer-events-auto">
-          <div className="flex items-center gap-1.5 text-indigo-400 font-bold mb-1 text-[10px] uppercase tracking-wide">
-            <Activity className="w-3.5 h-3.5 text-indigo-400" />
+        <div className="max-w-md text-[11px] text-[#1D1D1F] bg-[rgba(245,245,247,0.92)] backdrop-blur-[20px] px-3.5 py-2.5 rounded-2xl border border-[rgba(0,0,0,0.08)] shadow-md pointer-events-auto">
+          <div className="flex items-center gap-1.5 text-[#0071E3] font-semibold mb-1 text-[10px] uppercase tracking-wide">
+            <Activity className="w-3.5 h-3.5 text-[#0071E3]" />
             Biological Equilibrium Trace
           </div>
-          <p className="text-slate-300 font-sans text-xs leading-snug">
+          <p className="text-[#1D1D1F] text-xs leading-snug">
             {hvacState.aiReasoning}
           </p>
         </div>
 
         {/* Aeration Damper Modulator */}
-        <div className="pointer-events-auto bg-[#0a1222]/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-800 flex items-center gap-3 text-xs font-mono shadow-xl">
-          <Sliders className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="text-[10px] text-slate-400">CO₂ SPARGING</span>
+        <div className="pointer-events-auto bg-[rgba(245,245,247,0.92)] backdrop-blur-[20px] px-3.5 py-2 rounded-2xl border border-[rgba(0,0,0,0.08)] flex items-center gap-3 text-xs shadow-md text-[#1D1D1F]">
+          <Sliders className="w-3.5 h-3.5 text-[#0071E3]" />
+          <span className="text-[10px] text-[#86868B] font-semibold uppercase">CO₂ SPARGING</span>
           <input
             type="range"
             min="0"
             max="100"
             value={hvacState.damperOpenPct}
             onChange={(e) => setDamper(parseInt(e.target.value))}
-            className="w-24 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+            className="w-24 h-1.5 bg-[#E5E5EA] rounded-lg appearance-none cursor-pointer accent-[#0071E3]"
           />
-          <span className="font-bold text-white w-8 text-right">{hvacState.damperOpenPct}%</span>
+          <span className="font-semibold text-[#1D1D1F] w-8 text-right">{hvacState.damperOpenPct}%</span>
         </div>
       </div>
     </>
@@ -663,18 +662,9 @@ export default function BioreactorTwin({ focusMode = 'algae' }) {
   const [viewMode, setViewMode] = useState('vessel'); // 'vessel' | 'cascade'
 
   return (
-    <div className="relative w-full h-full min-h-[460px] bg-gradient-to-b from-[#030712] via-[#081120] to-[#040814] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col">
+    <div className="relative w-full h-full min-h-[460px] bg-[#000000] rounded-2xl overflow-hidden border border-[rgba(0,0,0,0.08)] flex flex-col">
       {/* HUD Overlay */}
       <BioreactorHUD viewMode={viewMode} setViewMode={setViewMode} />
-
-      {/* Footer Spec Badge */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none hidden lg:flex items-center gap-2 text-[10px] font-mono text-slate-400 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-full border border-slate-800">
-        <span className="text-emerald-400 font-bold">CHLORELLA VULGARIS PBR</span>
-        <span>·</span>
-        <span className="text-sky-300">BOROSILICATE 3.3 GLASS</span>
-        <span>·</span>
-        <span className="text-purple-300">PAR ACTINIC LED GROW CORE</span>
-      </div>
 
       {/* Three.js Canvas Scene */}
       <Canvas shadows dpr={[1, 2]} className="flex-1 w-full h-full">

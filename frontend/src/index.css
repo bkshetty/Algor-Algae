@@ -19,14 +19,75 @@
   --color-accent-amber: #f59e0b;
   --color-accent-crimson: #ef4444;
   --color-hairline: rgba(237, 231, 220, 0.13);
+  
+  /* Apple Retail System Tokens (apple-design.md) */
+  --apple-bg: #F5F5F7;
+  --apple-surface: #FFFFFF;
+  --apple-surface-dark: #000000;
+  --apple-text-primary: #1D1D1F;
+  --apple-text-secondary: #86868B;
+  --apple-accent: #0071E3;
+  --apple-accent-hover: #0076DF;
+  --apple-link: #0066CC;
+  --apple-border: rgba(0, 0, 0, 0.08);
+  --apple-border-dark: rgba(255, 255, 255, 0.14);
 }
 
 body {
   margin: 0;
-  font-family: 'Sora', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 'Sora', sans-serif;
   background-color: var(--color-ground);
   color: var(--color-ink-primary);
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
+}
+
+/* Apple Retail Design Components */
+.apple-panel {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.apple-panel-dark {
+  background-color: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.btn-apple-primary {
+  background-color: #0071E3;
+  color: #FFFFFF;
+  border-radius: 980px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+.btn-apple-primary:hover {
+  background-color: #0076DF;
+}
+
+.btn-apple-outline {
+  background-color: transparent;
+  color: #0071E3;
+  border: 1px solid #0071E3;
+  border-radius: 980px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.btn-apple-outline:hover {
+  background-color: rgba(0, 113, 227, 0.06);
+}
+
+.btn-apple-secondary {
+  background-color: #F5F5F7;
+  color: #1D1D1F;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 980px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+.btn-apple-secondary:hover {
+  background-color: #FFFFFF;
 }
 
 /* Glassmorphism utility */

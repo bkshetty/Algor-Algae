@@ -80,71 +80,77 @@ export default function AlgaeHealthPage() {
 
   return (
     <div className="flex flex-col space-y-4 w-full">
-      {/* Top Algae Bio-Health Header */}
+      {/* Top Algae Bio-Health Header - Apple Retail Specification Tiles */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Metric 1: Algae Health */}
-        <div className={`p-4 rounded-xl border flex flex-col justify-between shadow-lg transition-colors duration-500 ${healthBg}`}>
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-slate-300">Bioreactor Health</span>
-            <Activity className={`w-4 h-4 ${healthColor}`} />
+        <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#86868B]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider">Bioreactor Health</span>
+            <Activity className="w-4 h-4 text-[#0071E3]" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className={`text-3xl font-bold font-mono ${healthColor}`}>{algaeHealth.toFixed(1)}%</span>
-            <span className="text-xs font-mono text-slate-300 font-bold uppercase">{status}</span>
+            <span className={`text-3xl font-semibold tracking-tight ${
+              isHealthy ? 'text-[#34C759]' : isStressed ? 'text-[#FF9500]' : 'text-[#FF3B30]'
+            }`}>{algaeHealth.toFixed(1)}%</span>
+            <span className={`text-xs font-semibold uppercase px-2 py-0.5 rounded-[980px] ${
+              isHealthy ? 'bg-[#EAF9EE] text-[#34C759]' : isStressed ? 'bg-[#FFF8E6] text-[#FF9500]' : 'bg-[#FEECEB] text-[#FF3B30]'
+            }`}>{status}</span>
           </div>
-          <div className="mt-2 w-full bg-slate-900/80 rounded-full h-1.5 overflow-hidden">
+          <div className="mt-2.5 w-full bg-[#E5E5EA] rounded-full h-1.5 overflow-hidden">
             <div
-              className={`h-full transition-all duration-300 ${healthProgressColor}`}
+              className={`h-full transition-all duration-300 ${
+                isHealthy ? 'bg-[#34C759]' : isStressed ? 'bg-[#FF9500]' : 'bg-[#FF3B30]'
+              }`}
               style={{ width: `${Math.max(5, Math.min(100, algaeHealth))}%` }}
             />
           </div>
         </div>
 
         {/* Metric 2: Dominant Spectral Wavelength */}
-        <div className="bg-[#0e1626] border border-emerald-900/50 p-4 rounded-xl shadow-lg">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-mono uppercase tracking-wider">Dominant Pigment Spectrum</span>
-            <Gauge className="w-4 h-4 text-emerald-400" />
+        <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#86868B]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider">Dominant Spectrum</span>
+            <Gauge className="w-4 h-4 text-[#0071E3]" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-base font-bold font-mono text-white truncate">{dominantPigment}</span>
+            <span className="text-base font-semibold text-[#1D1D1F] truncate">{dominantPigment}</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between font-mono">
+          <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
             <span>ROI Spectrophotometer</span>
-            <span className={healthColor}>HSV Hue: {hsvStats?.mean_h ?? 58}°</span>
+            <span className="font-medium text-[#1D1D1F]">Hue: {hsvStats?.mean_h ?? 58}°</span>
           </div>
         </div>
 
         {/* Metric 3: Biofuel Synthesis Rate */}
-        <div className="bg-[#0e1626] border border-teal-900/50 p-4 rounded-xl shadow-lg">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-mono uppercase tracking-wider">Biofuel Synthesis Rate</span>
-            <Droplet className="w-4 h-4 text-teal-400" />
+        <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#86868B]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider">Biofuel Synthesis Rate</span>
+            <Droplet className="w-4 h-4 text-[#0071E3]" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-3xl font-bold font-mono text-white">{biofuelRate}</span>
-            <span className="text-xs text-teal-300 font-mono">ml / hr</span>
+            <span className="text-3xl font-semibold text-[#1D1D1F] tracking-tight">{biofuelRate}</span>
+            <span className="text-xs text-[#86868B] font-medium">ml / hr</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between font-mono">
+          <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
             <span>Daily Biomass Harvest</span>
-            <span className="text-teal-400 font-bold">+{dailyLipidYield} L/day</span>
+            <span className="text-[#34C759] font-medium">+{dailyLipidYield} L/day</span>
           </div>
         </div>
 
         {/* Metric 4: GenAI HVAC Airflow Redirection Status */}
-        <div className="bg-[#0e1626] border border-indigo-900/50 p-4 rounded-xl shadow-lg">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-mono uppercase tracking-wider">GenAI HVAC Airflow</span>
-            <Wind className="w-4 h-4 text-cyan-400" />
+        <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#86868B]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider">GenAI HVAC Airflow</span>
+            <Wind className="w-4 h-4 text-[#0071E3]" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-sm font-bold font-mono truncate" style={{ color: hvacState.airflowColor }}>
+            <span className="text-sm font-semibold truncate text-[#1D1D1F]">
               {hvacState.hvacStatusText}
             </span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between font-mono">
+          <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
             <span>Damper Valve</span>
-            <span className="font-bold" style={{ color: hvacState.airflowColor }}>
+            <span className="font-semibold text-[#0071E3]">
               {hvacState.damperOpenPct}% Open
             </span>
           </div>
@@ -155,40 +161,40 @@ export default function AlgaeHealthPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[580px]">
         {/* Left Column (7 cols): 3D Living Bioreactor Digital Twin */}
         <section className="lg:col-span-7 flex flex-col space-y-3">
-          {/* 3D Viewport Selector */}
+          {/* Apple Segmented Viewport Switcher */}
           <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-1.5 font-mono text-xs">
+            <div className="flex items-center bg-[#E8E8ED] p-1 rounded-[980px] text-xs">
               <button
                 onClick={() => setThreeDView('bioreactor')}
-                className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 border ${
+                className={`px-3.5 py-1 rounded-[980px] transition-all flex items-center gap-1.5 ${
                   threeDView === 'bioreactor'
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400 font-bold shadow-lg shadow-emerald-950/40'
-                    : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white'
+                    ? 'bg-white text-[#1D1D1F] font-semibold shadow-sm'
+                    : 'text-[#86868B] hover:text-[#1D1D1F]'
                 }`}
               >
-                <FlaskConical className="w-3.5 h-3.5 text-emerald-400" />
+                <FlaskConical className="w-3.5 h-3.5 text-[#0071E3]" />
                 <span>Real Photobioreactor (3D PBR)</span>
               </button>
 
               <button
                 onClick={() => setThreeDView('building')}
-                className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 border ${
+                className={`px-3.5 py-1 rounded-[980px] transition-all flex items-center gap-1.5 ${
                   threeDView === 'building'
-                    ? 'bg-sky-500/20 text-sky-300 border-sky-400 font-bold shadow-lg shadow-sky-950/40'
-                    : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white'
+                    ? 'bg-white text-[#1D1D1F] font-semibold shadow-sm'
+                    : 'text-[#86868B] hover:text-[#1D1D1F]'
                 }`}
               >
-                <Wind className="w-3.5 h-3.5 text-sky-400" />
+                <Wind className="w-3.5 h-3.5 text-[#0071E3]" />
                 <span>Building Context</span>
               </button>
             </div>
 
-            <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
+            <span className="text-[11px] text-[#86868B] font-medium hidden sm:inline">
               {threeDView === 'bioreactor' ? 'Active: Chlorella Culture Chamber' : 'Active: 5-Story Facade'}
             </span>
           </div>
 
-          <div className="h-[460px] lg:h-[520px] w-full">
+          <div className="h-[460px] lg:h-[520px] w-full rounded-2xl overflow-hidden border border-[rgba(0,0,0,0.08)] bg-[#000000]">
             {threeDView === 'bioreactor' ? (
               <BioreactorTwin focusMode="algae" />
             ) : (
@@ -197,48 +203,50 @@ export default function AlgaeHealthPage() {
           </div>
 
           {/* Photobioreactor Physical Subsystem Status & OpenCV Color Breakdown */}
-          <div className="bg-[#0a0f1d] border border-slate-800 rounded-xl p-3.5 flex flex-col space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-300 font-bold flex items-center">
-                <FlaskConical className="w-3.5 h-3.5 text-emerald-400 mr-1.5" />
-                OpenCV Spectrophotometer Bio-Scanner Telemetry:
+          <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] rounded-2xl p-4 flex flex-col space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#1D1D1F] font-semibold flex items-center">
+                <FlaskConical className="w-4 h-4 text-[#0071E3] mr-1.5" />
+                OpenCV Spectrophotometer Bio-Scanner Telemetry
               </span>
-              <span className={`text-[11px] font-bold ${healthColor}`}>Culture: {status}</span>
+              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-[980px] ${
+                isHealthy ? 'bg-[#EAF9EE] text-[#34C759]' : isStressed ? 'bg-[#FFF8E6] text-[#FF9500]' : 'bg-[#FEECEB] text-[#FF3B30]'
+              }`}>Culture: {status}</span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-xs">
-              <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-lg">
-                <span className="text-[10px] text-slate-400">Culture Strain</span>
-                <div className="text-emerald-300 font-bold text-xs mt-0.5">Chlorella Vulgaris</div>
-                <div className="text-[9px] text-slate-500 mt-0.5">Photosynthetic Microalgae</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
+              <div className="bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] p-3 rounded-xl">
+                <span className="text-[10px] text-[#86868B] font-medium">Culture Strain</span>
+                <div className="text-[#1D1D1F] font-semibold text-xs mt-0.5">Chlorella Vulgaris</div>
+                <div className="text-[10px] text-[#86868B] mt-0.5">Photosynthetic Algae</div>
               </div>
 
-              <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-lg">
-                <span className="text-[10px] text-slate-400">Culture pH & Acid Level</span>
-                <div className={`font-bold text-xs mt-0.5 ${isCritical ? 'text-rose-400' : 'text-sky-300'}`}>
+              <div className="bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] p-3 rounded-xl">
+                <span className="text-[10px] text-[#86868B] font-medium">Culture pH Level</span>
+                <div className={`font-semibold text-xs mt-0.5 ${isCritical ? 'text-[#FF3B30]' : 'text-[#1D1D1F]'}`}>
                   {isCritical ? 'pH 6.3 (Acid Shock)' : 'pH 7.8 (Optimal)'}
                 </div>
-                <div className="text-[9px] text-slate-500 mt-0.5">
-                  {isCritical ? 'Bypass Damper Activated' : 'Buffer Balanced'}
+                <div className="text-[10px] text-[#86868B] mt-0.5">
+                  {isCritical ? 'Bypass Damper Active' : 'Buffer Balanced'}
                 </div>
               </div>
 
-              <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-lg">
-                <span className="text-[10px] text-slate-400">HSV Mean Color Hue</span>
-                <div className="text-white font-bold text-xs mt-0.5">
+              <div className="bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] p-3 rounded-xl">
+                <span className="text-[10px] text-[#86868B] font-medium">HSV Color Hue</span>
+                <div className="text-[#1D1D1F] font-semibold text-xs mt-0.5">
                   H: {hsvStats?.mean_h ?? 58}° (S:{hsvStats?.mean_s ?? 120})
                 </div>
-                <div className="text-[9px] text-emerald-400 mt-0.5">
+                <div className={`text-[10px] mt-0.5 font-medium ${hsvStats?.mean_h >= 35 && hsvStats?.mean_h <= 85 ? 'text-[#34C759]' : 'text-[#FF9500]'}`}>
                   {hsvStats?.mean_h >= 35 && hsvStats?.mean_h <= 85 ? 'Healthy Green' : 'Yellow/Degraded'}
                 </div>
               </div>
 
-              <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-lg">
-                <span className="text-[10px] text-slate-400">Biomass Cell Density</span>
-                <div className="text-teal-300 font-bold text-xs mt-0.5">
+              <div className="bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] p-3 rounded-xl">
+                <span className="text-[10px] text-[#86868B] font-medium">Biomass Cell Density</span>
+                <div className="text-[#0071E3] font-semibold text-xs mt-0.5">
                   {hsvStats?.biomass_g_l ?? 1.62} g/L
                 </div>
-                <div className="text-[9px] text-slate-500 mt-0.5">Centrifuge Extraction Online</div>
+                <div className="text-[10px] text-[#86868B] mt-0.5">Harvest Online</div>
               </div>
             </div>
           </div>
@@ -252,43 +260,43 @@ export default function AlgaeHealthPage() {
           </div>
 
           {/* AI Autonomous Management, HVAC Redirection & ESG Panel */}
-          <div className="bg-[#0b101e] border border-slate-800 rounded-2xl p-4 flex flex-col space-y-3 shadow-xl">
+          <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] rounded-2xl p-4 flex flex-col space-y-3">
             {/* Header & Tab Buttons */}
-            <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2.5 gap-2">
-              <div className="flex space-x-1 font-mono text-xs">
+            <div className="flex flex-wrap items-center justify-between border-b border-[rgba(0,0,0,0.06)] pb-2.5 gap-2">
+              <div className="flex items-center bg-[#E8E8ED] p-1 rounded-[980px] text-xs">
                 <button
                   onClick={() => setActiveTab('diagnostics')}
-                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1 ${
+                  className={`px-3 py-1 rounded-[980px] transition-all flex items-center space-x-1.5 ${
                     activeTab === 'diagnostics'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white text-[#1D1D1F] font-semibold shadow-sm'
+                      : 'text-[#86868B] hover:text-[#1D1D1F]'
                   }`}
                 >
-                  <Bot className="w-3.5 h-3.5 text-emerald-400" />
+                  <Bot className="w-3.5 h-3.5 text-[#0071E3]" />
                   <span>AI Actions</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('hvac')}
-                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1 ${
+                  className={`px-3 py-1 rounded-[980px] transition-all flex items-center space-x-1.5 ${
                     activeTab === 'hvac'
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white text-[#1D1D1F] font-semibold shadow-sm'
+                      : 'text-[#86868B] hover:text-[#1D1D1F]'
                   }`}
                 >
-                  <Wind className="w-3.5 h-3.5 text-cyan-400" />
+                  <Wind className="w-3.5 h-3.5 text-[#0071E3]" />
                   <span>HVAC Redirection</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('esg')}
-                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1 ${
+                  className={`px-3 py-1 rounded-[980px] transition-all flex items-center space-x-1.5 ${
                     activeTab === 'esg'
-                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 font-bold'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white text-[#1D1D1F] font-semibold shadow-sm'
+                      : 'text-[#86868B] hover:text-[#1D1D1F]'
                   }`}
                 >
-                  <FileText className="w-3.5 h-3.5 text-teal-400" />
+                  <FileText className="w-3.5 h-3.5 text-[#0071E3]" />
                   <span>ESG Report</span>
                 </button>
               </div>
@@ -297,11 +305,7 @@ export default function AlgaeHealthPage() {
               <button
                 onClick={handleRunAI}
                 disabled={isLoading}
-                className={`px-3 py-1 rounded-xl text-xs font-mono font-medium flex items-center space-x-1.5 transition-all shadow-md ${
-                  isLoading
-                    ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white'
-                }`}
+                className="btn-apple-primary px-3.5 py-1.5 text-xs font-medium flex items-center space-x-1.5"
               >
                 {isLoading ? (
                   <>
@@ -310,7 +314,7 @@ export default function AlgaeHealthPage() {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+                    <Sparkles className="w-3.5 h-3.5 text-white" />
                     <span>Run AI Diagnostics</span>
                   </>
                 )}
@@ -319,41 +323,41 @@ export default function AlgaeHealthPage() {
 
             {/* Tab 1: AI Diagnostics & BMS Commands */}
             {activeTab === 'diagnostics' && (
-              <div className="space-y-3 font-mono text-xs max-h-[290px] overflow-y-auto pr-1">
+              <div className="space-y-3 text-xs max-h-[290px] overflow-y-auto pr-1">
                 {diagnostics ? (
                   <>
-                    <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
+                    <div className="p-3.5 rounded-xl bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)]">
                       <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="text-[10px] text-slate-400 uppercase">Biological Assessment</span>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          diagnostics.status === 'OPTIMAL' ? 'bg-emerald-500/20 text-emerald-300' :
-                          diagnostics.status === 'STRESSED' ? 'bg-amber-500/20 text-amber-300' : 'bg-rose-500/20 text-rose-300'
+                        <span className="text-[10px] text-[#86868B] font-semibold uppercase tracking-wider">Biological Assessment</span>
+                        <span className={`px-2 py-0.5 rounded-[980px] text-[10px] font-semibold ${
+                          diagnostics.status === 'OPTIMAL' ? 'bg-[#EAF9EE] text-[#34C759]' :
+                          diagnostics.status === 'STRESSED' ? 'bg-[#FFF8E6] text-[#FF9500]' : 'bg-[#FEECEB] text-[#FF3B30]'
                         }`}>
                           {diagnostics.status}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-200 font-sans leading-relaxed">
+                      <p className="text-xs text-[#1D1D1F] leading-relaxed">
                         {diagnostics.diagnostics}
                       </p>
                     </div>
 
                     {/* Action Directives */}
                     <div className="space-y-2">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">
+                      <div className="text-[10px] text-[#86868B] font-semibold uppercase tracking-wider">
                         Autonomous BMS Directives Executed:
                       </div>
                       {diagnostics.detailed_actions?.map((act, i) => (
-                        <div key={i} className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 flex items-start justify-between space-x-2">
+                        <div key={i} className="p-2.5 rounded-xl bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] flex items-start justify-between space-x-2">
                           <div>
-                            <div className="text-emerald-400 font-bold flex items-center text-xs">
-                              <ChevronRight className="w-3 h-3 mr-1" />
-                              {act.action} <span className="text-slate-400 font-normal ml-1">[{act.target}]</span>
+                            <div className="text-[#0071E3] font-semibold flex items-center text-xs">
+                              <ChevronRight className="w-3.5 h-3.5 mr-0.5 text-[#0071E3]" />
+                              {act.action} <span className="text-[#86868B] font-normal ml-1">[{act.target}]</span>
                             </div>
-                            <div className="text-slate-300 text-[11px] font-sans mt-0.5">
+                            <div className="text-[#1D1D1F] text-[11px] mt-0.5">
                               {act.rationale}
                             </div>
                           </div>
-                          <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] flex-shrink-0">
+                          <span className="px-2 py-0.5 rounded-[980px] bg-white text-[#1D1D1F] text-[10px] font-medium border border-[rgba(0,0,0,0.06)] flex-shrink-0">
                             {act.parameter}
                           </span>
                         </div>
@@ -361,9 +365,9 @@ export default function AlgaeHealthPage() {
                     </div>
                   </>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-6 text-center text-slate-400 text-xs space-y-2">
-                    <Bot className="w-8 h-8 text-slate-600" />
-                    <p>Click "Run AI Diagnostics" above to have Gemini 3.8 Flash formulate autonomous biological interventions.</p>
+                  <div className="flex flex-col items-center justify-center py-6 text-center text-[#86868B] text-xs space-y-2">
+                    <Bot className="w-8 h-8 text-[#86868B]" />
+                    <p>Click "Run AI Diagnostics" above to have Gemini formulate autonomous biological interventions.</p>
                   </div>
                 )}
               </div>
@@ -371,136 +375,133 @@ export default function AlgaeHealthPage() {
 
             {/* Tab 2: HVAC Airflow Redirection Actuator System */}
             {activeTab === 'hvac' && (
-              <div className="space-y-3 font-mono text-xs max-h-[360px] overflow-y-auto pr-1">
-                {/* ── 2D HVAC System Layout & Operational Scenarios ── */}
-                <HVACDiagram />
-
+              <div className="space-y-3 text-xs max-h-[360px] overflow-y-auto pr-1">
                 {/* Visual Airflow Loop Schematic */}
-                <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <div className="p-3.5 rounded-xl bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[10px] text-slate-400 uppercase">HVAC Redirection Loop</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold" style={{ backgroundColor: `${hvacState.airflowColor}22`, color: hvacState.airflowColor }}>
+                    <span className="text-[10px] text-[#86868B] font-semibold uppercase tracking-wider">HVAC Redirection Loop</span>
+                    <span className="px-2 py-0.5 rounded-[980px] text-[10px] font-semibold bg-[#E8F2FD] text-[#0071E3]">
                       {hvacState.hvacStatusText}
                     </span>
                   </div>
 
                   {hvacState.activeLoop === 'roof_bypass' ? (
-                    <div className="p-2.5 rounded-lg bg-rose-950/40 border border-rose-500/40 flex items-center justify-between text-[11px] space-x-1 text-center">
+                    <div className="p-2.5 rounded-lg bg-white border border-[#FF3B30]/30 flex items-center justify-between text-[11px] space-x-1 text-center shadow-sm">
                       <div className="flex-1">
-                        <span className="text-slate-400 text-[9px] block">INDOOR ROOMS</span>
-                        <span className="text-sky-300 font-bold">{occupancy} humans ({co2Ppm}ppm)</span>
+                        <span className="text-[#86868B] text-[9px] block">INDOOR ROOMS</span>
+                        <span className="text-[#1D1D1F] font-semibold">{occupancy} humans ({co2Ppm}ppm)</span>
                       </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 text-[#FF3B30] flex-shrink-0" />
                       <div className="flex-1">
-                        <span className="text-slate-400 text-[9px] block">DAMPER (BYPASS)</span>
-                        <span className="font-bold text-rose-400">90% OUTSIDE VENT</span>
+                        <span className="text-[#86868B] text-[9px] block">DAMPER (BYPASS)</span>
+                        <span className="font-semibold text-[#FF3B30]">90% OUTSIDE VENT</span>
                       </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 text-[#FF3B30] flex-shrink-0" />
                       <div className="flex-1">
-                        <span className="text-slate-400 text-[9px] block">OUTSIDE ATMOSPHERE</span>
-                        <span className="text-amber-300 font-bold">ALGAE PROTECTED</span>
+                        <span className="text-[#86868B] text-[9px] block">OUTSIDE ATMOSPHERE</span>
+                        <span className="text-[#FF9500] font-semibold">ALGAE PROTECTED</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="p-2.5 rounded-lg bg-black/40 border border-slate-800/80 flex items-center justify-between text-[11px] space-x-1 text-center">
+                    <div className="p-2.5 rounded-lg bg-white border border-[rgba(0,0,0,0.06)] flex items-center justify-between text-[11px] space-x-1 text-center shadow-sm">
                       <div className="flex-1">
-                        <span className="text-slate-400 text-[9px] block">INDOOR ROOMS</span>
-                        <span className="text-sky-300 font-bold">{occupancy} humans ({co2Ppm}ppm)</span>
+                        <span className="text-[#86868B] text-[9px] block">INDOOR ROOMS</span>
+                        <span className="text-[#1D1D1F] font-semibold">{occupancy} humans ({co2Ppm}ppm)</span>
                       </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 text-[#86868B] flex-shrink-0" />
                       <div className="flex-1">
-                        <span className="text-slate-400 text-[9px] block">MOTORIZED DAMPER</span>
-                        <span className="font-bold" style={{ color: hvacState.airflowColor }}>{hvacState.damperOpenPct}% Modulated</span>
+                        <span className="text-[#86868B] text-[9px] block">MOTORIZED DAMPER</span>
+                        <span className="font-semibold text-[#0071E3]">{hvacState.damperOpenPct}% Modulated</span>
                       </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 text-[#86868B] flex-shrink-0" />
                       <div className="flex-1">
-                        <span className="text-slate-400 text-[9px] block">BIOREACTOR FACADE</span>
-                        <span className="text-emerald-400 font-bold">{biofuelRate} ml/h Lipid</span>
+                        <span className="text-[#86868B] text-[9px] block">BIOREACTOR FACADE</span>
+                        <span className="text-[#34C759] font-semibold">{biofuelRate} ml/h Lipid</span>
                       </div>
                     </div>
                   )}
 
-                  <div className="text-[11px] text-slate-300 font-sans leading-relaxed pt-1">
+                  <div className="text-[11px] text-[#1D1D1F] leading-relaxed pt-1">
                     {hvacState.aiReasoning}
                   </div>
                 </div>
 
                 {/* Actuator State Grid */}
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800">
-                    <span className="text-[10px] text-slate-400">Damper Position</span>
-                    <div className="text-sm font-bold text-white mt-0.5 flex items-center justify-between">
+                  <div className="p-2.5 rounded-xl bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)]">
+                    <span className="text-[10px] text-[#86868B] font-semibold uppercase">Damper Position</span>
+                    <div className="text-sm font-semibold text-[#1D1D1F] mt-0.5 flex items-center justify-between">
                       <span>{hvacState.damperOpenPct}%</span>
-                      <span className="text-[10px] font-normal text-slate-400">Servo 42°</span>
+                      <span className="text-[10px] font-normal text-[#86868B]">Servo 42°</span>
                     </div>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800">
-                    <span className="text-[10px] text-slate-400">Air Sparging Rate</span>
-                    <div className="text-sm font-bold text-cyan-400 mt-0.5 flex items-center justify-between">
+                  <div className="p-2.5 rounded-xl bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)]">
+                    <span className="text-[10px] text-[#86868B] font-semibold uppercase">Air Sparging Rate</span>
+                    <div className="text-sm font-semibold text-[#0071E3] mt-0.5 flex items-center justify-between">
                       <span>{hvacState.spargingRateLpm} L/min</span>
-                      <span className="text-[10px] font-normal text-slate-400">{(hvacState.airflowVelocity * 160).toFixed(0)} CFM</span>
+                      <span className="text-[10px] font-normal text-[#86868B]">{(hvacState.airflowVelocity * 160).toFixed(0)} CFM</span>
                     </div>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800">
-                    <span className="text-[10px] text-slate-400">Nutrient Dosing Solenoid</span>
-                    <div className="text-sm font-bold text-emerald-400 mt-0.5">
+                  <div className="p-2.5 rounded-xl bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)]">
+                    <span className="text-[10px] text-[#86868B] font-semibold uppercase">Nutrient Dosing Solenoid</span>
+                    <div className="text-sm font-semibold text-[#34C759] mt-0.5">
                       {isStressed || isCritical ? '+35 ml/hr Buffer' : 'Standby (0 ml)'}
                     </div>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800">
-                    <span className="text-[10px] text-slate-400">Electrochromic Tint</span>
-                    <div className="text-sm font-bold text-indigo-400 mt-0.5">
+                  <div className="p-2.5 rounded-xl bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)]">
+                    <span className="text-[10px] text-[#86868B] font-semibold uppercase">Electrochromic Tint</span>
+                    <div className="text-sm font-semibold text-[#0071E3] mt-0.5">
                       {isCritical ? '40% Transmission' : '85% Transmission'}
                     </div>
                   </div>
                 </div>
 
                 {/* Interactive Airflow Demo Triggers */}
-                <div className="pt-2 border-t border-slate-800 space-y-1.5">
-                  <div className="text-[10px] text-slate-400 uppercase tracking-wider flex items-center">
-                    <Zap className="w-3 h-3 text-amber-400 mr-1" />
+                <div className="pt-2 border-t border-[rgba(0,0,0,0.06)] space-y-1.5">
+                  <div className="text-[10px] text-[#86868B] font-semibold uppercase tracking-wider flex items-center">
+                    <Zap className="w-3 h-3 text-[#0071E3] mr-1" />
                     Test GenAI Airflow Redirect Scenarios:
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => triggerHvacScenario('redirect')}
-                      className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all text-left ${
+                      className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all text-left ${
                         hvacState.mode === 'redirect'
-                          ? 'bg-amber-500/20 border-amber-400 text-amber-300 font-bold'
-                          : 'bg-slate-800/60 border-slate-700 text-amber-400 hover:bg-slate-700/60'
+                          ? 'btn-apple-primary'
+                          : 'btn-apple-secondary'
                       }`}
                     >
                       🔀 AI Redirect (Amber)
                     </button>
                     <button
                       onClick={() => triggerHvacScenario('bypass')}
-                      className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all text-left ${
+                      className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all text-left ${
                         hvacState.mode === 'bypass'
-                          ? 'bg-rose-500/20 border-rose-400 text-rose-300 font-bold'
-                          : 'bg-slate-800/60 border-slate-700 text-rose-400 hover:bg-slate-700/60'
+                          ? 'btn-apple-primary'
+                          : 'btn-apple-secondary'
                       }`}
                     >
                       ⚠️ AI Bypass (Crimson)
                     </button>
                     <button
                       onClick={() => triggerHvacScenario('optimal')}
-                      className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all text-left ${
+                      className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all text-left ${
                         hvacState.mode === 'optimal'
-                          ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold'
-                          : 'bg-slate-800/60 border-slate-700 text-emerald-400 hover:bg-slate-700/60'
+                          ? 'btn-apple-primary'
+                          : 'btn-apple-secondary'
                       }`}
                     >
                       🌿 Max Bio (Emerald)
                     </button>
                     <button
                       onClick={() => triggerHvacScenario('auto')}
-                      className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all text-left ${
+                      className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all text-left ${
                         hvacState.mode === 'auto'
-                          ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
-                          : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-700/60'
+                          ? 'btn-apple-primary'
+                          : 'btn-apple-secondary'
                       }`}
                     >
                       🔄 Auto Dynamic Sync
@@ -512,36 +513,36 @@ export default function AlgaeHealthPage() {
 
             {/* Tab 3: ESG Report */}
             {activeTab === 'esg' && (
-              <div className="space-y-3 font-mono text-xs max-h-[290px] overflow-y-auto">
+              <div className="space-y-3 text-xs max-h-[290px] overflow-y-auto">
                 {diagnostics?.carbon_report ? (
                   <div className="space-y-2.5">
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                        <span className="text-[10px] text-slate-400 uppercase">CO₂ Sequestered</span>
-                        <div className="text-lg font-bold text-emerald-400 mt-1">
+                      <div className="p-3 rounded-xl bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)]">
+                        <span className="text-[10px] text-[#86868B] font-semibold uppercase">CO₂ Sequestered</span>
+                        <div className="text-lg font-semibold text-[#34C759] mt-1">
                           {diagnostics.carbon_report.co2_absorbed_kg_day} kg / day
                         </div>
                       </div>
-                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                        <span className="text-[10px] text-slate-400 uppercase">Carbon Credits</span>
-                        <div className="text-lg font-bold text-sky-400 mt-1">
+                      <div className="p-3 rounded-xl bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)]">
+                        <span className="text-[10px] text-[#86868B] font-semibold uppercase">Carbon Credits</span>
+                        <div className="text-lg font-semibold text-[#0071E3] mt-1">
                           {diagnostics.carbon_report.carbon_credits_earned} tCO2e
                         </div>
                       </div>
                     </div>
-                    <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                    <div className="p-3.5 rounded-xl bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)]">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-slate-400 uppercase">LEED ESG Rating</span>
-                        <span className="text-emerald-400 font-bold">{diagnostics.carbon_report.esg_compliance_score}</span>
+                        <span className="text-[#86868B] font-semibold uppercase">LEED ESG Rating</span>
+                        <span className="text-[#34C759] font-bold">{diagnostics.carbon_report.esg_compliance_score}</span>
                       </div>
-                      <p className="mt-2 text-xs font-sans text-slate-300 leading-relaxed">
+                      <p className="mt-2 text-xs text-[#1D1D1F] leading-relaxed">
                         {diagnostics.carbon_report.summary}
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-6 text-center text-slate-400 text-xs space-y-2">
-                    <FileText className="w-8 h-8 text-slate-600" />
+                  <div className="flex flex-col items-center justify-center py-6 text-center text-[#86868B] text-xs space-y-2">
+                    <FileText className="w-8 h-8 text-[#86868B]" />
                     <p>Run AI Diagnostics to generate automated LEED Net-Zero Carbon Offset certification metrics.</p>
                   </div>
                 )}
@@ -549,38 +550,38 @@ export default function AlgaeHealthPage() {
             )}
 
             {/* Hackathon Judge Simulation Triggers */}
-            <div className="pt-2 border-t border-slate-800">
-              <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2 flex items-center">
-                <Zap className="w-3.5 h-3.5 text-amber-400 mr-1.5" />
+            <div className="pt-2 border-t border-[rgba(0,0,0,0.06)]">
+              <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider mb-2 flex items-center">
+                <Zap className="w-3.5 h-3.5 text-[#0071E3] mr-1.5" />
                 Algae Color & Culture Triggers:
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={handleSimulateCrisis}
-                  className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all ${
+                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
                     activePreset === 'crisis'
-                      ? 'bg-rose-500/20 border-rose-400 text-rose-300 font-bold'
-                      : 'bg-slate-800/70 border-slate-700 text-slate-300 hover:bg-slate-700/70'
+                      ? 'btn-apple-primary'
+                      : 'btn-apple-secondary'
                   }`}
                 >
                   Yellow Crisis (40%)
                 </button>
                 <button
                   onClick={handleSimulateHealthy}
-                  className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all ${
+                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
                     activePreset === 'healthy'
-                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold'
-                      : 'bg-slate-800/70 border-slate-700 text-slate-300 hover:bg-slate-700/70'
+                      ? 'btn-apple-primary'
+                      : 'btn-apple-secondary'
                   }`}
                 >
                   Healthy Culture (95%)
                 </button>
                 <button
                   onClick={handleResetLive}
-                  className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all ${
+                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
                     activePreset === 'live'
-                      ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
-                      : 'bg-slate-800/70 border-slate-700 text-slate-300 hover:bg-slate-700/70'
+                      ? 'bg-[#34C759] text-white'
+                      : 'btn-apple-secondary'
                   }`}
                 >
                   Live OpenCV Feed
@@ -592,7 +593,7 @@ export default function AlgaeHealthPage() {
       </div>
 
       {/* ── Full 2D HVAC Architecture & 3-State Operational Redirection Layout ── */}
-      <section className="mt-8 pt-6 border-t border-slate-800/80">
+      <section className="mt-8 pt-6 border-t border-[rgba(0,0,0,0.08)]">
         <HVACDiagram />
       </section>
     </div>

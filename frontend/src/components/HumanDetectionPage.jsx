@@ -48,75 +48,75 @@ export default function HumanDetectionPage() {
 
   return (
     <div className="flex flex-col space-y-4 w-full">
-      {/* Top Occupancy Telemetry HUD Header */}
+      {/* Top Occupancy Telemetry HUD Header - Apple Retail Product Specification Tiles */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Metric 1: Detected Occupants */}
-        <div className="bg-[#0e1626] border border-sky-900/50 p-4 rounded-xl shadow-lg relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-mono uppercase tracking-wider">Occupancy Tracked</span>
-            <Users className="w-4 h-4 text-sky-400" />
+        <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl relative overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#86868B]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider">Occupancy Tracked</span>
+            <Users className="w-4 h-4 text-[#0071E3]" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-3xl font-bold font-mono text-white">{occupancy}</span>
-            <span className="text-xs text-sky-300 font-mono">person{occupancy !== 1 ? 's' : ''} in room</span>
+            <span className="text-3xl font-semibold text-[#1D1D1F] tracking-tight">{occupancy}</span>
+            <span className="text-xs text-[#86868B] font-medium">person{occupancy !== 1 ? 's' : ''} in room</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between">
+          <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
             <span className="flex items-center">
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 mr-1.5 animate-ping" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0071E3] mr-1.5 animate-pulse" />
               YOLOv8n Neural Net
             </span>
-            <span className="text-sky-400 font-mono">COCO Class 0</span>
+            <span className="text-[#0071E3] font-medium text-[10px] bg-[#E8F2FD] px-1.5 py-0.5 rounded-[980px]">Class 0</span>
           </div>
         </div>
 
         {/* Metric 2: Derived Atmospheric CO2 */}
-        <div className="bg-[#0e1626] border border-emerald-900/50 p-4 rounded-xl shadow-lg">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-mono uppercase tracking-wider">Indoor CO2 Concentration</span>
-            <Wind className="w-4 h-4 text-emerald-400" />
+        <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#86868B]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider">Indoor CO₂ Level</span>
+            <Wind className="w-4 h-4 text-[#34C759]" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-3xl font-bold font-mono text-white">{co2Ppm}</span>
-            <span className="text-xs text-emerald-400 font-mono">ppm</span>
+            <span className="text-3xl font-semibold text-[#1D1D1F] tracking-tight">{co2Ppm}</span>
+            <span className="text-xs text-[#86868B] font-medium">ppm</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between font-mono">
-            <span>Baseline: 400 ppm</span>
-            <span className="text-emerald-400 font-bold">+{metabolicCo2Added} ppm breath</span>
+          <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
+            <span>Base: 400 ppm</span>
+            <span className="text-[#34C759] font-medium">+{metabolicCo2Added} ppm breath</span>
           </div>
         </div>
 
         {/* Metric 3: HVAC Sparging Damper */}
-        <div className="bg-[#0e1626] border border-cyan-900/50 p-4 rounded-xl shadow-lg">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-mono uppercase tracking-wider">HVAC Damper Valve</span>
-            <Activity className="w-4 h-4 text-cyan-400" />
+        <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#86868B]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider">HVAC Damper Valve</span>
+            <Activity className="w-4 h-4 text-[#0071E3]" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-3xl font-bold font-mono text-white">{hvacDamperOpenPct}%</span>
-            <span className="text-xs text-cyan-400 font-mono">{airflowSpargingRate} L/min</span>
+            <span className="text-3xl font-semibold text-[#1D1D1F] tracking-tight">{hvacDamperOpenPct}%</span>
+            <span className="text-xs text-[#86868B] font-medium">{airflowSpargingRate} L/min</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between font-mono">
-            <span>Airflow Direction</span>
-            <span className={isBypass ? "text-rose-400 font-bold" : "text-cyan-400 font-medium"}>
-              {isBypass ? "Outside Atmosphere (Bypassed)" : "Redirected to Facade"}
+          <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
+            <span>Airflow Loop</span>
+            <span className={isBypass ? "text-[#FF3B30] font-semibold" : "text-[#0071E3] font-medium"}>
+              {isBypass ? "Outside (Bypassed)" : "Redirected to Facade"}
             </span>
           </div>
         </div>
 
         {/* Metric 4: Daily Metabolic Carbon Load */}
-        <div className="bg-[#0e1626] border border-teal-900/50 p-4 rounded-xl shadow-lg">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-mono uppercase tracking-wider">Metabolic Carbon Load</span>
-            <TrendingUp className="w-4 h-4 text-teal-400" />
+        <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#86868B]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider">Metabolic Carbon Load</span>
+            <TrendingUp className="w-4 h-4 text-[#0071E3]" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-3xl font-bold font-mono text-white">{dailyCo2LoadKg}</span>
-            <span className="text-xs text-teal-300 font-mono">kg CO₂ / day</span>
+            <span className="text-3xl font-semibold text-[#1D1D1F] tracking-tight">{dailyCo2LoadKg}</span>
+            <span className="text-xs text-[#86868B] font-medium">kg CO₂ / day</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between font-mono">
-            <span>Facade Sequestration</span>
-            <span className={isBypass ? "text-amber-400 font-bold" : "text-teal-400 font-bold"}>
-              {isBypass ? "Bypassed (Culture Safeguard)" : "100% Absorbed"}
+          <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
+            <span>Sequestration</span>
+            <span className={isBypass ? "text-[#FF9500] font-semibold" : "text-[#34C759] font-semibold"}>
+              {isBypass ? "Culture Safeguard" : "100% Absorbed"}
             </span>
           </div>
         </div>
@@ -126,28 +126,30 @@ export default function HumanDetectionPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[580px]">
         {/* Left Column (7 cols): Working 3D Digital Twin with Human Focus */}
         <section className="lg:col-span-7 flex flex-col space-y-3">
-          <div className="h-[460px] lg:h-[520px] w-full">
+          <div className="h-[460px] lg:h-[520px] w-full rounded-2xl overflow-hidden border border-[rgba(0,0,0,0.08)] bg-[#000000]">
             <BuildingTwin focusMode="human" />
           </div>
 
           {/* Floor-by-Floor Building Occupancy Distribution Card */}
-          <div className="bg-[#0a0f1d] border border-slate-800 rounded-xl p-3.5 flex flex-col space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-300 font-bold flex items-center">
-                <Building className="w-3.5 h-3.5 text-sky-400 mr-1.5" />
-                7-Story Tower Occupancy Distribution & Intake Manifold:
+          <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] rounded-2xl p-4 flex flex-col space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#1D1D1F] font-semibold flex items-center">
+                <Building className="w-4 h-4 text-[#0071E3] mr-1.5" />
+                7-Story Tower Occupancy Distribution & Intake Manifold
               </span>
-              <span className="text-sky-400 text-[11px]">Dynamic Airflow Active</span>
+              <span className="text-[#0071E3] text-[11px] font-medium bg-[#E8F2FD] px-2 py-0.5 rounded-[980px]">
+                Dynamic Airflow Active
+              </span>
             </div>
 
-            <div className="grid grid-cols-7 gap-2 pt-1 font-mono text-center">
+            <div className="grid grid-cols-7 gap-2 pt-1 text-center">
               {[7, 6, 5, 4, 3, 2, 1].map((floor) => {
                 const floorOcc = Math.max(0, Math.ceil((occupancy * (8 - floor)) / 10));
                 return (
-                  <div key={floor} className="bg-slate-900/80 border border-slate-800 p-2 rounded-lg flex flex-col items-center">
-                    <span className="text-[10px] text-slate-400">FL {floor}</span>
-                    <span className="text-sm font-bold text-sky-300 mt-1">{floorOcc}</span>
-                    <span className="text-[9px] text-slate-500 mt-0.5">{400 + floorOcc * 150}ppm</span>
+                  <div key={floor} className="bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] p-2.5 rounded-xl flex flex-col items-center">
+                    <span className="text-[10px] font-medium text-[#86868B]">FL {floor}</span>
+                    <span className="text-base font-semibold text-[#1D1D1F] mt-0.5">{floorOcc}</span>
+                    <span className="text-[10px] text-[#86868B] font-mono mt-0.5">{400 + floorOcc * 150}ppm</span>
                   </div>
                 );
               })}
@@ -163,79 +165,79 @@ export default function HumanDetectionPage() {
           </div>
 
           {/* Mathematical CO2 Derivation Card */}
-          <div className="bg-[#0b101e] border border-slate-800 rounded-2xl p-4 flex flex-col space-y-3 shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h4 className="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider flex items-center">
-                <Cpu className="w-4 h-4 text-sky-400 mr-2" />
-                Real-Time Human CO₂ Derivation Engine
+          <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] rounded-2xl p-4 flex flex-col space-y-3">
+            <div className="flex items-center justify-between border-b border-[rgba(0,0,0,0.06)] pb-2.5">
+              <h4 className="text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider flex items-center">
+                <Cpu className="w-4 h-4 text-[#0071E3] mr-2" />
+                Human CO₂ Derivation Engine
               </h4>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-[980px] bg-[#E8F2FD] text-[#0071E3]">
                 ACTIVE
               </span>
             </div>
 
-            <div className="bg-slate-900/90 border border-slate-800/80 rounded-xl p-3 font-mono text-xs space-y-2">
-              <div className="text-slate-400 text-[11px]">
-                Mathematical formula derived from respiratory metabolic volume:
+            <div className="bg-[#F5F5F7] rounded-xl p-3.5 text-xs space-y-2.5 border border-[rgba(0,0,0,0.04)]">
+              <div className="text-[#86868B] text-[11px]">
+                Mathematical formula derived from human respiratory metabolic volume:
               </div>
-              <div className="text-emerald-400 font-bold text-sm bg-black/40 p-2 rounded border border-emerald-900/40 text-center">
+              <div className="text-[#1D1D1F] font-semibold text-sm bg-white p-2.5 rounded-lg border border-[rgba(0,0,0,0.06)] text-center shadow-sm">
                 CO₂(ppm) = 400 + ( Occupancy × 150 )
               </div>
               <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-                <div className="p-2 rounded bg-slate-800/60 border border-slate-700/50">
-                  <span className="text-slate-400">Ambient Baseline:</span>
-                  <div className="text-white font-bold mt-0.5">400 ppm (Clean Air)</div>
+                <div className="p-2.5 rounded-lg bg-white border border-[rgba(0,0,0,0.06)]">
+                  <span className="text-[#86868B] text-[10px] uppercase font-semibold">Ambient Baseline:</span>
+                  <div className="text-[#1D1D1F] font-semibold mt-0.5">400 ppm (Clean Air)</div>
                 </div>
-                <div className="p-2 rounded bg-slate-800/60 border border-slate-700/50">
-                  <span className="text-slate-400">Added Metabolic Load:</span>
-                  <div className="text-sky-300 font-bold mt-0.5">+{metabolicCo2Added} ppm ({occupancy} pers)</div>
+                <div className="p-2.5 rounded-lg bg-white border border-[rgba(0,0,0,0.06)]">
+                  <span className="text-[#86868B] text-[10px] uppercase font-semibold">Added Metabolic Load:</span>
+                  <div className="text-[#0071E3] font-semibold mt-0.5">+{metabolicCo2Added} ppm ({occupancy} pers)</div>
                 </div>
               </div>
             </div>
 
             {/* Quick Demo Simulator for Judges */}
             <div className="pt-1">
-              <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2 flex items-center">
-                <Zap className="w-3.5 h-3.5 text-amber-400 mr-1.5" />
+              <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider mb-2 flex items-center">
+                <Zap className="w-3.5 h-3.5 text-[#0071E3] mr-1.5" />
                 Hackathon Judge Simulation Controls:
               </div>
               <div className="grid grid-cols-4 gap-2">
                 <button
                   onClick={() => handleSetOccupants(1)}
-                  className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all ${
+                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
                     activePreset === 'occ-1'
-                      ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
-                      : 'bg-slate-800/70 border-slate-700 text-slate-300 hover:bg-slate-700/70'
+                      ? 'btn-apple-primary'
+                      : 'btn-apple-secondary'
                   }`}
                 >
                   1 Person
                 </button>
                 <button
                   onClick={() => handleSetOccupants(2)}
-                  className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all ${
+                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
                     activePreset === 'occ-2'
-                      ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
-                      : 'bg-slate-800/70 border-slate-700 text-slate-300 hover:bg-slate-700/70'
+                      ? 'btn-apple-primary'
+                      : 'btn-apple-secondary'
                   }`}
                 >
                   2 People
                 </button>
                 <button
                   onClick={() => handleSetOccupants(4)}
-                  className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all ${
+                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
                     activePreset === 'occ-4'
-                      ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
-                      : 'bg-slate-800/70 border-slate-700 text-slate-300 hover:bg-slate-700/70'
+                      ? 'btn-apple-primary'
+                      : 'btn-apple-secondary'
                   }`}
                 >
                   4 People
                 </button>
                 <button
                   onClick={handleResetLive}
-                  className={`px-2 py-1.5 rounded-lg text-xs font-mono border transition-all ${
+                  className={`text-xs py-1.5 px-3 rounded-[980px] font-medium transition-all ${
                     activePreset === 'live'
-                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold'
-                      : 'bg-slate-800/70 border-slate-700 text-slate-300 hover:bg-slate-700/70'
+                      ? 'bg-[#34C759] text-white'
+                      : 'btn-apple-secondary'
                   }`}
                 >
                   Live CV
