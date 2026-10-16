@@ -76,55 +76,24 @@ export const useStore = create((set, get) => ({
           spargingRateLpm: 26.0,
           divertPct: Math.max(5, 100 - damper)
         };
-      } else if (isUnhealthyAlgae) {
-        // Pipeline 2: The "Acidification Bypass" Pipeline (Redirecting AWAY from the Bioreactor)
-        // Trigger: OpenCV detects yellow pixels in target box, dropping algae_health below 45%.
-        // Logic: Sick microalgae cannot process carbon efficiently. Continuing high-CO2 air produces carbonic acid,
-        // rapidly lowering pH (<6.8) and killing remaining culture.
-        // Action: Gemini AI triggers Emergency Bypass, clamping dampers down to 15% (restricting flow to 15%)
-        // Visual: Heavily pulsing crimson and amber pipeline labeled "ALGAE COLLAPSE BYPASS SHUNT" venting CO2 to safe rooftop scrubber.
-        updatedHvac = {
-          mode: 'auto',
-          damperOpenPct: 15, // Strictly clamped down to 15% to protect biology
-          airflowVelocity: 2.8,
-          airflowColor: '#FF3B30', // Heavily pulsing crimson & amber
-          activeLoop: 'roof_bypass',
-          hvacStatusText: 'EMERGENCY BYPASS: ALGAE COLLAPSE BYPASS SHUNT',
-          aiReasoning: `Gemini 3.8 Flash BMS: Yellow pixels detected in OpenCV ROI — Algae health collapsed to ${newHealth.toFixed(1)}% (<45%). Sick microalgae cannot process carbon efficiently. Continuing high-CO2 air creates lethal carbonic acid (pH < 6.8). Emergency Bypass triggered: damper clamped to 15% to safeguard culture, 85% exhaust routed through ALGAE COLLAPSE BYPASS SHUNT to safe rooftop scrubber.`,
-          spargingRateLpm: 2.5,
-          divertPct: 85
-        };
-      } else if (newOcc >= 1) {
-        // Pipeline 1: The "Feed the Algae" Pipeline (Redirecting TO the Bioreactor)
-        // Trigger: YOLOv8 detects humans in the camera frame.
-        // Logic: CO2 spike (400ppm baseline + 150ppm per person).
-        // Action: Healthy algae (green) + humans present -> Gemini AI opens HVAC dampers. CO2-rich exhaust routed directly into bioreactor panels.
-        // Visual: Glowing fast-moving orange pipeline labeled "HUMAN CO2 RETURN AIR" flowing from room into facade.
-        const damper = Math.min(95, 45 + (newOcc * 12));
-        const vel = 1.2 + (newOcc * 0.4);
-        updatedHvac = {
-          mode: 'auto',
-          damperOpenPct: damper,
-          airflowVelocity: vel,
-          airflowColor: '#FF9500', // Glowing radiant orange
-          activeLoop: 'facade',
-          hvacStatusText: 'FEED THE ALGAE: HUMAN CO₂ RETURN AIR ROUTED TO BIOREACTOR',
-          aiReasoning: `Gemini 3.8 Flash BMS: YOLOv8 detected ${newOcc} occupant${newOcc > 1 ? 's' : ''}. CO₂ spike calculated at ${newCo2} ppm (400 baseline + ${newOcc * 150} metabolic). Healthy algae culture (${newHealth.toFixed(1)}%) ready for carbon capture: opening HVAC dampers to ${damper}% — routing human CO₂ exhaust directly into bioreactor panels as photosynthetic fuel.`,
-          spargingRateLpm: (newOcc * 5.5).toFixed(1),
-          divertPct: Math.max(5, 100 - damper)
-        };
       } else {
-        // Healthy algae + 0 humans baseline equilibrium
+        // Low Occupancy (< 4 occupants, e.g. 0, 1, 2, 3) OR Acidification Bypass:
+        // Rule: When occupants are less than 4, air directs in HVAC system to exhausts
+        // Action: Gemini AI BMS directs airflow to rooftop scrubber exhaust (85% outdoor exhaust vent, 15% idle bio-bleed)
         updatedHvac = {
           mode: 'auto',
-          damperOpenPct: 35,
-          airflowVelocity: 1.0,
-          airflowColor: '#34C759',
-          activeLoop: 'facade',
-          hvacStatusText: 'HEALTHY ALGAE: BASELINE EQUILIBRIUM',
-          aiReasoning: `Gemini 3.8 Flash BMS: Ambient baseline (400 ppm CO2). Healthy algae operating at optimal photosynthetic balance.`,
-          spargingRateLpm: 6.0,
-          divertPct: 65
+          damperOpenPct: 15, // Bioreactor feed restricted to 15%
+          airflowVelocity: 2.6,
+          airflowColor: isUnhealthyAlgae ? '#FF3B30' : '#0071E3', // Crimson for yellow crisis, sleek Apple blue for outdoor exhaust
+          activeLoop: 'roof_bypass', // Routes air in HVAC system to exhausts
+          hvacStatusText: isUnhealthyAlgae
+            ? 'EMERGENCY BYPASS: ALGAE COLLAPSE BYPASS SHUNT'
+            : `EXHAUST MODE: AIR DIRECTED TO ROOFTOP SCRUBBER EXHAUST (${newOcc} < 4 OCCUPANTS)`,
+          aiReasoning: isUnhealthyAlgae
+            ? `Gemini 3.8 Flash BMS: Yellow pixels detected in OpenCV ROI (<45% health). Emergency bypass active: 85% exhaust routed away to rooftop scrubber.`
+            : `Gemini 3.8 Flash BMS: Live CV detected ${newOcc} occupant${newOcc !== 1 ? 's' : ''} (<4 threshold). Airflow directs in HVAC system to rooftop scrubber exhaust (85% outdoor exhaust vent, 15% idle bio-bleed).`,
+          spargingRateLpm: 2.5,
+          divertPct: 85 // 85% exhaust to outdoor rooftop scrubber
         };
       }
     }
