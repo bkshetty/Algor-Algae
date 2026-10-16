@@ -51,9 +51,10 @@ export default function HumanDetectionPage() {
 
   // Biological Cause-and-Effect Pipeline State
   const isHighOcc = occupancy >= 4;
-  const isCrisis = !isHighOcc && algaeHealth < 45.0;
+  const isCrisis = algaeHealth < 45.0;
+  const isBypass = !isHighOcc || isCrisis || hvacState.activeLoop === 'roof_bypass';
   const metabolicCo2Added = occupancy * 150;
-  // If occupants >= 4, damper opens to 85% redirecting air to bioreactor; if occupants < 4, air directs in HVAC system to exhausts
+  // If occupants >= 4, damper opens to 85% redirecting air to bioreactor; if occupants < 4, air redirects to outside exhausts (damper clamped to 15% to bio / 85% outside)
   const hvacDamperOpenPct = isHighOcc ? 85 : 15;
   const dailyCo2LoadKg = (occupancy * 0.12).toFixed(2);
   const airflowSpargingRate = isHighOcc ? '26.0' : '2.5';
@@ -101,18 +102,18 @@ export default function HumanDetectionPage() {
         <div className="bg-[#FFFFFF] border border-[rgba(0,0,0,0.08)] p-4 rounded-2xl flex flex-col justify-between">
           <div className="flex items-center justify-between text-[#86868B]">
             <span className="text-[11px] font-semibold uppercase tracking-wider">HVAC Damper Valve</span>
-            <Activity className={`w-4 h-4 ${isHighOcc ? 'text-[#34C759]' : (isCrisis ? 'text-[#FF3B30]' : 'text-[#0071E3]')}`} />
+            <Activity className={`w-4 h-4 ${isCrisis ? 'text-[#FF3B30]' : isHighOcc ? 'text-[#34C759]' : 'text-[#0071E3]'}`} />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className={`text-3xl font-semibold tracking-tight ${isHighOcc ? 'text-[#34C759]' : 'text-[#1D1D1F]'}`}>
+            <span className={`text-3xl font-semibold tracking-tight ${isCrisis ? 'text-[#FF3B30]' : isHighOcc ? 'text-[#1D1D1F]' : 'text-[#0071E3]'}`}>
               {hvacDamperOpenPct}%
             </span>
             <span className="text-xs text-[#86868B] font-medium">{airflowSpargingRate} L/min</span>
           </div>
           <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
             <span>Active Pipeline</span>
-            <span className={`font-semibold ${isHighOcc ? "text-[#34C759]" : (isCrisis ? "text-[#FF3B30]" : "text-[#0071E3]")}`}>
-              {isHighOcc ? "85% Facade Fuel Redirected" : "85% Rooftop Scrubber Exhaust"}
+            <span className={`font-semibold ${isCrisis ? "text-[#FF3B30]" : isHighOcc ? "text-[#34C759]" : "text-[#0071E3]"}`}>
+              {isCrisis ? "15% Shunt Clamped" : isHighOcc ? "85% Facade Fuel Redirected" : "85% Outside Exhaust"}
             </span>
           </div>
         </div>
@@ -129,8 +130,8 @@ export default function HumanDetectionPage() {
           </div>
           <div className="mt-2 pt-2 border-t border-[rgba(0,0,0,0.06)] text-[11px] text-[#86868B] flex items-center justify-between">
             <span>Biological Loop</span>
-            <span className={isHighOcc ? "text-[#34C759] font-semibold" : (isCrisis ? "text-[#FF3B30] font-semibold" : "text-[#0071E3] font-semibold")}>
-              {isHighOcc ? "Photosynthetic Feed" : "Outdoor Exhaust (<4 Occ)"}
+            <span className={isCrisis ? "text-[#FF3B30] font-semibold" : isHighOcc ? "text-[#34C759] font-semibold" : "text-[#0071E3] font-semibold"}>
+              {isCrisis ? "Acidification Shield" : isHighOcc ? "Photosynthetic Feed" : "Outside Atmospheric Vent"}
             </span>
           </div>
         </div>

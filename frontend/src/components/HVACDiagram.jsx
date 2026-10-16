@@ -47,18 +47,18 @@ import { useStore } from '../store';
 const STATES = {
   state1: {
     id: 'state1',
-    title: 'State 1: Exhaust Mode (Low Occupancy <4)',
-    subtitle: '1 human detected (550 ppm CO2). Less than 4 occupants: Air directs in HVAC system to rooftop scrubber exhausts.',
+    title: 'State 1: Low Occupancy (<4 Occupants)',
+    subtitle: '1 human detected (550 ppm CO2). Air redirects in HVAC system to exhausts outside (85% outdoor vent).',
     occupants: 1,
     co2: 550,
     algaeHealth: 95,
     toAlgaePct: 15,
     toOutdoorPct: 85,
-    damperAngle: 12,
+    damperAngle: 15,
     flowLpm: 2.5,
     algaeColor: '#34C759',
     liquidTone: 'healthy',
-    modeText: 'EXHAUST MODE (85% OUTDOOR VENT)',
+    modeText: 'OUTDOOR EXHAUST REDIRECTION (85% VENT)',
     badgeColor: '#0071E3'
   },
   state2: {
@@ -393,7 +393,7 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
           ) : !isHighOcc ? (
             <div className="flex flex-col items-center">
               <span className="text-[8px] font-mono text-[#0071E3] font-bold text-center leading-tight">
-                ROOFTOP<br />EXHAUST
+                OUTDOOR<br />EXHAUST
               </span>
               <ArrowRight className="w-4 h-4 text-[#0071E3] my-0.5" />
               <span className="text-[7.5px] font-mono text-[#0071E3] font-bold">85% Outside</span>
@@ -428,8 +428,8 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
                 15%<br />CLAMP
               </span>
             ) : !isHighOcc ? (
-              <span className="text-[8px] font-bold text-sky-950 text-center leading-none">
-                15%<br />BLEED
+              <span className="text-[8px] font-bold text-slate-300 text-center leading-none">
+                15%<br />STANDBY
               </span>
             ) : (
               <span className="text-[8px] font-bold text-emerald-950 text-center leading-none">
@@ -498,8 +498,10 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
 function TechnicalHVACSchematic({ stateData }) {
   const { occupants, co2, algaeHealth, toAlgaePct, toOutdoorPct, damperAngle, flowLpm } = stateData;
   const isHighOcc = occupants >= 4;
-  const isDirectToExhaust = !isHighOcc; // When occupants < 4, air directs in HVAC system to exhausts
-  const isCrisis = !isHighOcc && algaeHealth < 45;
+  const isCrisis = algaeHealth < 45;
+  // If occupants >= 4, air directs to bioreactor!
+  // If occupants < 4 or crisis, air redirects to outside exhausts!
+  const isBypass = !isHighOcc || isCrisis || toOutdoorPct >= 60;
 
   return (
     <div className="relative w-full bg-[#FFFFFF] rounded-2xl p-4 sm:p-5 border border-[rgba(0,0,0,0.08)] overflow-hidden">
@@ -549,15 +551,11 @@ function TechnicalHVACSchematic({ stateData }) {
           <span className="px-3 py-1 rounded-[980px] bg-[#F5F5F7] border border-[rgba(0,0,0,0.04)] text-[#1D1D1F]">
             Intake: <strong className="text-[#0071E3]">Fresh Air 100%</strong>
           </span>
-          <span className={`px-3 py-1 rounded-[980px] border text-[#1D1D1F] ${isCrisis ? 'bg-[#FFF2F2] border-[#FF3B30]/30' : 'bg-[#E8F2FD] border-[#0071E3]/20'}`}>
+          <span className="px-3 py-1 rounded-[980px] bg-[#E8F2FD] border border-[#0071E3]/20 text-[#1D1D1F]">
             Return: <strong className="text-[#FF9500]">HUMAN CO₂ ({co2} ppm)</strong>
           </span>
-          <span className={`px-3 py-1 rounded-[980px] border text-[#1D1D1F] ${isDirectToExhaust ? 'bg-[#E8F2FD] border-[#0071E3]/30' : 'bg-[#E8F8EE] border-[#34C759]/20'}`}>
-            {isDirectToExhaust ? (
-              <span>Exhaust: <strong className="text-[#0071E3]">{toOutdoorPct}% (ROOFTOP SCRUBBER)</strong></span>
-            ) : (
-              <span>Bioreactor: <strong className="text-[#34C759]">{toAlgaePct}% (85% BIO-FEED)</strong></span>
-            )}
+          <span className={`px-3 py-1 rounded-[980px] border text-[#1D1D1F] ${isHighOcc ? 'bg-[#E8F8EE] border-[#34C759]/20' : 'bg-[#E8F2FD] border-[#0071E3]/30'}`}>
+            HVAC Status: <strong className={isHighOcc ? "text-[#34C759]" : "text-[#0071E3]"}>{isHighOcc ? '85% TO BIOREACTOR' : '85% EXHAUSTED OUTSIDE'}</strong>
           </span>
         </div>
       </div>
@@ -790,85 +788,53 @@ function TechnicalHVACSchematic({ stateData }) {
             <text x="0" y="-32" fill="#e2e8f0" fontSize="10" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
               3-way Damper
             </text>
-            <text x="0" y="-20" fill={isDirectToExhaust ? (isCrisis ? "#FF3B30" : "#38BDF8") : "#FF9500"} fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
-              {isHighOcc ? '(AI REDIRECTED 85% TO BIOREACTOR)' : '(AI DIRECTED 85% TO EXHAUST)'}
+            <text x="0" y="-20" fill={isCrisis ? "#FF3B30" : isHighOcc ? "#34C759" : "#0071E3"} fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+              {isCrisis ? '(CLAMPED 15% BY AI)' : isHighOcc ? '(AI REDIRECTED 85% TO BIOREACTOR)' : '(AI REDIRECTED 85% TO OUTSIDE EXHAUSTS)'}
             </text>
           </g>
 
           {/* ══════════════════════════════════════════════════════════════════
-              7. UPWARD EXHAUST BRANCH (ROOFTOP SCRUBBER EXHAUST)
-                 Active when occupants < 4 or during crisis!
-                 Demonstrates air directed in HVAC system to outside exhausts.
+              7. OUTSIDE EXHAUST / BYPASS SHUNT PIPELINE (UPWARD BRANCH)
+                 - When occupants < 4: Air actively redirects to outside exhausts!
+                 - When health < 45%: Emergency bypass shunt to safe scrubber!
              ══════════════════════════════════════════════════════════════════ */}
-          {isCrisis ? (
-            /* HEAVILY PULSING CRIMSON AND AMBER PIPELINE (CRISIS BYPASS) */
+          {isBypass ? (
+            /* HEAVILY PULSING EXHAUST REDIRECTION PIPELINE */
             <g>
+              {/* Outer pulsing stroke */}
               <path
                 d="M 595 84 L 595 55 L 675 55"
                 fill="none"
-                stroke="#FF3B30"
+                stroke={isCrisis ? "#FF3B30" : "#0071E3"}
                 strokeWidth="8"
                 strokeLinejoin="round"
                 className="animate-bypass-heavy"
               />
+              {/* Inner fast-moving pulse dashes */}
               <path
                 d="M 595 84 L 595 55 L 675 55"
                 fill="none"
-                stroke="#FF9500"
+                stroke={isCrisis ? "#FF9500" : "#38BDF8"}
                 strokeWidth="3.5"
                 strokeDasharray="8 6"
                 strokeLinejoin="round"
                 className="animate-flow-dash-fast"
               />
-              <polygon points="687,55 675,48 675,62" fill="#FF3B30" className="animate-bypass-heavy" />
+              <polygon points="687,55 675,48 675,62" fill={isCrisis ? "#FF3B30" : "#0071E3"} className="animate-bypass-heavy" />
 
+              {/* HEAVILY PULSING BADGE */}
               <g transform="translate(565, 14)">
-                <rect x="0" y="0" width="195" height="28" rx="6" fill="#450a0a" stroke="#FF3B30" strokeWidth="1.8" className="animate-pulse" />
-                <text x="97.5" y="11" fill="#FF3B30" fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
-                  ⚠️ ALGAE COLLAPSE BYPASS SHUNT
+                <rect x="0" y="0" width="195" height="28" rx="6" fill={isCrisis ? "#450a0a" : "#082f49"} stroke={isCrisis ? "#FF3B30" : "#0071E3"} strokeWidth="1.8" className="animate-pulse" />
+                <text x="97.5" y="11" fill={isCrisis ? "#FF3B30" : "#38BDF8"} fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
+                  {isCrisis ? '⚠️ ALGAE COLLAPSE BYPASS SHUNT' : '💨 OUTDOOR EXHAUST REDIRECTION'}
                 </text>
-                <text x="97.5" y="21" fill="#FDE047" fontSize="7" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
-                  VENTING {toOutdoorPct}% TO PREVENT ACIDIFICATION
-                </text>
-              </g>
-            </g>
-          ) : isDirectToExhaust ? (
-            /* ACTIVE EXHAUST STREAM (< 4 OCCUPANTS) - AIR DIRECTS IN HVAC SYSTEM TO EXHAUSTS */
-            <g>
-              {/* Outer glowing blue/cyan exhaust conduit */}
-              <path
-                d="M 595 84 L 595 55 L 675 55"
-                fill="none"
-                stroke="#0071E3"
-                strokeWidth="7"
-                strokeLinejoin="round"
-                style={{ filter: 'drop-shadow(0 0 6px rgba(0,113,227,0.85))' }}
-              />
-              {/* Animated high-velocity flow dashes */}
-              <path
-                d="M 595 84 L 595 55 L 675 55"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="2.5"
-                strokeDasharray="8 6"
-                strokeLinejoin="round"
-                className="animate-flow-dash-fast"
-              />
-              <polygon points="687,55 675,49 675,61" fill="#0071E3" />
-
-              {/* Prominent Badge: AIR DIRECTS TO EXHAUSTS */}
-              <g transform="translate(565, 14)">
-                <rect x="0" y="0" width="195" height="28" rx="6" fill="#081d38" stroke="#0071E3" strokeWidth="1.8" />
-                <text x="97.5" y="11" fill="#38BDF8" fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
-                  💨 ROOFTOP SCRUBBER EXHAUST
-                </text>
-                <text x="97.5" y="21" fill="#BAE6FD" fontSize="7" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
-                  DIRECTING {toOutdoorPct}% AIR OUTSIDE (&lt;4 OCCUPANTS)
+                <text x="97.5" y="21" fill={isCrisis ? "#FDE047" : "#BAE6FD"} fontSize="7" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+                  {isCrisis ? `VENTING ${toOutdoorPct}% TO PREVENT ACIDIFICATION` : `VENTING ${toOutdoorPct}% OUTSIDE (<4 OCCUPANTS)`}
                 </text>
               </g>
             </g>
           ) : (
-            /* Normal standby outdoor exhaust bleed (Occupancy >= 4) */
+            /* Normal standby outdoor exhaust */
             <g>
               <path
                 d="M 595 84 L 595 55 L 675 55"
@@ -892,18 +858,18 @@ function TechnicalHVACSchematic({ stateData }) {
               width="155"
               height="62"
               rx="10"
-              fill={isDirectToExhaust ? (isCrisis ? "#1f1012" : "#081d38") : "#0f172a"}
-              stroke={isDirectToExhaust ? (isCrisis ? "#FF3B30" : "#0071E3") : "#475569"}
-              strokeWidth={isDirectToExhaust ? "2" : "1.5"}
+              fill={isBypass ? (isCrisis ? "#1f1012" : "#0c2340") : "#0f172a"}
+              stroke={isBypass ? (isCrisis ? "#FF3B30" : "#0071E3") : "#475569"}
+              strokeWidth={isBypass ? "2" : "1.5"}
             />
             <text x="77.5" y="18" fill="#FFFFFF" fontSize="9.5" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">
               SAFE ROOFTOP SCRUBBER
             </text>
-            <text x="77.5" y="31" fill={isDirectToExhaust ? (isCrisis ? "#FCA5A5" : "#BAE6FD") : "#94A3B8"} fontSize="8" fontWeight="medium" textAnchor="middle" fontFamily="sans-serif">
-              {isDirectToExhaust ? (isCrisis ? 'CO₂ Diverted (pH Safeguard)' : 'Active Airflow Exhaust (<4 Occ)') : 'Atmospheric Bleed Vent'}
+            <text x="77.5" y="31" fill={isBypass ? (isCrisis ? "#FCA5A5" : "#7DD3FC") : "#94A3B8"} fontSize="8" fontWeight="medium" textAnchor="middle" fontFamily="sans-serif">
+              {isCrisis ? 'CO₂ Diverted (pH Safeguard)' : isBypass ? 'Outside Atmospheric Exhaust' : 'Atmospheric Bleed Vent'}
             </text>
-            <text x="77.5" y="47" fill={isDirectToExhaust ? (isCrisis ? "#FF9500" : "#38BDF8") : "#64748B"} fontSize="9.5" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
-              {toOutdoorPct}% OUTDOOR EXHAUST
+            <text x="77.5" y="47" fill={isBypass ? (isCrisis ? "#FF9500" : "#38BDF8") : "#64748B"} fontSize="9.5" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+              {toOutdoorPct}% OUTDOOR VENT
             </text>
           </g>
 
@@ -933,7 +899,7 @@ function TechnicalHVACSchematic({ stateData }) {
                   RESTRICTED TO 15% FLOW
                 </text>
                 <text x="82.5" y="24" fill="#94A3B8" fontSize="7" fontWeight="medium" textAnchor="middle" fontFamily="monospace">
-                  Acidification Shield (pH &lt; 6.8)
+                  {isCrisis ? 'Acidification Shield (pH < 6.8)' : 'Low Occupancy (<4) — Air Exhausted Outside'}
                 </text>
               </g>
             </g>
@@ -1024,11 +990,11 @@ function TechnicalHVACSchematic({ stateData }) {
               <text x="44" y="4" fill="#34C759" fontSize="9.5" fontFamily="sans-serif">Photosynthetic Fuel</text>
             </g>
 
-            {/* Item 4: Rooftop Scrubber Exhaust */}
+            {/* Item 4: ALGAE COLLAPSE BYPASS SHUNT */}
             <g transform="translate(18, 146)">
-              <line x1="0" y1="0" x2="30" y2="0" stroke="#0071E3" strokeWidth="5" strokeLinecap="round" />
-              <polygon points="34,0 26,-4 26,4" fill="#0071E3" />
-              <text x="44" y="4" fill="#38BDF8" fontSize="8" fontWeight="bold" fontFamily="sans-serif">ROOFTOP EXHAUST (&lt;4)</text>
+              <line x1="0" y1="0" x2="30" y2="0" stroke="#FF3B30" strokeWidth="5" strokeLinecap="round" />
+              <polygon points="34,0 26,-4 26,4" fill="#FF3B30" />
+              <text x="44" y="4" fill="#FF3B30" fontSize="8" fontWeight="bold" fontFamily="sans-serif">BYPASS SHUNT (&lt;45%)</text>
             </g>
 
             <line x1="18" y1="168" x2="172" y2="168" stroke="#1e293b" strokeWidth="1" />
@@ -1090,36 +1056,38 @@ export default function HVACDiagram({
   const currentStateData = useMemo(() => {
     if (selectedState === 'live') {
       const isHighOcc = storeOccupancy >= 4;
-      const isCrisis = !isHighOcc && storeAlgaeHealth < 45.0;
-      // When occupants >= 4: 85% to Bioreactor, 15% to Outdoor
-      // When occupants < 4: air directs to exhausts: 85% to Outdoor Exhaust, 15% to Bioreactor
+      const isCrisis = storeAlgaeHealth < 45.0 || (hvacState.activeLoop === 'roof_bypass' && storeAlgaeHealth < 45);
+      
+      // When occupants are 4 or more: air directs to bioreactor (85% bio, 15% outdoor)
+      // When occupants are less than 4: air redirects in HVAC system to exhausts outside (85% outdoor, 15% bio)
       const toAlgae = isHighOcc ? 85 : 15;
-      const toOutdoor = 100 - toAlgae;
+      const toOutdoor = isHighOcc ? 15 : 85;
+
       return {
         id: 'live',
         title: isHighOcc
           ? 'Live Sync: "Feed the Algae" Active (High Occupancy ≥4)'
           : (isCrisis
             ? 'Live Sync: "Acidification Bypass" Shunt'
-            : 'Live Sync: Exhaust Mode Active (<4 Occupants)'),
+            : 'Live Sync: Outdoor Exhaust Redirection (<4 Occupants)'),
         subtitle: isHighOcc
           ? `YOLOv8 detected ${storeOccupancy} occupants in Live CV (${storeCo2} ppm CO₂). HVAC dampers modulated to 85% — directing human CO₂ exhaust straight into the bioreactor facade.`
           : (isCrisis
             ? `ALGAE COLLAPSE BYPASS SHUNT active: Yellow pixels detected (${Math.round(storeAlgaeHealth)}% < 45%). Damper clamped to 15% to prevent carbonic acidification. 85% exhaust routed to safe rooftop scrubber.`
-            : `YOLOv8 detected ${storeOccupancy} occupant${storeOccupancy !== 1 ? 's' : ''} in Live CV (<4 threshold). Air directs in HVAC system to rooftop scrubber exhaust (85% outdoor exhaust vent).`),
+            : `YOLOv8 detected ${storeOccupancy} occupant${storeOccupancy !== 1 ? 's' : ''} in Live CV (<4 threshold). Air redirects in HVAC system to exhausts outside (85% outdoor exhaust vent / 15% baseline bio-trickle).`),
         occupants: storeOccupancy,
         co2: storeCo2,
         algaeHealth: isHighOcc ? Math.max(88, Math.round(storeAlgaeHealth)) : Math.round(storeAlgaeHealth),
         toAlgaePct: toAlgae,
         toOutdoorPct: toOutdoor,
-        damperAngle: isHighOcc ? 75 : 12,
+        damperAngle: isHighOcc ? 75 : 15,
         flowLpm: isHighOcc ? 26.0 : 2.5,
         algaeColor: (!isCrisis || isHighOcc) ? '#34C759' : '#FFCC00',
         liquidTone: (!isCrisis || isHighOcc) ? 'healthy' : 'unhealthy',
         modeText: isHighOcc
           ? 'FEED THE ALGAE (85% BIO-FEED)'
-          : (isCrisis ? 'ALGAE COLLAPSE BYPASS SHUNT (15% CLAMP)' : 'EXHAUST MODE (85% OUTDOOR VENT)'),
-        badgeColor: isHighOcc ? '#FF9500' : (isCrisis ? '#FF3B30' : '#0071E3')
+          : (isCrisis ? 'ALGAE COLLAPSE BYPASS SHUNT (15% CLAMP)' : 'OUTDOOR EXHAUST REDIRECTION (85% VENT)'),
+        badgeColor: isHighOcc ? '#34C759' : (isCrisis ? '#FF3B30' : '#0071E3')
       };
     }
     return STATES[selectedState] || STATES.state2;

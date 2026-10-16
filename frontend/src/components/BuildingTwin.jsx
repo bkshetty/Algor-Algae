@@ -856,7 +856,7 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
         {isBypass && (
           <div className="px-3 py-1.5 rounded-[980px] text-xs font-semibold border border-[#0071E3]/30 bg-[rgba(245,245,247,0.92)] text-[#0071E3] flex items-center gap-2 backdrop-blur-[20px] shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-[#0071E3] animate-pulse" />
-            <span>EXHAUST ACTIVE: AIR DIRECTED TO ROOFTOP SCRUBBER ({occupancy} &lt; 4 OCCUPANTS)</span>
+            <span>OUTLET AIR REDIRECTED TO OUTSIDE (ROOFTOP EXHAUST)</span>
           </div>
         )}
 
