@@ -90,8 +90,10 @@ class CVEngine:
         green_count = int(cv2.countNonZero(green_mask))
 
         # Yellow mask (Degradation / Stress / Yellow paper/screen held up)
-        lower_yellow = np.array([15, 40, 40])
-        upper_yellow = np.array([34, 255, 255])
+        # Narrowed to genuine high-saturation yellow (Hue 24-35, Saturation >= 100, Value >= 100)
+        # Prevents human skin tones (Hue 12-20) and ambient walls from false-triggering crisis
+        lower_yellow = np.array([24, 100, 100])
+        upper_yellow = np.array([35, 255, 255])
         yellow_mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
         yellow_count = int(cv2.countNonZero(yellow_mask))
 
@@ -100,10 +102,10 @@ class CVEngine:
         yellow_ratio = yellow_count / total_pixels
 
         # Target health logic:
-        # If user explicitly holds yellow object in the ROI box (yellow_ratio > 0.08)
-        if yellow_ratio > 0.08:
+        # If user explicitly holds vibrant yellow sample/card in the ROI box (yellow_ratio > 0.15)
+        if yellow_ratio > 0.15:
             # Significant yellow detected -> crisis simulation
-            target_health = max(10.0, 100.0 - (yellow_ratio * 150.0))
+            target_health = max(10.0, 100.0 - (yellow_ratio * 140.0))
         elif green_ratio > 0.08:
             # Significant green detected -> thriving culture
             target_health = min(100.0, 80.0 + (green_ratio * 30.0))

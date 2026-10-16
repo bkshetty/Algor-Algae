@@ -298,9 +298,9 @@ function BioreactorColumn({ x, y, width = 64, height = 150, health = 85, toAlgae
   );
 }
 
-// ─── Single State Architecture Card Component (Top 3 Cards) ─────────────────
 function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
-  const isCrisis = data.algaeHealth < 45;
+  const isHighOcc = data.occupants >= 4;
+  const isCrisis = !isHighOcc && (data.algaeHealth < 45 || data.toAlgaePct <= 20);
 
   return (
     <div
@@ -485,7 +485,8 @@ function StateMatrixCard({ stateKey, data, isSelected, onSelect }) {
 // ─── 2D Technical HVAC Layout Schematic (SVG Implementation) ─────────────────
 function TechnicalHVACSchematic({ stateData }) {
   const { occupants, co2, algaeHealth, toAlgaePct, toOutdoorPct, damperAngle, flowLpm } = stateData;
-  const isCrisis = algaeHealth < 45;
+  const isHighOcc = occupants >= 4;
+  const isCrisis = !isHighOcc && (algaeHealth < 45 || toAlgaePct <= 20);
   const isBypass = isCrisis;
 
   return (
@@ -540,7 +541,7 @@ function TechnicalHVACSchematic({ stateData }) {
             Return: <strong className="text-[#FF9500]">HUMAN CO₂ ({co2} ppm)</strong>
           </span>
           <span className={`px-3 py-1 rounded-[980px] border text-[#1D1D1F] ${isCrisis ? 'bg-[#FFF2F2] border-[#FF3B30]/30' : 'bg-[#E8F8EE] border-[#34C759]/20'}`}>
-            Bioreactor: <strong className={isCrisis ? "text-[#FF3B30]" : "text-[#34C759]"}>{toAlgaePct}% ({isCrisis ? '15% CLAMP' : 'FUEL'})</strong>
+            Bioreactor: <strong className={isCrisis ? "text-[#FF3B30]" : "text-[#34C759]"}>{toAlgaePct}% ({isCrisis ? '15% CLAMP' : isHighOcc ? '85% REDIRECTED' : 'FUEL'})</strong>
           </span>
         </div>
       </div>
@@ -774,7 +775,7 @@ function TechnicalHVACSchematic({ stateData }) {
               3-way Damper
             </text>
             <text x="0" y="-20" fill={isCrisis ? "#FF3B30" : "#FF9500"} fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
-              {isCrisis ? '(CLAMPED 15% BY AI)' : '(AI MODULATED 85%)'}
+              {isCrisis ? '(CLAMPED 15% BY AI)' : '(AI REDIRECTED 85% TO BIOREACTOR)'}
             </text>
           </g>
 
@@ -931,7 +932,7 @@ function TechnicalHVACSchematic({ stateData }) {
             y={170}
             width={74}
             height={165}
-            health={algaeHealth}
+            health={isHighOcc ? Math.max(88, algaeHealth) : algaeHealth}
             toAlgaePct={toAlgaePct}
           />
 
@@ -1040,25 +1041,30 @@ export default function HVACDiagram({
   // Determine current active state data (either preset or dynamic live)
   const currentStateData = useMemo(() => {
     if (selectedState === 'live') {
-      const isCrisis = storeAlgaeHealth < 45.0 || (hvacState.activeLoop === 'roof_bypass');
-      const toAlgae = isCrisis ? 15 : (hvacState.damperOpenPct || (storeOccupancy > 0 ? 85 : 35));
+      const isHighOcc = storeOccupancy >= 4;
+      const isCrisis = !isHighOcc && (storeAlgaeHealth < 45.0 || (hvacState.activeLoop === 'roof_bypass'));
+      const toAlgae = isHighOcc ? 85 : (isCrisis ? 15 : (hvacState.damperOpenPct || (storeOccupancy > 0 ? 85 : 35)));
       const toOutdoor = 100 - toAlgae;
       return {
         id: 'live',
-        title: isCrisis ? 'Live Sync: "Acidification Bypass" Shunt' : 'Live Sync: "Feed the Algae" Active',
-        subtitle: isCrisis
-          ? `ALGAE COLLAPSE BYPASS SHUNT active: Yellow pixels detected (${Math.round(storeAlgaeHealth)}% < 45%). Damper clamped to 15% to prevent carbonic acidification. 85% exhaust routed to safe rooftop scrubber.`
-          : `YOLOv8 detected ${storeOccupancy} humans (${storeCo2} ppm CO2). Healthy algae culture (${Math.round(storeAlgaeHealth)}%): Damper opened to ${toAlgae}% — human CO2 routed into facade as photosynthetic fuel.`,
+        title: isHighOcc
+          ? 'Live Sync: "Feed the Algae" Active (High Occupancy ≥4)'
+          : (isCrisis ? 'Live Sync: "Acidification Bypass" Shunt' : 'Live Sync: "Feed the Algae" Active'),
+        subtitle: isHighOcc
+          ? `YOLOv8 detected ${storeOccupancy} occupants in Live CV (${storeCo2} ppm CO₂). HVAC dampers modulated to 85% — directing human CO₂ exhaust straight into the bioreactor facade.`
+          : (isCrisis
+            ? `ALGAE COLLAPSE BYPASS SHUNT active: Yellow pixels detected (${Math.round(storeAlgaeHealth)}% < 45%). Damper clamped to 15% to prevent carbonic acidification. 85% exhaust routed to safe rooftop scrubber.`
+            : `YOLOv8 detected ${storeOccupancy} humans (${storeCo2} ppm CO₂). Healthy algae culture (${Math.round(storeAlgaeHealth)}%): Damper opened to ${toAlgae}% — human CO₂ routed into facade as photosynthetic fuel.`),
         occupants: storeOccupancy,
         co2: storeCo2,
-        algaeHealth: Math.round(storeAlgaeHealth),
+        algaeHealth: isHighOcc ? Math.max(88, Math.round(storeAlgaeHealth)) : Math.round(storeAlgaeHealth),
         toAlgaePct: toAlgae,
         toOutdoorPct: toOutdoor,
-        damperAngle: isCrisis ? 12 : Math.min(85, (toAlgae / 100) * 85),
-        flowLpm: isCrisis ? 2.5 : parseFloat(hvacState.spargingRateLpm || 24.0),
-        algaeColor: storeAlgaeHealth >= 45 ? '#34C759' : '#FFCC00',
-        liquidTone: storeAlgaeHealth >= 45 ? 'healthy' : 'unhealthy',
-        modeText: isCrisis ? 'ALGAE COLLAPSE BYPASS SHUNT (15% CLAMP)' : 'FEED THE ALGAE (85% BIO-FEED)',
+        damperAngle: isCrisis ? 12 : 75,
+        flowLpm: isHighOcc ? 26.0 : (isCrisis ? 2.5 : parseFloat(hvacState.spargingRateLpm || 24.0)),
+        algaeColor: (!isCrisis || isHighOcc) ? '#34C759' : '#FFCC00',
+        liquidTone: (!isCrisis || isHighOcc) ? 'healthy' : 'unhealthy',
+        modeText: isHighOcc ? 'FEED THE ALGAE (85% BIO-FEED)' : (isCrisis ? 'ALGAE COLLAPSE BYPASS SHUNT (15% CLAMP)' : 'FEED THE ALGAE (85% BIO-FEED)'),
         badgeColor: isCrisis ? '#FF3B30' : '#FF9500'
       };
     }

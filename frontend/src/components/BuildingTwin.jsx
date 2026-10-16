@@ -339,8 +339,8 @@ function CornerBioreactorStack({ position, cornerType = 'FL', floorYs = [Y_GROUN
   }, [cornerType]);
 
   useFrame((state, delta) => {
-    const { algae_health, hvacState } = useStore.getState();
-    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 68;
+    const { algae_health, hvacState, occupancy } = useStore.getState();
+    const isBypass = (hvacState.activeLoop === 'roof_bypass' || algae_health < 45) && (occupancy < 4);
 
     // Dynamically lerp fluid color and emissive glow based on real-time health telemetry
     const targetColor = getBioreactorFluidColor(algae_health);
@@ -503,8 +503,8 @@ function AirflowPipeNetwork() {
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
-    const { hvacState, algae_health } = useStore.getState();
-    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 68;
+    const { hvacState, algae_health, occupancy } = useStore.getState();
+    const isBypass = (hvacState.activeLoop === 'roof_bypass' || algae_health < 45) && (occupancy < 4);
     const arr = pointsRef.current.geometry.attributes.position.array;
 
     // When algae is unhealthy/yellow (bypass active), conduit stream to corner reactors throttles to 5% trickle
@@ -577,8 +577,8 @@ function RooftopAtmosphericExhaust() {
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
-    const { hvacState, algae_health } = useStore.getState();
-    const isBypass = hvacState.activeLoop === 'roof_bypass' || algae_health < 68;
+    const { hvacState, algae_health, occupancy } = useStore.getState();
+    const isBypass = (hvacState.activeLoop === 'roof_bypass' || algae_health < 45) && (occupancy < 4);
     pointsRef.current.visible = isBypass;
     if (!isBypass) return;
 
@@ -836,7 +836,7 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
   const setDamper   = useStore((s) => s.setHvacDamper);
 
   const statusColor = algaeHealth >= 75 ? '#10b981' : algaeHealth >= 45 ? '#f59e0b' : '#ef4444';
-  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 68;
+  const isBypass = (hvacState.activeLoop === 'roof_bypass' || algaeHealth < 45) && (occupancy < 4);
 
   return (
     <>

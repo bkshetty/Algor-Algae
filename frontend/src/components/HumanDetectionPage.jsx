@@ -50,12 +50,13 @@ export default function HumanDetectionPage() {
   };
 
   // Biological Cause-and-Effect Pipeline State
-  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 45.0;
+  const isHighOcc = occupancy >= 4;
+  const isBypass = !isHighOcc && (hvacState.activeLoop === 'roof_bypass' || algaeHealth < 45.0);
   const metabolicCo2Added = occupancy * 150;
-  // If in bypass, damper is strictly clamped down to 15% to protect biology from acidifying
-  const hvacDamperOpenPct = isBypass ? 15 : (hvacState.damperOpenPct || (occupancy > 0 ? 85 : 35));
+  // If occupants >= 4, damper opens to 85% redirecting air to bioreactor; if in bypass, clamped to 15%
+  const hvacDamperOpenPct = isHighOcc ? 85 : (isBypass ? 15 : (hvacState.damperOpenPct || (occupancy > 0 ? 85 : 35)));
   const dailyCo2LoadKg = (occupancy * 0.12).toFixed(2);
-  const airflowSpargingRate = isBypass ? '2.5' : (hvacState.spargingRateLpm || (occupancy > 0 ? '26.0' : '6.0'));
+  const airflowSpargingRate = isHighOcc ? '26.0' : (isBypass ? '2.5' : (hvacState.spargingRateLpm || (occupancy > 0 ? '26.0' : '6.0')));
 
   return (
     <div className="flex flex-col space-y-4 w-full">

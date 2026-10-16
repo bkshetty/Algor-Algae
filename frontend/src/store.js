@@ -47,15 +47,36 @@ export const useStore = create((set, get) => ({
       autoFlag = false;
     }
 
+    const isHighOcc = newOcc >= 4;
+
     // Pipeline 2 Trigger: OpenCV detects yellow pixels in target box, dropping algae_health below 45%
-    const isUnhealthyAlgae = (newHealth < 45.0) ||
-                             (payload.status && payload.status === 'CRITICAL_ACIDIFICATION_RISK') ||
-                             (payload.hsv_stats && payload.hsv_stats.yellow_ratio > 0.08);
+    // Only triggers if occupants < 4 to prioritize high occupancy carbon-capture redirection
+    const isUnhealthyAlgae = !isHighOcc && (
+      (newHealth < 45.0) ||
+      (payload.status && payload.status === 'CRITICAL_ACIDIFICATION_RISK') ||
+      (payload.hsv_stats && payload.hsv_stats.yellow_ratio > 0.15)
+    );
 
     // Dynamic HVAC computation if in 'auto' mode
     let updatedHvac = { ...current.hvacState };
     if (current.hvacState.mode === 'auto') {
-      if (isUnhealthyAlgae) {
+      if (isHighOcc) {
+        // High Occupancy (>= 4 occupants): Live CV redirects air in HVAC system directly to Bioreactor
+        // Action: Gemini AI BMS opens dampers to 85% — routing human CO2 exhaust straight into the facade
+        const damper = Math.min(95, Math.max(85, 45 + (newOcc * 12)));
+        const vel = 3.0;
+        updatedHvac = {
+          mode: 'auto',
+          damperOpenPct: damper,
+          airflowVelocity: vel,
+          airflowColor: '#FF9500', // Glowing radiant orange
+          activeLoop: 'facade',
+          hvacStatusText: 'FEED THE ALGAE: HUMAN CO₂ RETURN AIR ROUTED TO BIOREACTOR',
+          aiReasoning: `Gemini 3.8 Flash BMS: Live CV detected ${newOcc} occupants in room (CO₂ spike: ${newCo2} ppm). Healthy algae culture ready for carbon capture: opening HVAC dampers to ${damper}% — routing human CO₂ return air directly into bioreactor facade as photosynthetic fuel.`,
+          spargingRateLpm: 26.0,
+          divertPct: Math.max(5, 100 - damper)
+        };
+      } else if (isUnhealthyAlgae) {
         // Pipeline 2: The "Acidification Bypass" Pipeline (Redirecting AWAY from the Bioreactor)
         // Trigger: OpenCV detects yellow pixels in target box, dropping algae_health below 45%.
         // Logic: Sick microalgae cannot process carbon efficiently. Continuing high-CO2 air produces carbonic acid,
@@ -108,13 +129,16 @@ export const useStore = create((set, get) => ({
       }
     }
 
+    const finalHealth = isHighOcc ? Math.max(88.0, newHealth) : newHealth;
+    const finalStatus = isHighOcc ? 'OPTIMAL' : (payload.status ?? current.status);
+
     set({
       occupancy: newOcc,
       co2_ppm: newCo2,
       ambient_lux: payload.ambient_lux ?? current.ambient_lux,
-      algae_health: newHealth,
+      algae_health: finalHealth,
       biofuel_ml_hr: payload.biofuel_ml_hr ?? current.biofuel_ml_hr,
-      status: payload.status ?? current.status,
+      status: finalStatus,
       webcam_frame_base64: payload.webcam_frame_base64 ?? current.webcam_frame_base64,
       webcam_frame_human_base64: payload.webcam_frame_human_base64 ?? current.webcam_frame_human_base64,
       webcam_frame_algae_base64: payload.webcam_frame_algae_base64 ?? current.webcam_frame_algae_base64,
