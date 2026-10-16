@@ -7,18 +7,18 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-  --color-ground: #060a12;
-  --color-ground-secondary: #090f19;
-  --color-surface-glass: rgba(13, 21, 34, 0.75);
-  --color-ink-primary: #ede7dc;
-  --color-ink-secondary: #9ea5a8;
-  --color-ink-muted: #6c7378;
-  --color-accent-green: #10b981;
-  --color-accent-cyan: #0284c7;
-  --color-accent-amber: #f59e0b;
-  --color-accent-crimson: #ef4444;
-  --color-hairline: rgba(237, 231, 220, 0.13);
+  color-scheme: light;
+  --color-ground: #F5F5F7;
+  --color-ground-secondary: #FFFFFF;
+  --color-surface-glass: rgba(245, 245, 247, 0.8);
+  --color-ink-primary: #1D1D1F;
+  --color-ink-secondary: #86868B;
+  --color-ink-muted: #86868B;
+  --color-accent-green: #34C759;
+  --color-accent-cyan: #0071E3;
+  --color-accent-amber: #FF9500;
+  --color-accent-crimson: #FF3B30;
+  --color-hairline: rgba(0, 0, 0, 0.08);
   
   /* Apple Retail System Tokens (apple-design.md) */
   --apple-bg: #F5F5F7;
@@ -36,8 +36,8 @@
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 'Sora', sans-serif;
-  background-color: var(--color-ground);
-  color: var(--color-ink-primary);
+  background-color: var(--apple-bg);
+  color: var(--apple-text-primary);
   letter-spacing: -0.01em;
 }
 
@@ -126,12 +126,12 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: #F5F5F7;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #D1D1D6;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #8E8E93;
 }
