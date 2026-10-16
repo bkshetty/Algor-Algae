@@ -1,16 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   color-scheme: dark;
+  --color-ground: #060a12;
+  --color-ground-secondary: #090f19;
+  --color-surface-glass: rgba(13, 21, 34, 0.75);
+  --color-ink-primary: #ede7dc;
+  --color-ink-secondary: #9ea5a8;
+  --color-ink-muted: #6c7378;
+  --color-accent-green: #10b981;
+  --color-accent-cyan: #0284c7;
+  --color-accent-amber: #f59e0b;
+  --color-accent-crimson: #ef4444;
+  --color-hairline: rgba(237, 231, 220, 0.13);
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #080c14;
-  color: #f1f5f9;
+  font-family: 'Sora', sans-serif;
+  background-color: var(--color-ground);
+  color: var(--color-ink-primary);
+  letter-spacing: 0.02em;
 }
 
 /* Glassmorphism utility */

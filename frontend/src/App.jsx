@@ -27,6 +27,7 @@ export default function App() {
 
   // Systematic multi-page view state: 'landing' | 'overview' | 'human' | 'algae' | 'hvac'
   const [activePage, setActivePage] = useState('landing');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     initWebSocket();
@@ -35,133 +36,167 @@ export default function App() {
     };
   }, []);
 
-  const isCritical = algaeHealth < 45;
+  const handleNav = (page) => {
+    setActivePage(page);
+    setMobileMenuOpen(false);
+  };
 
   return (
-    <div className="min-h-screen bg-[#060a12] text-slate-100 flex flex-col font-sans">
-      {/* Top Futuristic Navigation Bar */}
-      <header className="border-b border-slate-800/80 bg-[#090f19]/90 backdrop-blur-xl px-4 lg:px-6 py-3 flex flex-wrap items-center justify-between sticky top-0 z-50 gap-3 shadow-2xl">
-        {/* Logo & Platform Info */}
+    <div className="min-h-screen bg-[#060a12] text-[#ede7dc] flex flex-col font-['Sora'] selection:bg-[#10b981] selection:text-black">
+      {/* 58px Fixed Translucent Navigation Bar */}
+      <header className="h-[58px] border-b border-[rgba(237,231,220,0.13)] bg-[rgba(13,21,34,0.75)] backdrop-blur-[16px] px-4 lg:px-8 flex items-center justify-between sticky top-0 z-50">
+        {/* Wordmark (15px Syne 700 uppercase with green trailing dot, 12px on mobile) */}
         <div 
-          onClick={() => setActivePage('landing')}
-          className="flex items-center space-x-3 cursor-pointer group"
+          onClick={() => handleNav('landing')}
+          className="flex items-center space-x-2 cursor-pointer group select-none"
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 flex items-center justify-center shadow-lg shadow-emerald-950/50 group-hover:scale-105 transition-transform">
-            <div className="w-full h-full bg-[#070b12] rounded-[10px] flex items-center justify-center">
-              <Leaf className="w-5 h-5 text-emerald-400" />
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <h1 className="font-bold text-base tracking-tight text-white font-mono flex items-center">
-                ALGOR-ALGAE
-                <span className="ml-2 text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono">
-                  LIVING TWIN v1.0
-                </span>
-              </h1>
-            </div>
-            <p className="text-[11px] text-slate-400 font-mono hidden sm:block">
-              Autonomous Biological Facade & Carbon Bio-Sequestration Nervous System
-            </p>
-          </div>
+          <span className="font-['Syne'] font-bold text-[12px] sm:text-[15px] uppercase tracking-[-0.02em] text-[#ede7dc] group-hover:opacity-90 transition-opacity">
+            Algor-Algae<span className="text-[#10b981]">.</span>
+          </span>
+          <span className="hidden md:inline-block font-mono text-[9.5px] uppercase px-1.5 py-0.5 rounded border border-[rgba(237,231,220,0.15)] text-[#9ea5a8]">
+            TWIN v1.0
+          </span>
         </div>
 
-        {/* Central Systematic Navigation Tabs */}
-        <nav className="flex items-center bg-[#0d1522] p-1 rounded-xl border border-slate-800 shadow-inner flex-wrap gap-1">
+        {/* Links (10.5px Sora 500 uppercase letter-spacing 0.12em) */}
+        <nav className="hidden sm:flex items-center space-x-5 lg:space-x-7 font-['Sora'] text-[10.5px] uppercase font-medium tracking-[0.12em]">
           <button
-            onClick={() => setActivePage('landing')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center space-x-1.5 ${
-              activePage === 'landing'
-                ? 'bg-gradient-to-r from-emerald-500/25 to-teal-500/25 text-emerald-300 border border-emerald-500/50 shadow-sm font-bold'
-                : 'text-slate-400 hover:text-white'
+            onClick={() => handleNav('landing')}
+            className={`transition-colors py-1 ${
+              activePage === 'landing' ? 'text-[#10b981] font-semibold' : 'text-[#ede7dc] hover:text-[#10b981]'
             }`}
           >
-            <Compass className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Project Overview</span>
+            Portal
           </button>
 
           <button
-            onClick={() => setActivePage('overview')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center space-x-1.5 ${
-              activePage === 'overview'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm font-bold'
-                : 'text-slate-400 hover:text-white'
+            onClick={() => handleNav('overview')}
+            className={`transition-colors py-1 ${
+              activePage === 'overview' ? 'text-[#10b981] font-semibold' : 'text-[#ede7dc] hover:text-[#10b981]'
             }`}
           >
-            <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>3D Digital Twin</span>
+            3D Twin
           </button>
 
           <button
-            onClick={() => setActivePage('human')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center space-x-1.5 ${
-              activePage === 'human'
-                ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm font-bold'
-                : 'text-slate-400 hover:text-white'
+            onClick={() => handleNav('human')}
+            className={`transition-colors py-1 flex items-center gap-1.5 ${
+              activePage === 'human' ? 'text-[#10b981] font-semibold' : 'text-[#ede7dc] hover:text-[#10b981]'
             }`}
           >
-            <Users className="w-3.5 h-3.5 text-sky-400" />
-            <span>Human Occupancy</span>
-            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-sky-500/30 text-sky-200">
+            <span>Occupancy</span>
+            <span className="font-mono text-[9.5px] px-1 rounded border border-[rgba(237,231,220,0.15)] text-[#9ea5a8]">
               {occupancy}
             </span>
           </button>
 
           <button
-            onClick={() => setActivePage('algae')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center space-x-1.5 ${
-              activePage === 'algae'
-                ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-sm font-bold'
-                : 'text-slate-400 hover:text-white'
+            onClick={() => handleNav('algae')}
+            className={`transition-colors py-1 flex items-center gap-1.5 ${
+              activePage === 'algae' ? 'text-[#10b981] font-semibold' : 'text-[#ede7dc] hover:text-[#10b981]'
             }`}
           >
-            <Activity className="w-3.5 h-3.5 text-teal-400" />
-            <span>Algae Bio-Health</span>
-            <span className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] ${
-              algaeHealth >= 70 ? 'bg-emerald-500/30 text-emerald-200' :
-              algaeHealth >= 45 ? 'bg-amber-500/30 text-amber-200' : 'bg-rose-500/30 text-rose-200'
-            }`}>
+            <span>Algae Health</span>
+            <span className="font-mono text-[9.5px] px-1 rounded border border-[rgba(16,185,129,0.3)] text-[#10b981]">
               {algaeHealth.toFixed(0)}%
             </span>
           </button>
 
           <button
-            onClick={() => setActivePage('hvac')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center space-x-1.5 ${
-              activePage === 'hvac'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm font-bold'
-                : 'text-slate-400 hover:text-white'
+            onClick={() => handleNav('hvac')}
+            className={`transition-colors py-1 ${
+              activePage === 'hvac' ? 'text-[#10b981] font-semibold' : 'text-[#ede7dc] hover:text-[#10b981]'
             }`}
           >
-            <Wind className="w-3.5 h-3.5 text-amber-400" />
-            <span>HVAC Schematic</span>
+            HVAC Schematic
           </button>
         </nav>
 
-        {/* Global Status Indicators */}
-        <div className="flex items-center space-x-3 text-xs font-mono">
-          <div className="hidden xl:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#0e1624] border border-slate-800">
-            <span className="text-slate-400 text-[11px]">BMS KERNEL:</span>
-            <span className="text-emerald-400 font-medium">GEMINI 3.8 FLASH</span>
+        {/* Right Controls: Pill CTA Button & Mobile Hamburger */}
+        <div className="flex items-center space-x-3">
+          <div className="hidden xl:flex items-center space-x-2 font-mono text-[10px] text-[#9ea5a8]">
+            <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-[#10b981] animate-pulse' : 'bg-[#ef4444]'}`} />
+            <span>{isConnected ? '30 FPS' : 'STANDBY'}</span>
           </div>
 
-          <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#0e1624] border border-slate-800">
-            <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
-            <span className={isConnected ? 'text-slate-300' : 'text-rose-400'}>
-              {isConnected ? 'TELEMETRY: 30 FPS' : 'OFFLINE'}
-            </span>
-          </div>
+          <button
+            onClick={() => handleNav(activePage === 'overview' ? 'landing' : 'overview')}
+            className="px-3.5 py-1.5 rounded-full border border-[rgba(237,231,220,0.22)] hover:border-[#10b981] hover:text-[#10b981] font-['Sora'] text-[10.5px] font-medium tracking-[0.12em] uppercase text-[#ede7dc] transition-all"
+          >
+            {activePage === 'overview' ? 'View Portal' : 'Explore Twin'}
+          </button>
+
+          {/* Mobile Hamburger Toggle Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="sm:hidden p-1.5 rounded text-[#ede7dc] hover:text-[#10b981] focus:outline-none"
+            aria-label="Toggle Navigation Menu"
+          >
+            <svg className="w-5 h-5 fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
       </header>
 
-      {/* Main Systematic Multi-View Container */}
-      <main className="flex-1 p-4 lg:p-6 flex flex-col max-w-[1850px] w-full mx-auto">
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div className="sm:hidden bg-[#090f19] border-b border-[rgba(237,231,220,0.13)] px-6 py-4 space-y-3 z-40 fixed top-[58px] left-0 right-0 shadow-2xl">
+          <button
+            onClick={() => handleNav('landing')}
+            className={`block w-full text-left py-2 font-['Sora'] text-xs uppercase tracking-[0.12em] ${
+              activePage === 'landing' ? 'text-[#10b981] font-semibold' : 'text-[#ede7dc]'
+            }`}
+          >
+            Portal Landing
+          </button>
+          <button
+            onClick={() => handleNav('overview')}
+            className={`block w-full text-left py-2 font-['Sora'] text-xs uppercase tracking-[0.12em] ${
+              activePage === 'overview' ? 'text-[#10b981] font-semibold' : 'text-[#ede7dc]'
+            }`}
+          >
+            3D Digital Twin
+          </button>
+          <button
+            onClick={() => handleNav('human')}
+            className={`block w-full text-left py-2 font-['Sora'] text-xs uppercase tracking-[0.12em] ${
+              activePage === 'human' ? 'text-[#10b981] font-semibold' : 'text-[#ede7dc]'
+            }`}
+          >
+            Occupancy Perception ({occupancy})
+          </button>
+          <button
+            onClick={() => handleNav('algae')}
+            className={`block w-full text-left py-2 font-['Sora'] text-xs uppercase tracking-[0.12em] ${
+              activePage === 'algae' ? 'text-[#10b981] font-semibold' : 'text-[#ede7dc]'
+            }`}
+          >
+            Algae Bio-Health ({algaeHealth.toFixed(0)}%)
+          </button>
+          <button
+            onClick={() => handleNav('hvac')}
+            className={`block w-full text-left py-2 font-['Sora'] text-xs uppercase tracking-[0.12em] ${
+              activePage === 'hvac' ? 'text-[#10b981] font-semibold' : 'text-[#ede7dc]'
+            }`}
+          >
+            HVAC 2D Schematic
+          </button>
+        </div>
+      )}
+
+      {/* Main Systematic Multi-View Container: full-bleed for landing, padded for operational dashboard */}
+      <main className={`flex-1 flex flex-col w-full ${activePage === 'landing' ? 'p-0 max-w-none' : 'p-4 lg:p-6 max-w-[1850px] mx-auto'}`}>
         {activePage === 'landing' && (
-          <LandingPage onNavigate={setActivePage} />
+          <LandingPage onNavigate={handleNav} />
         )}
 
         {activePage === 'overview' && (
-          <OverviewPage onNavigate={setActivePage} />
+          <OverviewPage onNavigate={handleNav} />
         )}
 
         {activePage === 'human' && (

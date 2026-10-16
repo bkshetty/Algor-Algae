@@ -6,15 +6,27 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        syne: ['Syne', 'sans-serif'],
+        sora: ['Sora', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace']
+      },
       colors: {
-        bio: {
-          dark: '#0a0f0d',
-          panel: '#111a16',
+        ground: '#060a12',
+        'ground-secondary': '#090f19',
+        'surface-glass': 'rgba(13, 21, 34, 0.75)',
+        ink: {
+          primary: '#ede7dc',
+          secondary: '#9ea5a8',
+          muted: '#6c7378'
+        },
+        accent: {
           green: '#10b981',
-          emerald: '#059669',
-          alert: '#eab308',
-          danger: '#ef4444'
-        }
+          cyan: '#0284c7',
+          amber: '#f59e0b',
+          crimson: '#ef4444'
+        },
+        hairline: 'rgba(237, 231, 220, 0.13)'
       }
     },
   },

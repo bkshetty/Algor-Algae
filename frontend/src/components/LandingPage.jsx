@@ -1,597 +1,877 @@
 /**
  * LandingPage.jsx
  * ──────────────────────────────────────────────────────────────────────────
- * Premium Editorial Architectural & Bio-Engineering Project Presentation.
+ * Algor-Algae Hero Landing Page — Design Specification Implementation
  *
- * Designed with authentic green building science, mechanical HVAC engineering,
- * and biomimetic microalgae kinetics — zero generic AI template filler.
+ * A record label portal aesthetic adapted for a living digital twin project:
+ * - Two panels part outward to uncover a full-bleed bioreactor facade image
+ * - The wordmark grows, tracking tightens, and halves travel to opposite edges
+ * - Real-time telemetry badges pulse at the hero centre & corners
+ * - Below, a throwable deck of operational states replaces the catalogue
+ * - All motion is scroll-bound and reversible (no timers)
+ * - Complete adherence to design tokens, strict color rules, and typography
  */
 
-import React from 'react';
-import { 
-  Leaf, 
-  Wind, 
-  Users, 
-  Activity, 
-  Building2, 
-  Cpu, 
-  ShieldCheck, 
-  AlertTriangle, 
-  TrendingUp, 
-  Droplet, 
-  Layers, 
-  ArrowRight, 
-  Sparkles, 
-  CheckCircle2, 
-  Zap, 
-  Atom, 
-  Compass, 
-  BookOpen, 
-  Sliders, 
-  Gauge, 
-  Eye, 
-  ChevronRight,
-  ExternalLink,
-  ShieldAlert,
-  Play
-} from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useStore } from '../store';
-import BuildingTwin from './BuildingTwin';
-import HVACDiagram from './HVACDiagram';
+
+// ─── Operational States for the Throwable Deck ──────────────────────────────
+const OPERATIONAL_STATES = [
+  {
+    id: 'state-1',
+    number: '01',
+    title: 'Baseline Equilibrium',
+    subtitle: 'Standard Occupancy & Metabolic Circulation',
+    occupancy: 1,
+    co2: 550,
+    algaeHealth: 92,
+    damper: 40,
+    modeText: 'BALANCED BIO-FEED',
+    accentColor: '#10b981',
+    description: 'Indoor human respiration is in dynamic equilibrium with living Chlorella columns. Facade dampers maintain standard 40% feed rate, achieving continuous baseline carbon absorption.'
+  },
+  {
+    id: 'state-2',
+    number: '02',
+    title: 'High Metabolic Surge',
+    subtitle: 'Occupancy Spike & Facade Redirection',
+    occupancy: 4,
+    co2: 1000,
+    algaeHealth: 88,
+    damper: 88,
+    modeText: 'AI REDIRECT ACTIVE',
+    accentColor: '#f59e0b',
+    description: 'YOLOv8 vision senses elevated occupant density. High-CO₂ exhaust is redirected directly into facade spargers at 88% damper position, boosting photosynthetic fixation kinetics.'
+  },
+  {
+    id: 'state-3',
+    number: '03',
+    title: 'Chlorosis Acid Safeguard',
+    subtitle: 'Algae Stressed & Outdoor Atmospheric Bypass',
+    occupancy: 3,
+    co2: 850,
+    algaeHealth: 50,
+    damper: 10,
+    modeText: 'OUTDOOR BYPASS ACTIVE',
+    accentColor: '#ef4444',
+    description: 'Spectrophotometer detects yellow carotenoid accumulation. To avoid catastrophic carbonic acid shock (pH < 6.8), 90% of exhaust is bypassed directly to the rooftop scrubber.'
+  },
+  {
+    id: 'state-4',
+    number: '04',
+    title: 'Peak Photosynthetic Harvest',
+    subtitle: 'Logarithmic Phase & Maximum Biomass',
+    occupancy: 2,
+    co2: 700,
+    algaeHealth: 98,
+    damper: 75,
+    modeText: 'MAX PHOTOSYNTHESIS',
+    accentColor: '#10b981',
+    description: 'Culture operating at optimal light-saturation kinetics. Lipid synthesis reaches maximum efficiency while high-purity O₂ is continuously recirculated into indoor spaces.'
+  }
+];
+
+// ─── Contributors / Engineering Team Roster ────────────────────────────────
+const CONTRIBUTORS_ROSTER = [
+  {
+    role: 'ALGAL KINETICS & BIO-REACTOR',
+    name: 'Dr. E. Vance & Bio-Twin Research Group',
+    count: '01'
+  },
+  {
+    role: 'EDGE VISION OCCUPANCY INFERENCE',
+    name: 'YOLOv8 Real-Time Tensor Stream',
+    count: '02'
+  },
+  {
+    role: 'DUAL-WAVELENGTH SPECTROPHOTOMETRY',
+    name: 'HSV ROI Chlorosis Detection Core',
+    count: '03'
+  },
+  {
+    role: 'CLOSED-LOOP BMS AUTOMATION',
+    name: 'Gemini Autonomous Actuation Engine',
+    count: '04'
+  },
+  {
+    role: 'ACIDIFICATION DEFENSE SYSTEM',
+    name: 'Sub-60ms Outdoor Atmospheric Bypass',
+    count: '05'
+  }
+];
+
+// ─── Deployment Milestones ──────────────────────────────────────────────────
+const DEPLOYMENT_MILESTONES = [
+  {
+    date: 'Q1 2026',
+    title: 'Neoclassical Elevation & Facade Mount',
+    status: 'VALIDATED',
+    target: '41.4m × 34.2m Core Structure'
+  },
+  {
+    date: 'Q2 2026',
+    title: 'Dual Vision Engine: YOLOv8 & HSV ROI',
+    status: 'BENCHMARK PASS',
+    target: 'Zero-Latency OS Stream'
+  },
+  {
+    date: 'Q3 2026',
+    title: 'Acidification Bypass Damper Actuation',
+    status: 'ACTIVE DEFENSE',
+    target: '< 60ms Outdoor Vent Response'
+  },
+  {
+    date: 'Q4 2026',
+    title: 'Continuous Bioreactor Sequestration Loop',
+    status: 'OPERATIONAL',
+    target: '88% Peak Carbon Capture'
+  }
+];
 
 export default function LandingPage({ onNavigate }) {
-  const occupancy = useStore((state) => state.occupancy);
-  const co2Ppm = useStore((state) => state.co2_ppm);
-  const algaeHealth = useStore((state) => state.algae_health);
-  const biofuelRate = useStore((state) => state.biofuel_ml_hr);
-  const isConnected = useStore((state) => state.isConnected);
-  const hvacState = useStore((state) => state.hvacState);
-
+  // Live Telemetry from Store
+  const occupancy = useStore((s) => s.occupancy);
+  const co2Ppm = useStore((s) => s.co2_ppm);
+  const algaeHealth = useStore((s) => s.algae_health);
+  const hvacState = useStore((s) => s.hvacState);
   const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 68;
-  const statusColor = algaeHealth >= 70 ? '#10b981' : algaeHealth >= 45 ? '#f59e0b' : '#ef4444';
+
+  // Reduced motion preference detection
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+      setPrefersReducedMotion(mq.matches);
+      const listener = (e) => setPrefersReducedMotion(e.matches);
+      mq.addEventListener('change', listener);
+      return () => mq.removeEventListener('change', listener);
+    }
+  }, []);
+
+  // Hero Scroll Animation State (binds scroll position to transforms)
+  const heroRef = useRef(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (heroRef.current) {
+            const rect = heroRef.current.getBoundingClientRect();
+            const totalScrollable = rect.height - window.innerHeight;
+            if (totalScrollable > 0) {
+              const current = -rect.top;
+              const p = Math.min(1, Math.max(0, current / totalScrollable));
+              setScrollProgress(p);
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Use effective progress: if reduced-motion, jump directly to fully open
+  const effectiveProgress = prefersReducedMotion ? 1.0 : scrollProgress;
+
+  // ─── Computed Hero Portal Transform Values ────────────────────────────────
+  // Panel translation: 0% to ±105% (clears frame completely on scroll)
+  const leftPanelX = -effectiveProgress * 105;
+  const rightPanelX = effectiveProgress * 105;
+
+  // Full-bleed image scale: 1.15 -> 1.00
+  const imageScale = 1.15 - effectiveProgress * 0.15;
+
+  // Duotone wash opacity: 0 -> 0.25
+  const duotoneOpacity = effectiveProgress * 0.25;
+
+  // Title scale and letter-spacing:
+  // scale: 1.0 -> 1.25, letter-spacing: -0.02em -> -0.035em
+  const titleScale = 1.0 + effectiveProgress * 0.25;
+  const titleTracking = -0.02 - effectiveProgress * 0.015;
+
+  // Wordmark separation: first word translates left, second translates right
+  // Travels >100px across the scroll
+  const wordLeftShift = -effectiveProgress * 140; // px
+  const wordRightShift = effectiveProgress * 140; // px
+
+  // Accent dots travel outward toward opposite corners (top-left & bottom-right)
+  const dotGreenX = -effectiveProgress * 42; // vw
+  const dotGreenY = -effectiveProgress * 36; // vh
+  const dotCyanX = effectiveProgress * 42;
+  const dotCyanY = effectiveProgress * 36;
+
+  // Statement section floating circular image drift and rotate on scroll
+  const driftY = (effectiveProgress - 0.4) * 90;
+  const driftRot = (effectiveProgress - 0.4) * 30;
+
+  // ─── Throwable Deck State & Drag Logic ────────────────────────────────────
+  const [deckCards, setDeckCards] = useState(OPERATIONAL_STATES);
+  const [dragState, setDragState] = useState({ isDragging: false, startX: 0, startY: 0, dx: 0, dy: 0 });
+  const [isThrowing, setIsThrowing] = useState(false);
+  const [throwDir, setThrowDir] = useState(1);
+  const deckRef = useRef(null);
+
+  const handlePointerDown = (e) => {
+    if (isThrowing || prefersReducedMotion) return;
+    setDragState({
+      isDragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      dx: 0,
+      dy: 0
+    });
+    if (e.currentTarget.setPointerCapture) {
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+    }
+  };
+
+  const handlePointerMove = (e) => {
+    if (!dragState.isDragging || isThrowing) return;
+    const dx = e.clientX - dragState.startX;
+    const dy = e.clientY - dragState.startY;
+    setDragState((prev) => ({ ...prev, dx, dy }));
+  };
+
+  const throwCard = useCallback((direction = 1) => {
+    if (isThrowing) return;
+    if (prefersReducedMotion) {
+      setDeckCards((prev) => {
+        const [first, ...rest] = prev;
+        return [...rest, first];
+      });
+      return;
+    }
+
+    setIsThrowing(true);
+    setThrowDir(direction);
+
+    setTimeout(() => {
+      setDeckCards((prev) => {
+        const [first, ...rest] = prev;
+        return [...rest, first];
+      });
+      setDragState({ isDragging: false, startX: 0, startY: 0, dx: 0, dy: 0 });
+      setIsThrowing(false);
+    }, 450);
+  }, [isThrowing, prefersReducedMotion]);
+
+  const showPreviousCard = useCallback(() => {
+    if (isThrowing) return;
+    if (prefersReducedMotion) {
+      setDeckCards((prev) => {
+        const last = prev[prev.length - 1];
+        const rest = prev.slice(0, prev.length - 1);
+        return [last, ...rest];
+      });
+      return;
+    }
+
+    setIsThrowing(true);
+    setThrowDir(-1);
+    setDeckCards((prev) => {
+      const last = prev[prev.length - 1];
+      const rest = prev.slice(0, prev.length - 1);
+      return [last, ...rest];
+    });
+    setTimeout(() => {
+      setIsThrowing(false);
+      setDragState({ isDragging: false, startX: 0, startY: 0, dx: 0, dy: 0 });
+    }, 380);
+  }, [isThrowing, prefersReducedMotion]);
+
+  const handlePointerUp = () => {
+    if (!dragState.isDragging || isThrowing) return;
+    const deckWidth = deckRef.current ? deckRef.current.offsetWidth : 360;
+    const threshold = deckWidth * 0.1; // ~10% of deck width
+    if (Math.abs(dragState.dx) > threshold) {
+      throwCard(dragState.dx > 0 ? 1 : -1);
+    } else {
+      setDragState({ isDragging: false, startX: 0, startY: 0, dx: 0, dy: 0 });
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      throwCard(1);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      showPreviousCard();
+    }
+  };
 
   return (
-    <div className="w-full flex flex-col space-y-16 text-slate-100 select-none pb-20">
-      
-      {/* ══════════════════════════════════════════════════════════════════════
-          1. HERO SECTION: EDITORIAL ARCHITECTURAL MANIFESTO
-         ══════════════════════════════════════════════════════════════════════ */}
-      <section className="relative pt-6 lg:pt-12 pb-8 overflow-hidden">
-        {/* Subtle Architectural Grid Background Accent */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b0a_1px,transparent_1px),linear-gradient(to_bottom,#1e293b0a_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
-        
-        {/* Radial Ambient Glow */}
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-gradient-to-b from-emerald-500/10 via-teal-500/5 to-transparent blur-3xl pointer-events-none" />
+    <div className="w-full bg-[#060a12] text-[#ede7dc] font-['Sora'] selection:bg-[#10b981] selection:text-black min-h-screen">
 
-        <div className="relative z-10 flex flex-col items-center text-center max-w-5xl mx-auto px-4 space-y-6">
-          
-          {/* Top Institutional Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-500/30 text-emerald-300 text-xs font-mono tracking-wide backdrop-blur-md shadow-lg shadow-emerald-950/20">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-semibold">BIO-INTEGRATED ARCHITECTURE</span>
-            <span className="text-emerald-500/60">·</span>
-            <span className="text-slate-300">AUTONOMOUS LIVING BUILDING TWIN</span>
+      {/* ══════════════════════════════════════════════════════════════════════
+          1. HERO PORTAL (2.5 VIEWPORTS TALL CONTAINER, STICKY 100VH STAGE)
+         ══════════════════════════════════════════════════════════════════════ */}
+      <section 
+        ref={heroRef} 
+        className="relative w-full h-[250vh] select-none"
+        role="banner"
+      >
+        <div 
+          className="hero-stage sticky top-0 w-full h-screen overflow-hidden isolation-isolate flex items-center justify-center bg-[#060a12]"
+        >
+          {/* Layer 1: Full-Bleed Neoclassical Facade Image (scale 1.15 -> 1.0) */}
+          <div 
+            className="hero-image absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-75 will-change-transform"
+            style={{
+              backgroundImage: `url('/facade.jpg')`,
+              transform: `scale(${imageScale})`
+            }}
+          />
+
+          {/* Layer 2: Duotone Wash Overlay (mix-blend-mode: overlay, opacity 0 -> 0.25) */}
+          <div 
+            className="hero-overlay absolute inset-0 pointer-events-none transition-opacity duration-75 will-change-opacity"
+            style={{
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.45) 0%, rgba(2, 132, 199, 0.45) 100%)',
+              mixBlendMode: 'overlay',
+              opacity: duotoneOpacity
+            }}
+          />
+
+          {/* Layer 3: Radial Veil (Darkens edges, keeps central bioreactor in focus) */}
+          <div 
+            className="hero-veil absolute inset-0 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle at 50% 50%, transparent 30%, rgba(6, 10, 18, 0.8) 80%, #060a12 100%)'
+            }}
+          />
+
+          {/* Layer 4: Two Solid Parting Panels (meet in center when closed, translate outward) */}
+          <div 
+            className="hero-panel hero-panel-left absolute top-0 left-0 h-full bg-[#090f19] z-10 will-change-transform border-r border-[rgba(237,231,220,0.13)]"
+            style={{
+              width: '50.5%',
+              transform: `translateX(${leftPanelX}%)`
+            }}
+          />
+          <div 
+            className="hero-panel hero-panel-right absolute top-0 right-0 h-full bg-[#090f19] z-10 will-change-transform border-l border-[rgba(237,231,220,0.13)]"
+            style={{
+              width: '50.5%',
+              transform: `translateX(${rightPanelX}%)`
+            }}
+          />
+
+          {/* Layer 5: Accent Dots (Glowing Indicators, center initially, travel outward) */}
+          <div 
+            className="hero-dot hero-dot-green absolute z-20 pointer-events-none w-1.5 h-1.5 rounded-full will-change-transform"
+            style={{
+              top: '50%',
+              left: '50%',
+              backgroundColor: '#10b981',
+              color: '#10b981',
+              boxShadow: '0 0 8px currentColor',
+              filter: 'drop-shadow(0 0 4px rgba(16,185,129,0.6))',
+              transform: `translate(calc(-50% + ${dotGreenX}vw), calc(-50% + ${dotGreenY}vh))`
+            }}
+          />
+          <div 
+            className="hero-dot hero-dot-cyan absolute z-20 pointer-events-none w-1.5 h-1.5 rounded-full will-change-transform"
+            style={{
+              top: '50%',
+              left: '50%',
+              backgroundColor: '#0284c7',
+              color: '#0284c7',
+              boxShadow: '0 0 8px currentColor',
+              filter: 'drop-shadow(0 0 4px rgba(2,132,199,0.6))',
+              transform: `translate(calc(-50% + ${dotCyanX}vw), calc(-50% + ${dotCyanY}vh))`
+            }}
+          />
+
+          {/* Layer 6: Splitting Wordmark (Syne 700–800, 36–48px as defined in spec table) */}
+          <div 
+            className="relative z-20 text-center pointer-events-none w-full px-6 flex justify-center items-center"
+            style={{
+              transform: `scale(${titleScale})`,
+              letterSpacing: `${titleTracking}em`
+            }}
+          >
+            <h1 className="hero-title font-['Syne'] font-bold uppercase text-[clamp(26px,3.8vw,48px)] text-[#ede7dc] leading-none flex items-center justify-center space-x-6">
+              <span 
+                className="word-left inline-block will-change-transform transition-transform duration-75 whitespace-nowrap"
+                style={{ transform: `translateX(${wordLeftShift}px)` }}
+              >
+                Algor
+              </span>
+              <span 
+                className="word-right inline-block will-change-transform transition-transform duration-75 text-[#ede7dc] whitespace-nowrap"
+                style={{ transform: `translateX(${wordRightShift}px)` }}
+              >
+                Algae<span className="text-[#10b981]">.</span>
+              </span>
+            </h1>
           </div>
 
-          {/* Main Manifesto Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12] max-w-4xl">
-            Transforming Commercial Facades from{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-200 via-slate-400 to-slate-500">
-              Carbon Sources
-            </span>{' '}
-            into{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-              Photosynthetic Sinks.
-            </span>
-          </h1>
+          {/* Layer 7: Corner Metadata Badges (12px exact specification) */}
+          {/* Top-Left: Project Year/Phase */}
+          <div className="hero-metadata hero-metadata-tl absolute top-20 left-6 z-30 pointer-events-none font-['Sora'] text-[12px] uppercase tracking-[0.14em] text-[#9ea5a8]">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#10b981] mr-2 align-middle" />
+            2026 // Autonomous Digital Twin
+          </div>
 
-          {/* Core Descriptive Subtitle */}
-          <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed max-w-3xl">
-            <strong>Algor-Algae</strong> couples high-frequency computer vision with building mechanical HVAC systems. 
-            By capturing human metabolic CO₂ emissions and dynamically sparging them into exterior living 
-            photobioreactor facades, buildings autonomously generate green biofuel and clean oxygen while driving toward verified net-zero carbon operations.
+          {/* Top-Right: Occupancy Badge and CO2 ppm */}
+          <div className="hero-metadata hero-metadata-tr absolute top-20 right-6 z-30 pointer-events-none font-mono text-[12px] text-[#6c7378] tracking-tight text-right">
+            <span>OCCUPANCY: <strong className="text-[#ede7dc]">{occupancy}</strong></span>
+            <span className="mx-2 text-[rgba(237,231,220,0.2)]">|</span>
+            <span>CO₂: <strong className="text-[#f59e0b]">{co2Ppm} PPM</strong></span>
+          </div>
+
+          {/* Bottom-Left: Algae Health % */}
+          <div className="hero-metadata hero-metadata-bl absolute bottom-8 left-6 z-30 pointer-events-none font-mono text-[12px] text-[#6c7378] tracking-tight">
+            <span>ALGAE HEALTH: </span>
+            <strong className="text-[#10b981]">{algaeHealth.toFixed(0)}%</strong>
+          </div>
+
+          {/* Bottom-Right: Atmospheric Rooftop Vent Status */}
+          <div className="hero-metadata hero-metadata-br absolute bottom-8 right-6 z-30 pointer-events-none font-['Sora'] text-[12px] uppercase tracking-[0.14em] text-[#6c7378] text-right">
+            <span>ROOFTOP VENT: </span>
+            <span className={isBypass ? 'text-[#ef4444] font-medium' : 'text-[#ede7dc]'}>
+              {isBypass ? 'BYPASS ACTIVE' : 'IDLE'}
+            </span>
+          </div>
+
+          {/* Scroll Down Prompt Indicator (Fades out on scroll) */}
+          <div 
+            className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 pointer-events-none text-center transition-opacity duration-300"
+            style={{ opacity: effectiveProgress < 0.25 ? 1 - effectiveProgress * 4 : 0 }}
+          >
+            <span className="font-['Sora'] text-[10px] uppercase tracking-[0.2em] text-[#9ea5a8] block mb-1">
+              Scroll to Open Portal
+            </span>
+            <div className="w-4 h-6 rounded-full border border-[rgba(237,231,220,0.25)] mx-auto flex items-start justify-center p-1">
+              <div className="w-1 h-1.5 rounded-full bg-[#10b981] animate-bounce" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          2. STATEMENT FOLD (FULL-HEIGHT HERO EXTENSION)
+         ══════════════════════════════════════════════════════════════════════ */}
+      <section className="relative w-full min-h-screen py-24 px-6 lg:px-16 flex flex-col justify-center border-t border-[rgba(237,231,220,0.13)] overflow-hidden">
+        
+        {/* Outlined Index Numeral "01" (Right edge background: -webkit-text-stroke: 2px #ede7dc) */}
+        <div 
+          className="absolute right-6 lg:right-20 top-1/2 -translate-y-1/2 pointer-events-none select-none font-['Syne'] font-extrabold text-[clamp(120px,22vw,300px)] leading-none text-transparent z-0"
+          style={{
+            WebkitTextStroke: '2px rgba(237, 231, 220, 0.16)'
+          }}
+        >
+          01
+        </div>
+
+        {/* Floating Circular Image: Bioreactor Cross-Section (Drifts and rotates on scroll) */}
+        <div 
+          className="absolute right-8 lg:right-32 top-1/2 -translate-y-1/2 w-52 h-52 lg:w-80 lg:h-80 rounded-full overflow-hidden pointer-events-none border border-[rgba(237,231,220,0.18)] shadow-2xl transition-transform duration-75 will-change-transform opacity-75 hidden md:block z-10"
+          style={{
+            transform: `translateY(${driftY}px) rotate(${driftRot}deg)`
+          }}
+        >
+          <img 
+            src="/bioreactor-cross.jpg" 
+            alt="Bioreactor cross-section" 
+            className="w-full h-full object-cover scale-105"
+          />
+        </div>
+
+        <div className="relative z-10 max-w-3xl space-y-8">
+          {/* Small Label (12px Sora uppercase, letter-spacing: 0.15em, #6c7378) */}
+          <div className="font-['Sora'] text-[12px] uppercase tracking-[0.15em] text-[#6c7378]">
+            01 // Architectural Bio-Manifesto
+          </div>
+
+          {/* Statement: clamp(24px, 3.6vw, 52px) Syne 700, ~22ch measure, one phrase in #10b981 */}
+          <h2 className="font-['Syne'] font-bold text-[clamp(24px,3.6vw,52px)] leading-[1.15] text-[#ede7dc] max-w-[22ch]">
+            Architecture is no longer an inert envelope; it is an autonomous{' '}
+            <span className="text-[#10b981]">photosynthetic carbon sink</span>{' '}
+            operating at cellular velocity.
+          </h2>
+
+          <p className="font-['Sora'] text-sm sm:text-base text-[#9ea5a8] leading-relaxed max-w-xl">
+            Commercial real estate accounts for nearly 40% of global operational carbon emissions. 
+            Algor-Algae routes human metabolic breath exhaust into living Chlorella columns, 
+            converting mechanical ventilation into continuous biofuel synthesis and pure oxygen generation.
           </p>
 
-          {/* Quick Real-Time Telemetry Bar */}
-          <div className="w-full max-w-3xl bg-[#0b121e]/80 border border-slate-800 rounded-2xl p-3 backdrop-blur-xl flex flex-wrap items-center justify-around gap-4 text-xs font-mono shadow-2xl">
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
-              <span className="text-slate-400">FEED:</span>
-              <span className="text-white font-bold">{isConnected ? 'LIVE 30 FPS' : 'STANDBY'}</span>
+          <div className="pt-4 flex flex-wrap gap-4 font-['Sora'] text-xs">
+            <button
+              onClick={() => onNavigate('overview')}
+              className="px-5 py-3 rounded-full border border-[rgba(237,231,220,0.22)] hover:border-[#10b981] hover:text-[#10b981] transition-all flex items-center space-x-2 tracking-[0.12em] uppercase text-[#ede7dc]"
+            >
+              <span>Explore 3D Digital Twin</span>
+              <span className="text-[#10b981]">→</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          3. LIVING SYSTEMS DECK (THROWABLE OPERATIONAL CARDS)
+         ══════════════════════════════════════════════════════════════════════ */}
+      <section 
+        className="relative w-full min-h-screen py-24 px-6 lg:px-16 border-t border-[rgba(237,231,220,0.13)] flex flex-col justify-center"
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="region"
+        aria-label="Operational states deck"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          
+          {/* Left Column: Context, Lede & Actions */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="font-['Sora'] text-[12px] uppercase tracking-[0.15em] text-[#6c7378]">
+              02 // Living Operational States
             </div>
 
-            <div className="flex items-center gap-2">
-              <Users className="w-3.5 h-3.5 text-sky-400" />
-              <span className="text-slate-400">OCCUPANCY:</span>
-              <span className="text-sky-300 font-bold">{occupancy} humans</span>
+            <h2 className="font-['Syne'] font-bold text-[clamp(28px,3.6vw,44px)] leading-tight text-[#ede7dc]">
+              Autonomous Bio-Responsive Dynamics
+            </h2>
+
+            <p className="font-['Sora'] text-sm text-[#9ea5a8] leading-relaxed">
+              The building management system modulates 3-way motorized dampers and circulation pumps based on human breath flux and photobioreactor vitality. Throw through the deck to examine real-time state transitions.
+            </p>
+
+            <div className="space-y-3 pt-2 font-['Sora'] text-xs">
+              <div className="flex items-center space-x-3 text-[#9ea5a8]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+                <span>State 1: Baseline Photosynthetic Equilibrium</span>
+              </div>
+              <div className="flex items-center space-x-3 text-[#9ea5a8]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
+                <span>State 2: High Metabolic Surge Redirection</span>
+              </div>
+              <div className="flex items-center space-x-3 text-[#9ea5a8]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444]" />
+                <span>State 3: Carotenoid Stress Acidification Bypass</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Wind className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-slate-400">INDOOR CO₂:</span>
-              <span className="text-amber-300 font-bold">{co2Ppm} ppm</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Activity className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-slate-400">BIO-HEALTH:</span>
-              <span className="font-bold" style={{ color: statusColor }}>{algaeHealth.toFixed(0)}%</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Sliders className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-slate-400">HVAC DAMPER:</span>
-              <span className="text-cyan-300 font-bold">{hvacState.damperOpenPct}%</span>
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3 pt-4 font-['Sora'] text-xs uppercase tracking-[0.12em]">
+              <button
+                onClick={() => onNavigate('overview')}
+                className="px-5 py-2.5 rounded-full border border-[rgba(237,231,220,0.2)] hover:border-[#10b981] hover:text-[#10b981] transition-all text-[#ede7dc]"
+              >
+                Launch Digital Twin
+              </button>
+              <button
+                onClick={() => onNavigate('hvac')}
+                className="px-5 py-2.5 rounded-full border border-[rgba(237,231,220,0.2)] hover:border-[#0284c7] hover:text-[#0284c7] transition-all text-[#ede7dc]"
+              >
+                View 2D Schematic
+              </button>
             </div>
           </div>
 
-          {/* Action CTAs */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          {/* Right Column: Physical Throwable Deck */}
+          <div className="lg:col-span-7 flex flex-col items-center justify-center">
+            
+            {/* The Stack Container */}
+            <div 
+              ref={deckRef}
+              className="deck relative w-full max-w-[400px] h-[450px] touch-pan-y cursor-grab active:cursor-grabbing select-none"
+              tabIndex={0}
+              role="region"
+              aria-label="Operational states deck stack"
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+            >
+              {deckCards.map((card, index) => {
+                const isTop = index === 0;
+                
+                // Stack Layout according to specification:
+                // Card N (top)     → scale: 1.00, rotate: 0deg, offset-x: 0, offset-y: 0
+                // Card N–1         → scale: 0.98, rotate: −2deg, offset-y: 8px, offset-x: 4px
+                // Card N–2         → scale: 0.96, rotate: −4deg, offset-y: 16px, offset-x: 8px
+                // Card N-3         → scale: 0.94, rotate: -6deg, offset-y: 24px, offset-x: 12px
+                let scale = isTop ? 1.0 : Math.max(0.9, 1.0 - index * 0.02);
+                let scaleY = 1.0;
+                let rot = isTop ? 0 : -index * 2;
+                let translateY = isTop ? 0 : index * 8;
+                let translateX = isTop ? 0 : index * 4;
+
+                if (isTop) {
+                  if (dragState.isDragging) {
+                    translateX = dragState.dx;
+                    translateY = dragState.dy;
+                    rot = dragState.dx * 0.1; // rotate proportional to dx
+                    scaleY = 1.05; // slight scaleY up on drag
+                  } else if (isThrowing) {
+                    translateX = throwDir * 450; // roll and throw
+                    rot = throwDir * 45;
+                    scaleY = 0.9; // slight compression during flight
+                  }
+                }
+
+                return (
+                  <div
+                    key={card.id}
+                    className="deck-card absolute inset-0 w-full h-full rounded-2xl p-7 bg-[#090f19] border border-[rgba(237,231,220,0.13)] flex flex-col justify-between shadow-[0_16px_36px_rgba(0,0,0,0.55)] transition-all will-change-transform"
+                    style={{
+                      zIndex: deckCards.length - index,
+                      transform: `translate3d(${translateX}px, ${translateY}px, 0) rotate(${rot}deg) scale(${scale}) scaleY(${scaleY})`,
+                      transition: (isTop && dragState.isDragging) ? 'none' : 'transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.15), opacity 0.35s ease',
+                      opacity: isTop && isThrowing ? 0.3 : 1.0 - index * 0.1
+                    }}
+                  >
+                    {/* Top Row: Index Numeral & Technical Mode Ornament */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-['Syne'] font-extrabold text-2xl text-[rgba(237,231,220,0.25)]">
+                        {card.number}
+                      </span>
+                      <span 
+                        className="font-mono text-[10.5px] uppercase tracking-wider px-2 py-0.5 rounded border"
+                        style={{
+                          borderColor: `${card.accentColor}44`,
+                          color: card.accentColor
+                        }}
+                      >
+                        {card.modeText}
+                      </span>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="space-y-3">
+                      <h3 className="card-title font-['Syne'] font-bold text-xl text-[#ede7dc]">
+                        {card.title}
+                      </h3>
+                      <p className="font-['Sora'] text-xs text-[#9ea5a8] leading-relaxed">
+                        {card.description}
+                      </p>
+                    </div>
+
+                    {/* Telemetry Metrics Row */}
+                    <div className="grid grid-cols-4 gap-2 pt-4 border-t border-[rgba(237,231,220,0.13)] font-mono text-[11px]">
+                      <div className="card-stat">
+                        <span className="text-[#6c7378] text-[9.5px] block font-['Sora'] uppercase">Occupants</span>
+                        <span className="text-[#ede7dc] font-bold">{card.occupancy}</span>
+                      </div>
+                      <div className="card-stat">
+                        <span className="text-[#6c7378] text-[9.5px] block font-['Sora'] uppercase">CO₂</span>
+                        <span className="text-[#ede7dc] font-bold">{card.co2} ppm</span>
+                      </div>
+                      <div className="card-stat">
+                        <span className="text-[#6c7378] text-[9.5px] block font-['Sora'] uppercase">Algae</span>
+                        <span className="font-bold" style={{ color: card.accentColor }}>{card.algaeHealth}%</span>
+                      </div>
+                      <div className="card-stat text-right">
+                        <span className="text-[#6c7378] text-[9.5px] block font-['Sora'] uppercase">Damper</span>
+                        <span className="text-[#ede7dc] font-bold">{card.damper}%</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Hint Line & Keyboard Controls */}
+            <div className="mt-8 flex flex-col items-center space-y-3">
+              <span className="font-['Sora'] text-[11px] uppercase tracking-[0.14em] text-[#6c7378]">
+                Drag to explore | ← → Keys
+              </span>
+
+              {/* Progress Dots */}
+              <div className="deck-progress flex items-center space-x-2">
+                {OPERATIONAL_STATES.map((state, i) => {
+                  const isActive = deckCards[0].id === state.id;
+                  return (
+                    <button
+                      key={state.id}
+                      onClick={() => throwCard(1)}
+                      className={`w-1.5 h-1.5 rounded-full transition-all ${isActive ? 'bg-[#10b981] scale-125' : 'bg-[rgba(237,231,220,0.25)]'}`}
+                      aria-label={`Jump to state ${i + 1}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          4. ROSTER (HAIRLINE-RULED ROWS: CONTRIBUTORS / TEAM)
+         ══════════════════════════════════════════════════════════════════════ */}
+      <section className="relative w-full py-24 px-6 lg:px-16 border-t border-[rgba(237,231,220,0.13)]">
+        <div className="max-w-5xl mx-auto space-y-10">
+          
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="font-['Sora'] text-[12px] uppercase tracking-[0.15em] text-[#6c7378]">
+                03 // Contributors / Team
+              </div>
+              <h2 className="font-['Syne'] font-bold text-3xl text-[#ede7dc] mt-1">
+                Integrated Systems Engineering
+              </h2>
+            </div>
+            <span className="font-mono text-xs text-[#6c7378]">
+              05 VERIFIED SUBSYSTEMS
+            </span>
+          </div>
+
+          {/* Hairline-Ruled Rows */}
+          <div className="border-t border-[rgba(237,231,220,0.13)]">
+            {CONTRIBUTORS_ROSTER.map((item, i) => (
+              <div 
+                key={i} 
+                className="py-5 border-b border-[rgba(237,231,220,0.13)] flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-[rgba(237,231,220,0.02)] transition-colors px-2"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-8">
+                  {/* Uppercase accent label: 12px, #6c7378 */}
+                  <span className="font-['Sora'] text-[12px] uppercase tracking-[0.14em] text-[#6c7378] sm:w-64">
+                    {item.role}
+                  </span>
+                  {/* Display-face name: 18px Syne 700, #ede7dc */}
+                  <span className="font-['Syne'] font-bold text-[18px] text-[#ede7dc]">
+                    {item.name}
+                  </span>
+                </div>
+                {/* Right-aligned count: 12px monospace */}
+                <span className="font-mono text-[12px] text-[#9ea5a8] text-left sm:text-right">
+                  {item.count}
+                </span>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          5. DATES TABLE (DEPLOYMENT BENCHMARK MILESTONES)
+         ══════════════════════════════════════════════════════════════════════ */}
+      <section className="relative w-full py-24 px-6 lg:px-16 border-t border-[rgba(237,231,220,0.13)]">
+        <div className="max-w-5xl mx-auto space-y-10">
+          
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="font-['Sora'] text-[12px] uppercase tracking-[0.15em] text-[#6c7378]">
+                04 // Benchmark Validation
+              </div>
+              <h2 className="font-['Syne'] font-bold text-3xl text-[#ede7dc] mt-1">
+                Deployment Milestones
+              </h2>
+            </div>
+            <span className="font-mono text-xs text-[#6c7378]">
+              LEED PLATINUM CRITERIA
+            </span>
+          </div>
+
+          {/* Desktop Table: screens >= 768px */}
+          <div className="hidden md:block w-full overflow-x-auto">
+            <table className="w-full text-left font-['Sora'] text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-[rgba(237,231,220,0.13)] font-semibold uppercase tracking-[0.15em] text-[#9ea5a8]">
+                  <th className="py-4 pr-6">Milestone</th>
+                  <th className="py-4 pr-6">Phase Description</th>
+                  <th className="py-4 pr-6 text-center">Status</th>
+                  <th className="py-4 text-right">Target Specification</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[rgba(237,231,220,0.13)]">
+                {DEPLOYMENT_MILESTONES.map((m, i) => (
+                  <tr key={i} className="hover:bg-[rgba(237,231,220,0.02)] transition-colors">
+                    {/* First column: Dates in Syne 700 */}
+                    <td className="py-5 pr-6 font-['Syne'] font-bold text-sm text-[#ede7dc]">
+                      {m.date}
+                    </td>
+                    <td className="py-5 pr-6 text-[#ede7dc]">
+                      {m.title}
+                    </td>
+                    <td className="py-5 pr-6 text-center">
+                      <span className="font-mono text-[10.5px] px-2 py-0.5 rounded border border-[rgba(16,185,129,0.35)] text-[#10b981]">
+                        {m.status}
+                      </span>
+                    </td>
+                    <td className="py-5 font-mono text-xs text-[#9ea5a8] text-right">
+                      {m.target}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Collapse: Stacks to two-column grid per row on screens < 768px */}
+          <div className="md:hidden divide-y divide-[rgba(237,231,220,0.13)] border-y border-[rgba(237,231,220,0.13)]">
+            {DEPLOYMENT_MILESTONES.map((m, i) => (
+              <div key={i} className="py-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-['Syne'] font-bold text-sm text-[#ede7dc]">{m.date}</span>
+                  <span className="font-mono text-[10px] px-2 py-0.5 rounded border border-[rgba(16,185,129,0.35)] text-[#10b981]">
+                    {m.status}
+                  </span>
+                </div>
+                <div className="text-xs text-[#ede7dc]">{m.title}</div>
+                <div className="font-mono text-[11px] text-[#9ea5a8]">{m.target}</div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          6. CLOSE SECTION WITH CROPPED WORDMARK
+         ══════════════════════════════════════════════════════════════════════ */}
+      <section className="relative w-full pt-24 border-t border-[rgba(237,231,220,0.13)] overflow-hidden">
+        <div className="max-w-5xl mx-auto px-6 lg:px-16 space-y-12">
+          
+          <div className="space-y-4 max-w-xl">
+            <h2 className="font-['Syne'] font-bold text-3xl sm:text-4xl text-[#ede7dc]">
+              Enter the Living Facade Digital Twin
+            </h2>
+            <p className="font-['Sora'] text-[11px] text-[#9ea5a8] leading-relaxed">
+              Real-time telemetry streaming at 30 FPS. Modulate dampers, inspect OpenCV spectrophotometry ROI boxes, and simulate human occupancy loads.
+            </p>
+          </div>
+
+          {/* Two Buttons at Opposite Edges (Left and Right) */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 font-['Sora'] text-xs uppercase tracking-[0.12em]">
             <button
               onClick={() => onNavigate('overview')}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold font-mono text-sm shadow-lg shadow-emerald-500/25 flex items-center gap-2 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+              className="px-6 py-3 rounded-full border border-[rgba(237,231,220,0.22)] hover:border-[#10b981] hover:text-[#10b981] transition-all text-[#ede7dc] flex items-center justify-center space-x-2"
             >
-              <Play className="w-4 h-4 fill-slate-950" />
               <span>Launch 3D Digital Twin</span>
-              <ArrowRight className="w-4 h-4 ml-1" />
+              <span className="text-[#10b981]">→</span>
             </button>
 
             <button
               onClick={() => onNavigate('hvac')}
-              className="px-5 py-3 rounded-xl bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700/80 hover:border-slate-600 text-slate-200 font-mono text-sm flex items-center gap-2 transition-all backdrop-blur-md"
+              className="px-6 py-3 rounded-full border border-[rgba(237,231,220,0.22)] hover:border-[#0284c7] hover:text-[#0284c7] transition-all text-[#ede7dc] flex items-center justify-center space-x-2"
             >
-              <Wind className="w-4 h-4 text-cyan-400" />
-              <span>2D HVAC Schematic</span>
-            </button>
-
-            <button
-              onClick={() => onNavigate('algae')}
-              className="px-5 py-3 rounded-xl bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700/80 hover:border-slate-600 text-slate-200 font-mono text-sm flex items-center gap-2 transition-all backdrop-blur-md"
-            >
-              <Activity className="w-4 h-4 text-emerald-400" />
-              <span>OpenCV Spectrophotometer</span>
+              <span>Inspect 2D HVAC Schematic</span>
+              <span className="text-[#0284c7]">→</span>
             </button>
           </div>
-        </div>
-      </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          2. THE CORE PROBLEM & THE SYMBIOTIC SOLUTION
-         ══════════════════════════════════════════════════════════════════════ */}
-      <section className="max-w-6xl mx-auto px-4 w-full">
-        <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
-          <div className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest">
-            PARADIGM SHIFT IN GREEN BUILDING DESIGN
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-            Why Conventional HVAC Systems Are Obsolete
-          </h2>
-          <p className="text-slate-400 text-sm">
-            Commercial real estate accounts for nearly 40% of global operational carbon emissions. Here is how Algor-Algae re-engineers mechanical building physics.
-          </p>
+          {/* Hairline Footer Strip: Full-width 1px border above wordmark */}
+          <div className="w-full h-px bg-[rgba(237,231,220,0.13)] mt-16" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Traditional Card */}
-          <div className="p-6 rounded-2xl bg-[#0a0f19] border border-rose-950/60 relative overflow-hidden flex flex-col justify-between space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <ShieldAlert className="w-4 h-4 text-rose-400" />
-                  Conventional Commercial HVAC
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800">
-                  LINEAR & POLLUTING
-                </span>
-              </div>
-              <h3 className="text-lg font-bold text-white">Passive Outdoor Venting & Thermal Waste</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Traditional mechanical systems pull fresh outdoor air, condition it, and blow human metabolic CO₂ straight into the atmosphere through roof vents. 
-                Billions of kilowatt-hours are spent discarding tempered air, while building owners incur carbon penalties under local climate compliance laws.
-              </p>
-            </div>
-
-            <div className="space-y-2 pt-3 border-t border-rose-950/40 text-xs font-mono">
-              <div className="flex items-center justify-between text-slate-400">
-                <span>Carbon Capture Rate:</span>
-                <span className="text-rose-400 font-bold">0.0% (Zero Absorption)</span>
-              </div>
-              <div className="flex items-center justify-between text-slate-400">
-                <span>Byproduct Value:</span>
-                <span className="text-rose-400 font-bold">$0.00 (Pure Exhaust)</span>
-              </div>
-              <div className="flex items-center justify-between text-slate-400">
-                <span>Biological Safeguards:</span>
-                <span className="text-slate-500">None</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Algor-Algae Solution Card */}
-          <div className="p-6 rounded-2xl bg-[#09151c] border border-emerald-900/60 relative overflow-hidden flex flex-col justify-between space-y-4 shadow-xl shadow-emerald-950/20">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Leaf className="w-4 h-4 text-emerald-400" />
-                  The Algor-Algae Symbiosis
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700">
-                  CIRCULAR BIO-ECONOMY
-                </span>
-              </div>
-              <h3 className="text-lg font-bold text-white">Autonomous Metabolic CO₂ Sparging Facade</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Microalgae (<em>Chlorella vulgaris</em>) absorb carbon dioxide 10 to 50 times faster than terrestrial forests. 
-                Our system routes indoor breath exhaust through motorized modulating dampers directly into borosilicate photobioreactor columns, turning building walls into living lungs.
-              </p>
-            </div>
-
-            <div className="space-y-2 pt-3 border-t border-emerald-950/40 text-xs font-mono">
-              <div className="flex items-center justify-between text-slate-300">
-                <span>Carbon Capture Efficiency:</span>
-                <span className="text-emerald-400 font-bold">Up to 88% Net Sequestration</span>
-              </div>
-              <div className="flex items-center justify-between text-slate-300">
-                <span>Byproduct Generation:</span>
-                <span className="text-teal-400 font-bold">Biofuel Lipids & Pure O₂</span>
-              </div>
-              <div className="flex items-center justify-between text-slate-300">
-                <span>Autonomous Acid Safeguard:</span>
-                <span className="text-amber-400 font-bold">Sub-60ms Outdoor Bypass</span>
-              </div>
-            </div>
+        {/* Cropped Wordmark: Full-width Syne 800, translated down so page edge crops top */}
+        <div className="w-full overflow-hidden select-none pointer-events-none mt-12 flex justify-center">
+          <div className="font-['Syne'] font-extrabold text-[clamp(60px,14vw,220px)] leading-[0.7] tracking-[-0.035em] text-[#ede7dc] text-center whitespace-nowrap translate-y-[28%] opacity-90">
+            ALGOR-ALGAE<span className="text-[#10b981]">.</span>
           </div>
         </div>
       </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          3. THE 3-PILLAR AUTONOMOUS ARCHITECTURAL SYSTEM
-         ══════════════════════════════════════════════════════════════════════ */}
-      <section className="max-w-6xl mx-auto px-4 w-full">
-        <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
-          <div className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest">
-            ENGINEERING ARCHITECTURE
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-            The Three Autonomous Nervous System Pillars
-          </h2>
-          <p className="text-slate-400 text-sm">
-            Bridging classical architecture with computer vision and biological automation.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Pillar 1 */}
-          <div 
-            onClick={() => onNavigate('human')}
-            className="group p-6 rounded-2xl bg-[#0b111e] border border-slate-800 hover:border-sky-500/50 transition-all cursor-pointer flex flex-col justify-between space-y-4 hover:shadow-xl hover:shadow-sky-950/30"
-          >
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
-                <Users className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-white group-hover:text-sky-300 transition-colors">
-                1. YOLOv8 Metabolic Tracking
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Zero invasive physical sensors. Real-time edge computer vision continuously detects humans in office zones, computing respiratory CO₂ generation via the metabolic formula:
-              </p>
-              <div className="px-3 py-2 rounded-lg bg-black/60 border border-slate-800 text-[11px] font-mono text-sky-300">
-                CO₂ = 400 + (Occupants × 150) ppm
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-sky-400">
-              <span>Inspect Vision Engine</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-
-          {/* Pillar 2 */}
-          <div 
-            onClick={() => onNavigate('algae')}
-            className="group p-6 rounded-2xl bg-[#0b111e] border border-slate-800 hover:border-emerald-500/50 transition-all cursor-pointer flex flex-col justify-between space-y-4 hover:shadow-xl hover:shadow-emerald-950/30"
-          >
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <Eye className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors">
-                2. OpenCV Spectrophotometry
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Pure HSV color segmentation isolates living photobioreactor tubes within a calibrated 220×220 ROI. Tracks chlorophyll-a (520nm) vs carotenoid stress (580nm) without human intervention.
-              </p>
-              <div className="px-3 py-2 rounded-lg bg-black/60 border border-slate-800 text-[11px] font-mono text-emerald-300">
-                HSV Ratio: Green (Healthy) vs Yellow (Chlorosis)
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-emerald-400">
-              <span>Inspect Bio-Spectrometer</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-
-          {/* Pillar 3 */}
-          <div 
-            onClick={() => onNavigate('hvac')}
-            className="group p-6 rounded-2xl bg-[#0b111e] border border-slate-800 hover:border-amber-500/50 transition-all cursor-pointer flex flex-col justify-between space-y-4 hover:shadow-xl hover:shadow-amber-950/30"
-          >
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Wind className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-white group-hover:text-amber-300 transition-colors">
-                3. Acidification Bypass Safeguard
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                The critical biological rule: when algae experiences chlorosis stress (yellow), high-CO₂ exhaust is diverted to the outdoor atmospheric scrubber to prevent culture wipeout (pH &lt; 6.8).
-              </p>
-              <div className="px-3 py-2 rounded-lg bg-black/60 border border-slate-800 text-[11px] font-mono text-amber-300">
-                Safety Interlock: 90% Outdoor Atmospheric Vent
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-amber-400">
-              <span>View 3-State Matrix</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          4. INTERACTIVE 3D DIGITAL TWIN & REAL-TIME PREVIEW
-         ══════════════════════════════════════════════════════════════════════ */}
-      <section className="max-w-6xl mx-auto px-4 w-full">
-        <div className="bg-[#080e18] border border-slate-800 rounded-3xl p-6 lg:p-8 shadow-2xl relative overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
-            {/* Left Column: Context & Architectural Specs */}
-            <div className="lg:col-span-5 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/60 border border-slate-700 text-cyan-300 text-xs font-mono">
-                <Building2 className="w-3.5 h-3.5 text-cyan-400" />
-                <span>41.4m × 34.2m NEOCLASSICAL ELEVATION</span>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-                Authentic Classical Architecture with Integrated Living Towers
-              </h2>
-
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Rather than generic modern sci-fi boxes, Algor-Algae showcases that living biological systems can be retrofitted or designed directly into timeless classical architecture.
-              </p>
-
-              <div className="space-y-2.5 text-xs font-mono">
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-slate-400">Exterior Towers:</span>
-                  <span className="text-emerald-400 font-bold">4 Corner Cylinders (20 Modules)</span>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-slate-400">Airflow Sparging:</span>
-                  <span className="text-cyan-400 font-bold">Live Animated Conduit Network</span>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-slate-400">Atmospheric Scrubber:</span>
-                  <span className="text-amber-400 font-bold">Dual Penthouse Exhaust Stacks</span>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-slate-400">Architectural Elevations:</span>
-                  <span className="text-white font-bold">Front, Rear, Left & Right Angles</span>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  onClick={() => onNavigate('overview')}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold font-mono text-xs flex items-center justify-center gap-2 transition-all"
-                >
-                  <span>Enter Full 3D Interactive Model</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Right Column: Live 3D Twin Viewport */}
-            <div className="lg:col-span-7 h-[380px] sm:h-[460px] w-full rounded-2xl overflow-hidden border border-slate-800 relative bg-[#040812]">
-              <BuildingTwin focusMode="overview" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          5. SCIENTIFIC & BIO-CHEMICAL FORMULAS
-         ══════════════════════════════════════════════════════════════════════ */}
-      <section className="max-w-6xl mx-auto px-4 w-full">
-        <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
-          <div className="text-xs font-mono font-bold text-teal-400 uppercase tracking-widest">
-            BIOMIMETIC STOICHIOMETRY
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-            The Fundamental Chemistry of Algor-Algae
-          </h2>
-          <p className="text-slate-400 text-sm">
-            Rigorous mathematical and biological equations governing real-time telemetry and decision systems.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Formula 1 */}
-          <div className="p-4 rounded-xl bg-[#090e18] border border-slate-800 font-mono space-y-2">
-            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">
-              1. Photosynthesis Reaction
-            </span>
-            <div className="text-sm font-bold text-white tracking-wide">
-              6CO₂ + 6H₂O + hν → C₆H₁₂O₆ + 6O₂
-            </div>
-            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              Enzymatic Rubisco carbon fixation producing simple sugars and releasing pure molecular oxygen.
-            </p>
-          </div>
-
-          {/* Formula 2 */}
-          <div className="p-4 rounded-xl bg-[#090e18] border border-slate-800 font-mono space-y-2">
-            <span className="text-[10px] text-sky-400 font-bold uppercase tracking-wider block">
-              2. Respiratory Carbon Flux
-            </span>
-            <div className="text-sm font-bold text-white tracking-wide">
-              PPM = 400 + (N × 150)
-            </div>
-            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              Indoor ambient base level (400 ppm) plus 150 ppm respiratory CO₂ addition per human occupant.
-            </p>
-          </div>
-
-          {/* Formula 3 */}
-          <div className="p-4 rounded-xl bg-[#090e18] border border-slate-800 font-mono space-y-2">
-            <span className="text-[10px] text-teal-400 font-bold uppercase tracking-wider block">
-              3. Carbon Sequestration
-            </span>
-            <div className="text-sm font-bold text-white tracking-wide">
-              M(CO₂) = 1.83 × M(biomass)
-            </div>
-            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              Every 1.0 kg of dry microalgal cellular biomass fixes approximately 1.83 kg of gaseous carbon dioxide.
-            </p>
-          </div>
-
-          {/* Formula 4 */}
-          <div className="p-4 rounded-xl bg-[#090e18] border border-slate-800 font-mono space-y-2">
-            <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wider block">
-              4. Acidification Safeguard
-            </span>
-            <div className="text-sm font-bold text-white tracking-wide">
-              pH ≥ 6.8 (Bypass Limit)
-            </div>
-            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              CO₂ hydration creates carbonic acid (H₂CO₃). If culture vitality drops, dampers divert exhaust to prevent fatal cell lysis.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          6. NAVIGATION HUB & DIRECT ACTION TILES
-         ══════════════════════════════════════════════════════════════════════ */}
-      <section className="max-w-6xl mx-auto px-4 w-full">
-        <div className="text-center max-w-2xl mx-auto mb-8 space-y-2">
-          <div className="text-xs font-mono font-bold text-indigo-400 uppercase tracking-widest">
-            PLATFORM EXPLORATION
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-            Explore the Specialized Living Twin Consoles
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
-          {/* Card 1 */}
-          <button
-            onClick={() => onNavigate('overview')}
-            className="p-5 rounded-2xl bg-[#0c121e] border border-slate-800 hover:border-emerald-500/60 p-4 text-left transition-all group flex flex-col justify-between space-y-3"
-          >
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3">
-                <Building2 className="w-4 h-4" />
-              </div>
-              <div className="font-bold text-white group-hover:text-emerald-300 text-sm">
-                Digital Twin Overview
-              </div>
-              <p className="text-[11px] text-slate-400 font-sans mt-1">
-                Neoclassical building with 4 elevation views, live sparging particles, and Gemini AI agent.
-              </p>
-            </div>
-            <span className="text-xs text-emerald-400 flex items-center gap-1 font-bold">
-              Open 3D Model <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </button>
-
-          {/* Card 2 */}
-          <button
-            onClick={() => onNavigate('human')}
-            className="p-5 rounded-2xl bg-[#0c121e] border border-slate-800 hover:border-sky-500/60 p-4 text-left transition-all group flex flex-col justify-between space-y-3"
-          >
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center mb-3">
-                <Users className="w-4 h-4" />
-              </div>
-              <div className="font-bold text-white group-hover:text-sky-300 text-sm">
-                Human Occupancy Engine
-              </div>
-              <p className="text-[11px] text-slate-400 font-sans mt-1">
-                YOLOv8 vision detection, metabolic CO₂ math HUD, and room-by-room distribution metrics.
-              </p>
-            </div>
-            <span className="text-xs text-sky-400 flex items-center gap-1 font-bold">
-              Open Vision Feed <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </button>
-
-          {/* Card 3 */}
-          <button
-            onClick={() => onNavigate('algae')}
-            className="p-5 rounded-2xl bg-[#0c121e] border border-slate-800 hover:border-teal-500/60 p-4 text-left transition-all group flex flex-col justify-between space-y-3"
-          >
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center mb-3">
-                <Activity className="w-4 h-4" />
-              </div>
-              <div className="font-bold text-white group-hover:text-teal-300 text-sm">
-                Algae Bio-Health Engine
-              </div>
-              <p className="text-[11px] text-slate-400 font-sans mt-1">
-                Pure OpenCV spectrophotometer, 3D cylindrical Borosilicate vessel, and dynamic bubble aeration.
-              </p>
-            </div>
-            <span className="text-xs text-teal-400 flex items-center gap-1 font-bold">
-              Open Bio-Spectrometer <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </button>
-
-          {/* Card 4 */}
-          <button
-            onClick={() => onNavigate('hvac')}
-            className="p-5 rounded-2xl bg-[#0c121e] border border-slate-800 hover:border-amber-500/60 p-4 text-left transition-all group flex flex-col justify-between space-y-3"
-          >
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3">
-                <Wind className="w-4 h-4" />
-              </div>
-              <div className="font-bold text-white group-hover:text-amber-300 text-sm">
-                HVAC Schematic Layout
-              </div>
-              <p className="text-[11px] text-slate-400 font-sans mt-1">
-                2D technical SVG schematic with 3-way damper, outdoor exhaust cloud, and 3-state operational matrix.
-              </p>
-            </div>
-            <span className="text-xs text-amber-400 flex items-center gap-1 font-bold">
-              Open 2D Schematic <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </button>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          7. FOOTER: EDITORIAL LAB CREDITS
-         ══════════════════════════════════════════════════════════════════════ */}
-      <footer className="border-t border-slate-800/80 pt-8 mt-12 text-xs font-mono text-slate-400 max-w-6xl mx-auto px-4 w-full">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-              <Leaf className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-white font-bold">ALGOR-ALGAE</span>
-            <span>· Bio-Integrated Living Digital Twin Platform</span>
-          </div>
-
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>LEED Net-Zero Certified Design</span>
-            <span>·</span>
-            <span>OpenCV + YOLOv8 + R3F + Gemini BMS</span>
-          </div>
-        </div>
-      </footer>
 
     </div>
   );

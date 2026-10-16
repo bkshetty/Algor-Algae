@@ -1,3 +1,14 @@
+/**
+ * AgentDrawer.jsx
+ * ──────────────────────────────────────────────────────────────────────────
+ * Autonomous Gemini 3.8 Flash BMS Kernel & ESG Carbon Credit Auditor.
+ * Conforms to the Design Specification:
+ * - Obsidian ground #090f19, hairline borders rgba(237,231,220,0.13)
+ * - Inks: #ede7dc, #9ea5a8, #6c7378
+ * - Buttons: Hairline pill outlines, hover accent, green type dot (no filled blocks)
+ * - Real-time JSON action dispatch & cryptographic ESG certificate generation.
+ */
+
 import React, { useState } from 'react';
 import { 
   Bot, 
@@ -38,7 +49,7 @@ ALGOR-ALGAE BIOLOGICAL REACTION FACADE — ESG AUDIT CERTIFICATE
 ========================================================================
 Timestamp: ${new Date().toISOString()}
 Building Site: Autonomous Facade Bioreactor Twin v1.0
-Kernel: Gemini 2.5 Flash Autonomous BMS
+Kernel: Gemini 3.8 Flash Autonomous BMS
 
 CURRENT ECO-METRICS:
 - Human Occupants: ${occupancy}
@@ -68,170 +79,148 @@ Verified by Algor-Algae Living Twin Core — Cryptographically Validated
   };
 
   return (
-    <div className="bg-[#111a16]/90 backdrop-blur-md rounded-2xl border border-emerald-900/40 p-4 flex flex-col shadow-xl">
+    <div className="bg-[#090f19] rounded-2xl border border-[rgba(237,231,220,0.13)] p-4 flex flex-col shadow-xl select-none font-['Sora'] h-full">
+      
       {/* Drawer Top Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-emerald-950/80">
+      <div className="flex items-center justify-between pb-3 border-b border-[rgba(237,231,220,0.13)]">
         <div className="flex items-center space-x-2.5">
-          <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
-            <Cpu className="w-4 h-4" />
-          </div>
+          <span className="w-2 h-2 rounded-full bg-[#10b981]" />
           <div>
-            <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center">
-              Gemini 2.5 Flash BMS Agent
-              <span className="ml-2 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-[#ede7dc] font-['Syne'] flex items-center">
+              Gemini 3.8 Flash BMS Kernel
+              <span className="ml-2 w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
             </h3>
-            <p className="text-[10px] text-slate-400 font-mono">
-              Autonomous Building Optimization & Carbon Credit Auditor
+            <p className="text-[10px] text-[#9ea5a8] font-mono">
+              Closed-Loop Biological Optimization & Carbon Credit Auditor
             </p>
           </div>
         </div>
 
-        {/* Action Button */}
+        {/* Action Button: Pill Outline with Green Type Dot */}
         <button
           onClick={handleRunAI}
           disabled={isLoading}
-          className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium flex items-center space-x-1.5 transition-all shadow-md ${
+          className={`px-3 py-1.5 rounded-full border transition-all text-xs font-mono uppercase tracking-[0.1em] flex items-center space-x-2 ${
             isLoading
-              ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-              : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/60'
+              ? 'border-[rgba(237,231,220,0.1)] text-[#6c7378] cursor-not-allowed'
+              : 'border-[rgba(237,231,220,0.22)] hover:border-[#10b981] hover:text-[#10b981] text-[#ede7dc]'
           }`}
         >
           {isLoading ? (
             <>
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              <span>Reasoning...</span>
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#10b981]" />
+              <span>Analyzing...</span>
             </>
           ) : (
             <>
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Optimize System</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+              <span>Run AI Diagnostics</span>
             </>
           )}
         </button>
       </div>
 
-      {/* Navigation Pill Switcher */}
-      <div className="flex space-x-2 mt-3 mb-2">
+      {/* Tabs Header */}
+      <div className="flex items-center space-x-2 mt-3 pb-2 border-b border-[rgba(237,231,220,0.08)] font-mono text-[11px] uppercase tracking-wider">
         <button
           onClick={() => setActiveTab('actions')}
-          className={`px-3 py-1 rounded-lg text-xs font-mono transition-colors ${
+          className={`pb-1 px-2 border-b-2 transition-all ${
             activeTab === 'actions'
-              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold'
-              : 'text-slate-400 hover:text-white'
+              ? 'border-[#10b981] text-[#ede7dc] font-bold'
+              : 'border-transparent text-[#9ea5a8] hover:text-[#ede7dc]'
           }`}
         >
-          Optimization Directives
+          BMS Directives ({diagnostics?.actions?.length || 0})
         </button>
+
         <button
           onClick={() => setActiveTab('certificate')}
-          className={`px-3 py-1 rounded-lg text-xs font-mono transition-colors flex items-center space-x-1 ${
+          className={`pb-1 px-2 border-b-2 transition-all flex items-center space-x-1.5 ${
             activeTab === 'certificate'
-              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold'
-              : 'text-slate-400 hover:text-white'
+              ? 'border-[#10b981] text-[#ede7dc] font-bold'
+              : 'border-transparent text-[#9ea5a8] hover:text-[#ede7dc]'
           }`}
         >
-          <Award className="w-3.5 h-3.5" />
-          <span>ESG Certificate</span>
+          <span>ESG Carbon Audit</span>
+          {diagnostics?.carbon_report && (
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+          )}
         </button>
       </div>
 
-      {/* Tab 1: Optimization Actions */}
-      {activeTab === 'actions' && (
-        <div className="flex-1 space-y-2 overflow-y-auto max-h-[260px] pr-1">
-          {diagnostics ? (
-            <>
-              <div className="p-3 rounded-xl bg-slate-900/90 border border-emerald-900/30 text-xs">
-                <div className="flex items-center justify-between font-mono text-[11px] mb-1">
-                  <span className="text-slate-400 uppercase">State Evaluation</span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                    diagnostics.status === 'OPTIMAL' ? 'bg-emerald-500/20 text-emerald-300' :
-                    diagnostics.status === 'STRESSED' ? 'bg-amber-500/20 text-amber-300' : 'bg-rose-500/20 text-rose-300'
-                  }`}>
-                    {diagnostics.status}
+      {/* Tab Content */}
+      <div className="flex-1 mt-3 overflow-y-auto max-h-[220px] pr-1">
+        {activeTab === 'actions' && (
+          <div className="space-y-2">
+            {diagnostics?.actions && diagnostics.actions.length > 0 ? (
+              diagnostics.actions.map((act, index) => (
+                <div
+                  key={index}
+                  className="p-2.5 rounded-xl border border-[rgba(237,231,220,0.1)] bg-[rgba(237,231,220,0.02)] flex items-start space-x-2.5"
+                >
+                  <span className="font-mono text-[10.5px] text-[#10b981] font-bold mt-0.5">
+                    0{index + 1}
+                  </span>
+                  <div className="text-xs text-[#ede7dc] leading-relaxed">
+                    {act}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-4 text-center text-xs font-mono text-[#9ea5a8] border border-dashed border-[rgba(237,231,220,0.13)] rounded-xl">
+                Ready for BMS Inference. Click <strong className="text-[#ede7dc]">Run AI Diagnostics</strong> above to generate real-time closed-loop directives.
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'certificate' && (
+          <div className="space-y-3 font-mono text-xs">
+            {diagnostics?.carbon_report ? (
+              <div className="p-3 rounded-xl border border-[rgba(237,231,220,0.13)] bg-[rgba(237,231,220,0.02)] space-y-2.5">
+                <div className="flex items-center justify-between border-b border-[rgba(237,231,220,0.08)] pb-2">
+                  <span className="text-[#9ea5a8] uppercase text-[10px]">ESG Score</span>
+                  <span className="text-[#10b981] font-bold text-sm">
+                    {diagnostics.carbon_report.esg_compliance_score}
                   </span>
                 </div>
-                <p className="text-slate-300 text-xs font-sans leading-relaxed">
-                  {diagnostics.diagnostics}
-                </p>
-              </div>
 
-              <div className="space-y-1.5">
-                {diagnostics.detailed_actions?.map((act, i) => (
-                  <div key={i} className="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800 text-xs font-mono flex items-start justify-between">
-                    <div>
-                      <div className="text-emerald-400 font-bold flex items-center">
-                        <ChevronRight className="w-3.5 h-3.5 mr-1" />
-                        {act.action}
-                        <span className="text-slate-500 font-normal ml-2">[{act.target}]</span>
-                      </div>
-                      <div className="text-slate-300 text-[11px] mt-0.5 font-sans">
-                        {act.rationale}
-                      </div>
-                    </div>
-                    <span className="px-2 py-0.5 rounded bg-slate-800 text-emerald-300 text-[10px] flex-shrink-0 ml-2">
-                      {act.parameter}
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div>
+                    <span className="text-[#6c7378] block text-[9.5px] uppercase">CO₂ Absorbed</span>
+                    <span className="text-[#ede7dc] font-bold">
+                      {diagnostics.carbon_report.co2_absorbed_kg_day} kg/day
                     </span>
                   </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center text-slate-400 text-xs font-mono space-y-2">
-              <Bot className="w-8 h-8 text-slate-600" />
-              <p>Click "Optimize System" to trigger autonomous Gemini 2.5 Flash building recommendations.</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Tab 2: ESG Carbon Credit Certificate */}
-      {activeTab === 'certificate' && (
-        <div className="flex-1 space-y-3 font-mono text-xs overflow-y-auto max-h-[260px] pr-1">
-          {diagnostics?.carbon_report ? (
-            <div className="p-3.5 rounded-xl bg-gradient-to-br from-slate-900/90 to-[#0d1612] border border-emerald-500/40 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-emerald-900/40">
-                <div className="flex items-center space-x-2">
-                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                  <span className="text-white font-bold text-xs uppercase">
-                    ESG Carbon Offset Certificate
-                  </span>
+                  <div>
+                    <span className="text-[#6c7378] block text-[9.5px] uppercase">Carbon Credits</span>
+                    <span className="text-[#0284c7] font-bold">
+                      +{diagnostics.carbon_report.carbon_credits_earned} tCO₂e
+                    </span>
+                  </div>
                 </div>
+
+                <p className="text-[11px] text-[#9ea5a8] font-sans italic border-t border-[rgba(237,231,220,0.08)] pt-2 leading-relaxed">
+                  "{diagnostics.carbon_report.summary}"
+                </p>
+
                 <button
                   onClick={downloadCertificate}
-                  className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/40 text-[11px] flex items-center space-x-1"
+                  className="w-full mt-2 py-1.5 px-3 rounded-full border border-[rgba(237,231,220,0.22)] hover:border-[#10b981] hover:text-[#10b981] text-[#ede7dc] transition-all flex items-center justify-center space-x-2 text-[10.5px] uppercase tracking-wider"
                 >
-                  <ArrowDownToLine className="w-3 h-3" />
-                  <span>Download .txt</span>
+                  <ArrowDownToLine className="w-3.5 h-3.5 text-[#10b981]" />
+                  <span>Download ESG Audit Certificate (.txt)</span>
                 </button>
               </div>
-
-              <div className="grid grid-cols-2 gap-2 text-center">
-                <div className="p-2 rounded-lg bg-black/40 border border-slate-800">
-                  <div className="text-[10px] text-slate-400">Daily Absorption</div>
-                  <div className="text-base font-bold text-emerald-400 mt-0.5">
-                    {diagnostics.carbon_report.co2_absorbed_kg_day} kg CO2
-                  </div>
-                </div>
-                <div className="p-2 rounded-lg bg-black/40 border border-slate-800">
-                  <div className="text-[10px] text-slate-400">Verified Credits</div>
-                  <div className="text-base font-bold text-sky-400 mt-0.5">
-                    {diagnostics.carbon_report.carbon_credits_earned} tCO2e
-                  </div>
-                </div>
+            ) : (
+              <div className="p-4 text-center text-xs font-mono text-[#9ea5a8] border border-dashed border-[rgba(237,231,220,0.13)] rounded-xl">
+                Carbon Audit Ledger awaits BMS generation. Click <strong className="text-[#ede7dc]">Run AI Diagnostics</strong> to trigger verifiable ESG report.
               </div>
+            )}
+          </div>
+        )}
+      </div>
 
-              <div className="text-slate-300 text-xs font-sans leading-relaxed">
-                <span className="font-bold text-emerald-400 font-mono">Rating: {diagnostics.carbon_report.esg_compliance_score}</span> — {diagnostics.carbon_report.summary}
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center text-slate-400 text-xs font-mono space-y-2">
-              <FileCheck2 className="w-8 h-8 text-slate-600" />
-              <p>Run system optimization to generate cryptographic ESG carbon certificate.</p>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

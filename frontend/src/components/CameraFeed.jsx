@@ -1,5 +1,18 @@
+/**
+ * CameraFeed.jsx
+ * ──────────────────────────────────────────────────────────────────────────
+ * Real-Time Computer Vision Perception Stream & Judges' Demo Control Engine.
+ *
+ * Implements:
+ * 1. YOLOv8 Edge Vision Human Occupancy Detection (Class 0 Bounding Boxes)
+ * 2. OpenCV Pure HSV Spectrophotometer (220x220 ROI Color Segmentation)
+ * 3. Quick 1-Click Demo Simulation Triggers for Hackathon Judges
+ * 4. Strict adherence to design tokens: #060a12 ground, #090f19 surface,
+ *    rgba(237,231,220,0.13) hairlines, and type ornament accents.
+ */
+
 import React, { useState } from 'react';
-import { Camera, Users, AlertTriangle, ShieldCheck, RefreshCw, Zap, FlaskConical, Gauge, Eye } from 'lucide-react';
+import { Camera, Users, Zap, FlaskConical, Gauge, RefreshCw, Eye } from 'lucide-react';
 import { useStore } from '../store';
 import { setSimulationOverride, disableSimulationOverride } from '../utils/websocket';
 
@@ -11,11 +24,12 @@ export default function CameraFeed({ mode = 'overview' }) {
   const isSynthetic = useStore((state) => state.isSynthetic);
   const occupancy = useStore((state) => state.occupancy);
   const algaeHealth = useStore((state) => state.algae_health);
+  const co2Ppm = useStore((state) => state.co2_ppm);
   const hsvStats = useStore((state) => state.hsv_stats);
 
   const [activeTestMode, setActiveTestMode] = useState('live');
 
-  // Select specialized frame based on current page mode
+  // Select frame based on mode
   let frameBase64 = frameAll;
   if (mode === 'algae') {
     frameBase64 = frameAlgae || frameAll;
@@ -44,48 +58,40 @@ export default function CameraFeed({ mode = 'overview' }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0d1320] border border-slate-800/80 rounded-2xl p-4 shadow-xl">
+    <div className="flex flex-col h-full bg-[#090f19] border border-[rgba(237,231,220,0.13)] rounded-2xl p-4 shadow-xl select-none font-['Sora']">
+      
       {/* Header bar */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-        <div className="flex items-center space-x-2">
-          {mode === 'algae' ? (
-            <FlaskConical className="w-5 h-5 text-emerald-400" />
-          ) : mode === 'human' ? (
-            <Users className="w-5 h-5 text-sky-400" />
-          ) : (
-            <Camera className="w-5 h-5 text-emerald-400" />
-          )}
+      <div className="flex items-center justify-between pb-3 border-b border-[rgba(237,231,220,0.13)]">
+        <div className="flex items-center space-x-2.5">
+          <span className="w-2 h-2 rounded-full bg-[#10b981]" />
           <div>
-            <h3 className="text-sm font-semibold text-slate-200 uppercase tracking-wider font-mono flex items-center">
+            <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-[#ede7dc] font-['Syne'] flex items-center">
               {mode === 'algae'
                 ? 'OpenCV Bio-Spectrophotometer'
                 : mode === 'human'
                 ? 'YOLOv8 Human Occupancy Tracker'
-                : 'Vision Telemetry Feed'}
+                : 'Dual-Modal Perception Engine'}
             </h3>
-            {mode === 'algae' && (
-              <span className="text-[10px] text-emerald-400 font-mono block">
-                Pure HSV Color Segmentation • YOLO Disabled
-              </span>
-            )}
-            {mode === 'human' && (
-              <span className="text-[10px] text-sky-400 font-mono block">
-                COCO Class 0 • Continuous Bounding Boxes
-              </span>
-            )}
+            <span className="text-[10px] text-[#9ea5a8] font-mono block">
+              {mode === 'algae'
+                ? 'Pure HSV ROI Spectrometry // 520nm vs 580nm'
+                : mode === 'human'
+                ? 'COCO Class 0 // Real-time Bounding Boxes'
+                : 'YOLOv8 Occupancy + HSV Spectrophotometry'}
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'}`} />
-          <span className="text-xs font-mono text-slate-400">
-            {isConnected ? (isSynthetic ? 'SYNTHETIC CV FEED' : '30 FPS ZERO-LAG') : 'OFFLINE'}
+        <div className="flex items-center space-x-2 font-mono text-[10.5px]">
+          <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-[#10b981] animate-pulse' : 'bg-[#ef4444]'}`} />
+          <span className="text-[#9ea5a8]">
+            {isConnected ? (isSynthetic ? 'SYNTHETIC CV' : '30 FPS REAL-TIME') : 'STANDBY'}
           </span>
         </div>
       </div>
 
       {/* Video / Annotated Canvas Container */}
-      <div className="relative mt-3 flex-1 min-h-[260px] bg-black rounded-xl overflow-hidden border border-slate-700/60 flex items-center justify-center">
+      <div className="relative mt-3 flex-1 min-h-[240px] bg-black rounded-xl overflow-hidden border border-[rgba(237,231,220,0.13)] flex items-center justify-center">
         {frameBase64 ? (
           <img
             src={frameBase64}
@@ -94,153 +100,126 @@ export default function CameraFeed({ mode = 'overview' }) {
           />
         ) : (
           <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">
-            <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
-            <p className="text-xs font-mono text-slate-400">
-              Connecting to Python Computer Vision Server...<br />
-              Ensure <code className="text-emerald-400">python main.py</code> is running on port 8000.
+            <RefreshCw className="w-7 h-7 text-[#10b981] animate-spin" />
+            <p className="text-xs font-mono text-[#9ea5a8]">
+              Streaming Real-Time Computer Vision...<br />
+              Target: <code className="text-[#10b981]">ws://localhost:8000/ws</code>
             </p>
           </div>
         )}
 
         {/* Floating Watermark HUD */}
-        <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center text-[11px] font-mono bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 pointer-events-none">
-          {mode === 'algae' ? (
-            <>
-              <div className="flex items-center space-x-1.5 text-emerald-300">
-                <Gauge className="w-3.5 h-3.5 text-emerald-400" />
-                <span>HSV Hue: {hsvStats?.mean_h ?? 58}° • Density: {hsvStats?.biomass_g_l ?? 1.6} g/L</span>
-              </div>
-              <div className="text-emerald-400 text-[10px]">
-                Hold green/yellow in 220x220 ROI
-              </div>
-            </>
-          ) : mode === 'human' ? (
-            <>
-              <div className="flex items-center space-x-1.5 text-sky-300">
-                <Users className="w-3.5 h-3.5 text-sky-400" />
-                <span>YOLOv8: {occupancy} human{occupancy !== 1 ? 's' : ''} detected</span>
-              </div>
-              <div className="text-sky-400 text-[10px]">
-                Metabolic CO₂: +{occupancy * 150} ppm
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center space-x-1.5">
-                <Users className="w-3.5 h-3.5 text-sky-400" />
-                <span>YOLO: {occupancy} humans | ROI Health: {algaeHealth.toFixed(0)}%</span>
-              </div>
-              <div className="text-emerald-400 text-[10px]">
-                Bi-Modal Vision Active
-              </div>
-            </>
-          )}
+        <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center text-[10.5px] font-mono bg-[rgba(9,15,25,0.85)] backdrop-blur-md px-3 py-1.5 rounded-lg border border-[rgba(237,231,220,0.13)] text-[#ede7dc] pointer-events-none">
+          <div className="flex items-center space-x-2">
+            <span className="text-[#0284c7]">OCC: {occupancy}</span>
+            <span className="text-[rgba(237,231,220,0.2)]">|</span>
+            <span className="text-[#f59e0b]">CO₂: {co2Ppm} ppm</span>
+            <span className="text-[rgba(237,231,220,0.2)]">|</span>
+            <span className="text-[#10b981]">HEALTH: {algaeHealth.toFixed(0)}%</span>
+          </div>
+          <div className="text-[10px] text-[#9ea5a8] uppercase tracking-wider">
+            {activeTestMode === 'live' ? 'Live Optical Feed' : `Test: ${activeTestMode}`}
+          </div>
         </div>
       </div>
 
       {/* Quick Demo Controls for Hackathon Judges */}
-      <div className="mt-3 pt-3 border-t border-slate-800/80">
+      <div className="mt-3 pt-3 border-t border-[rgba(237,231,220,0.13)]">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider flex items-center">
-            <Zap className="w-3 h-3 text-amber-400 mr-1" />
-            {mode === 'algae' ? 'Algae Health Simulation Triggers:' : 'Demo CV Triggers:'}
+          <span className="text-[10.5px] font-['Sora'] uppercase tracking-[0.14em] text-[#9ea5a8] flex items-center">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] mr-1.5" />
+            Judges' Perception Triggers:
           </span>
-          <span className="text-[10px] text-slate-500 font-mono">
-            Mode: {activeTestMode}
+          <span className="text-[10px] text-[#6c7378] font-mono">
+            ACTIVE: <strong className="text-[#ede7dc]">{activeTestMode.toUpperCase()}</strong>
           </span>
         </div>
 
-        {mode === 'algae' ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {/* 2-Row Hairline Pill Trigger Buttons */}
+        <div className="space-y-1.5 font-['Sora'] text-xs">
+          {/* Row 1: Occupancy Spikes */}
+          <div className="grid grid-cols-4 gap-1.5 font-mono text-[10.5px]">
             <button
-              onClick={handleSimulateYellowCrisis}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border ${
-                activeTestMode === 'crisis'
-                  ? 'bg-amber-500/20 border-amber-400 text-amber-300'
-                  : 'bg-slate-800/60 border-slate-700 text-amber-400 hover:bg-amber-950/40'
+              onClick={() => handleSimulateOccupants(1)}
+              className={`py-1.5 px-2 rounded-full border transition-all text-center ${
+                activeTestMode === 'occ-1'
+                  ? 'border-[#0284c7] text-[#0284c7] font-bold'
+                  : 'border-[rgba(237,231,220,0.18)] text-[#ede7dc] hover:border-[#0284c7] hover:text-[#0284c7]'
               }`}
             >
-              Yellow Crisis (40%)
+              1 Human
             </button>
             <button
-              onClick={handleSimulateGreenCulture}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border ${
-                activeTestMode === 'healthy'
-                  ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300'
-                  : 'bg-slate-800/60 border-slate-700 text-emerald-400 hover:bg-emerald-950/40'
+              onClick={() => handleSimulateOccupants(3)}
+              className={`py-1.5 px-2 rounded-full border transition-all text-center ${
+                activeTestMode === 'occ-3'
+                  ? 'border-[#0284c7] text-[#0284c7] font-bold'
+                  : 'border-[rgba(237,231,220,0.18)] text-[#ede7dc] hover:border-[#0284c7] hover:text-[#0284c7]'
               }`}
             >
-              Healthy Green (95%)
+              3 Humans
+            </button>
+            <button
+              onClick={() => handleSimulateOccupants(5)}
+              className={`py-1.5 px-2 rounded-full border transition-all text-center ${
+                activeTestMode === 'occ-5'
+                  ? 'border-[#f59e0b] text-[#f59e0b] font-bold'
+                  : 'border-[rgba(237,231,220,0.18)] text-[#ede7dc] hover:border-[#f59e0b] hover:text-[#f59e0b]'
+              }`}
+            >
+              Surge (5)
+            </button>
+            <button
+              onClick={handleResetToLive}
+              className={`py-1.5 px-2 rounded-full border transition-all text-center ${
+                activeTestMode === 'live'
+                  ? 'border-[#10b981] text-[#10b981] font-bold'
+                  : 'border-[rgba(237,231,220,0.18)] text-[#ede7dc] hover:border-[#10b981] hover:text-[#10b981]'
+              }`}
+            >
+              Live Feed
+            </button>
+          </div>
+
+          {/* Row 2: Biological Health States */}
+          <div className="grid grid-cols-3 gap-1.5 font-mono text-[10.5px]">
+            <button
+              onClick={handleSimulateGreenCulture}
+              className={`py-1.5 px-2 rounded-full border transition-all text-center ${
+                activeTestMode === 'healthy'
+                  ? 'border-[#10b981] text-[#10b981] font-bold'
+                  : 'border-[rgba(237,231,220,0.18)] text-[#ede7dc] hover:border-[#10b981] hover:text-[#10b981]'
+              }`}
+            >
+              Lush Green (95%)
+            </button>
+            <button
+              onClick={handleSimulateYellowCrisis}
+              className={`py-1.5 px-2 rounded-full border transition-all text-center ${
+                activeTestMode === 'crisis'
+                  ? 'border-[#f59e0b] text-[#f59e0b] font-bold'
+                  : 'border-[rgba(237,231,220,0.18)] text-[#ede7dc] hover:border-[#f59e0b] hover:text-[#f59e0b]'
+              }`}
+            >
+              Yellow Stress (45%)
             </button>
             <button
               onClick={async () => {
                 setActiveTestMode('stress');
                 await setSimulationOverride(occupancy, true);
               }}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border ${
+              className={`py-1.5 px-2 rounded-full border transition-all text-center ${
                 activeTestMode === 'stress'
-                  ? 'bg-rose-500/20 border-rose-400 text-rose-300'
-                  : 'bg-slate-800/60 border-slate-700 text-rose-400 hover:bg-rose-950/40'
+                  ? 'border-[#ef4444] text-[#ef4444] font-bold'
+                  : 'border-[rgba(237,231,220,0.18)] text-[#ede7dc] hover:border-[#ef4444] hover:text-[#ef4444]'
               }`}
             >
-              Acidic Decay (25%)
-            </button>
-            <button
-              onClick={handleResetToLive}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border ${
-                activeTestMode === 'live'
-                  ? 'bg-emerald-500/20 border-emerald-400 text-slate-200'
-                  : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:bg-slate-700/60'
-              }`}
-            >
-              Live OpenCV Feed
+              Acid Crash (25%)
             </button>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <button
-              onClick={() => handleSimulateOccupants(1)}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border ${
-                activeTestMode === 'occ-1'
-                  ? 'bg-sky-500/20 border-sky-400 text-sky-300'
-                  : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-700/60'
-              }`}
-            >
-              1 Human (550ppm)
-            </button>
-            <button
-              onClick={() => handleSimulateOccupants(3)}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border ${
-                activeTestMode === 'occ-3'
-                  ? 'bg-sky-500/20 border-sky-400 text-sky-300'
-                  : 'bg-slate-800/60 border-slate-700 text-sky-400 hover:bg-slate-700/60'
-              }`}
-            >
-              +2 Humans (850ppm)
-            </button>
-            <button
-              onClick={() => handleSimulateOccupants(5)}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border ${
-                activeTestMode === 'occ-5'
-                  ? 'bg-amber-500/20 border-amber-400 text-amber-300'
-                  : 'bg-slate-800/60 border-slate-700 text-amber-400 hover:bg-amber-950/40'
-              }`}
-            >
-              Surge 5 (1150ppm)
-            </button>
-            <button
-              onClick={handleResetToLive}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all border ${
-                activeTestMode === 'live'
-                  ? 'bg-emerald-500/20 border-emerald-400 text-slate-200'
-                  : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:bg-slate-700/60'
-              }`}
-            >
-              Live Webcam
-            </button>
-          </div>
-        )}
+        </div>
       </div>
+
     </div>
   );
 }

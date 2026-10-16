@@ -833,49 +833,49 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
   const occupancy   = useStore((s) => s.occupancy);
   const co2Ppm      = useStore((s) => s.co2_ppm);
   const hvacState   = useStore((s) => s.hvacState);
-  const triggerHvac = useStore((s) => s.triggerHvacScenario);
   const setDamper   = useStore((s) => s.setHvacDamper);
 
   const statusColor = algaeHealth >= 75 ? '#10b981' : algaeHealth >= 45 ? '#f59e0b' : '#ef4444';
+  const isBypass = hvacState.activeLoop === 'roof_bypass' || algaeHealth < 68;
 
   return (
     <>
       {/* Top-Left Mode & Elevation Status */}
-      <div className="absolute top-3 left-3 z-10 pointer-events-none flex flex-wrap items-center gap-2">
+      <div className="absolute top-3 left-3 z-10 pointer-events-none flex flex-wrap items-center gap-2 font-['Sora']">
         <div
-          className="px-3 py-1.5 rounded-full text-xs font-mono font-bold border flex items-center gap-1.5 backdrop-blur-md shadow-lg"
+          className="px-3 py-1.5 rounded-full text-xs font-mono font-medium border flex items-center gap-2 backdrop-blur-md shadow-lg bg-[rgba(9,15,25,0.85)]"
           style={{
-            borderColor: `${statusColor}66`,
-            backgroundColor: `${statusColor}18`,
+            borderColor: `${statusColor}55`,
             color: statusColor
           }}
         >
-          <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: statusColor }} />
-          NEOCLASSICAL ARCHITECTURE · {hvacState.hvacStatusText}
+          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
+          <span>NEOCLASSICAL FACADE · {hvacState.hvacStatusText}</span>
         </div>
 
-        {hvacState.activeLoop === 'roof_bypass' && (
-          <div className="px-3 py-1.5 rounded-full text-xs font-mono font-bold border border-rose-500/60 bg-rose-950/80 text-rose-300 flex items-center gap-1.5 backdrop-blur-md shadow-lg animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-            ⚠️ OUTLET AIR REDIRECTED TO OUTSIDE (ROOFTOP SCRUBBER)
+        {isBypass && (
+          <div className="px-3 py-1.5 rounded-full text-xs font-mono font-medium border border-[rgba(239,68,68,0.5)] bg-[rgba(9,15,25,0.9)] text-[#ef4444] flex items-center gap-2 backdrop-blur-md shadow-lg">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] animate-pulse" />
+            <span>OUTLET AIR REDIRECTED TO OUTSIDE (ROOFTOP SCRUBBER)</span>
           </div>
         )}
 
-        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-mono bg-black/60 border border-slate-800 text-slate-300 backdrop-blur-md">
-          <Wind className="w-3.5 h-3.5 text-cyan-400" />
-          {occupancy} occupants · {co2Ppm} ppm CO₂ · {hvacState.damperOpenPct}% Damper
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-mono bg-[rgba(9,15,25,0.85)] border border-[rgba(237,231,220,0.13)] text-[#9ea5a8] backdrop-blur-md">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#0284c7]" />
+          <span>{occupancy} occupants · {co2Ppm} ppm · {hvacState.damperOpenPct}% Damper</span>
         </div>
       </div>
 
       {/* Top-Right 4-Elevation Camera View Selectors */}
-      <div className="absolute top-3 right-3 z-20 pointer-events-auto bg-[#0a101d]/90 backdrop-blur-md p-2 rounded-xl border border-slate-800 shadow-2xl flex flex-col gap-1.5">
-        <div className="text-[10px] font-mono font-bold text-sky-400 uppercase tracking-wider px-1 flex items-center justify-between border-b border-slate-800 pb-1">
-          <span className="flex items-center gap-1">
-            <Camera className="w-3 h-3 text-sky-400" /> Elevation Views
+      <div className="absolute top-3 right-3 z-20 pointer-events-auto bg-[rgba(9,15,25,0.9)] backdrop-blur-md p-2.5 rounded-2xl border border-[rgba(237,231,220,0.13)] shadow-2xl flex flex-col gap-2 font-['Sora']">
+        <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-[#9ea5a8] px-1 flex items-center justify-between border-b border-[rgba(237,231,220,0.1)] pb-1.5">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0284c7]" />
+            Elevation Views
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-1 text-[11px] font-mono">
+        <div className="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
           {[
             { key: 'front', label: 'Front' },
             { key: 'rear', label: 'Rear' },
@@ -886,10 +886,10 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
             <button
               key={key}
               onClick={() => setViewAngle(key)}
-              className={`px-2 py-1 rounded-lg border transition-all text-center ${
+              className={`px-2.5 py-1 rounded-full border transition-all text-center ${
                 viewAngle === key
-                  ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
-                  : 'border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? 'border-[#10b981] text-[#10b981] font-bold'
+                  : 'border-[rgba(237,231,220,0.15)] text-[#ede7dc] hover:border-[#10b981] hover:text-[#10b981]'
               } ${key === 'perspective' ? 'col-span-2' : ''}`}
             >
               {label}
@@ -899,29 +899,28 @@ function NeoclassicalTwinHUD({ focusMode, viewAngle, setViewAngle }) {
       </div>
 
       {/* Bottom Bar: AI Diagnostics & Damper Control */}
-      <div className="absolute bottom-3 left-3 right-3 z-10 pointer-events-none flex flex-col sm:flex-row items-end sm:items-center justify-between gap-2">
-        <div className="max-w-md text-[11px] font-mono text-slate-300 bg-black/85 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-white/10 shadow-lg pointer-events-auto">
-          <div className="flex items-center gap-1.5 text-indigo-400 font-bold mb-1 text-[10px] uppercase tracking-wide">
-            <Bot className="w-3.5 h-3.5 text-indigo-400" />
-            Gemini 3.8 Flash BMS Dynamic Control
+      <div className="absolute bottom-3 left-3 right-3 z-10 pointer-events-none flex flex-col sm:flex-row items-end sm:items-center justify-between gap-2 font-['Sora']">
+        <div className="max-w-md text-[11px] font-mono text-[#ede7dc] bg-[rgba(9,15,25,0.9)] backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-[rgba(237,231,220,0.13)] shadow-lg pointer-events-auto">
+          <div className="flex items-center gap-1.5 text-[#10b981] font-bold mb-1 text-[10px] uppercase tracking-[0.14em]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+            Gemini 3.8 Flash BMS Actuation
           </div>
-          <p className="text-slate-300 font-sans text-xs leading-snug">
+          <p className="text-[#9ea5a8] font-sans text-xs leading-snug">
             {hvacState.aiReasoning}
           </p>
         </div>
 
-        <div className="pointer-events-auto bg-[#0a1222]/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-800 flex items-center gap-3 text-xs font-mono shadow-xl">
-          <Sliders className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="text-[10px] text-slate-400">DAMPER VALVE</span>
+        <div className="pointer-events-auto bg-[rgba(9,15,25,0.9)] backdrop-blur-md px-3.5 py-2 rounded-xl border border-[rgba(237,231,220,0.13)] flex items-center gap-3 text-xs font-mono shadow-xl text-[#ede7dc]">
+          <span className="text-[10.5px] uppercase tracking-wider text-[#9ea5a8]">Damper Servo</span>
           <input
             type="range"
             min="0"
             max="100"
             value={hvacState.damperOpenPct}
             onChange={(e) => setDamper(parseInt(e.target.value))}
-            className="w-24 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+            className="w-24 h-1.5 bg-[#1e293b] rounded-lg appearance-none cursor-pointer accent-[#10b981]"
           />
-          <span className="font-bold text-white w-8 text-right">{hvacState.damperOpenPct}%</span>
+          <span className="font-bold text-[#10b981] w-8 text-right">{hvacState.damperOpenPct}%</span>
         </div>
       </div>
     </>
